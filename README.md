@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1><img src="docs/images/wordmark.png" width="900" alt="Ravan Reel Studio"></h1>
+<h1><img src="docs/images/wordmark.svg" width="900" alt="Ravan Reel Studio"></h1>
 
 **Create → Review → Finish**  
 Make reels locally with your coding agent.

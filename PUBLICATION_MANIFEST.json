@@ -1,7 +1,7 @@
 {
   "project": "Ravan Reel Studio",
   "repository_name": "ravan-reel-studio",
-  "source_bytes": 24598168,
+  "source_bytes": 24604973,
   "files": [
     {
       "path": ".agents/skills/effects",
@@ -149,7 +149,7 @@
     {
       "path": "README.md",
       "bytes": 7492,
-      "sha256": "5745871f6fb7924ee7ce389c8fa45de9384799fca49c3b4c536610591809980e"
+      "sha256": "5848259b8c4eba883edffad231e20e10b02598b039a50304e6f5a5e33d51c324"
     },
     {
       "path": "SOURCE.json",
@@ -294,22 +294,22 @@
     {
       "path": "docs/images/social-instagram.svg",
       "bytes": 1017,
-      "sha256": "45f4f49a3b0a4b70ddd672f9d1c92186c7081ebcb32f66b93e703d2e6de7b195"
+      "sha256": "0a7d79ceb61d1441bc0e6a5a5eaa88677e8db583e4fc1e5d6a7bbdc74bc8b66d"
     },
     {
       "path": "docs/images/social-linkedin.svg",
       "bytes": 766,
-      "sha256": "730df37d38727770768b0a0a2b14f23cc1e853f3958915766899b724ead5c4e9"
+      "sha256": "14ff173f1e2a7568b84e2c37d0ec55efae6a76e4affc44fc543c2781f1eac80a"
     },
     {
       "path": "docs/images/social-website.svg",
       "bytes": 735,
-      "sha256": "7d1e1216d88a789750a277c1c847bcee7db1202b564df309bb967f5e1c509bc9"
+      "sha256": "bd452553d5465f72a2f0dd85364cfb273a6f52214f6c579c5cba49f1f47a640e"
     },
     {
       "path": "docs/images/social-youtube.svg",
       "bytes": 679,
-      "sha256": "4e20eaefc5f65921280a8caf58a21e6238478c40689f26847db7ed723a1363f2"
+      "sha256": "3cf7692bcdbf1b53d709610daffa06c17ef0f7bb64f317f77efb8489328e9062"
     },
     {
       "path": "docs/images/wordmark.png",
@@ -317,14 +317,19 @@
       "sha256": "f2b108c7559b692cde62e87e9d72de367e5f6507cb14afca3ef0a15052828fb8"
     },
     {
+      "path": "docs/images/wordmark.svg",
+      "bytes": 6805,
+      "sha256": "7cfb427b2464e4ab9662727b1471b79e93e86152c35839c3703ce1abb07e5fb5"
+    },
+    {
       "path": "docs/images/workflow-mobile.svg",
       "bytes": 3714,
-      "sha256": "79f84711b37a627f72c2e65b440faaced35fad18718cfc05f5b8ec9ea529ab58"
+      "sha256": "6df2f655b15c1bf49bfe3be3c2f3e9cb833d93c9b8e0762e16d8f8eeae9a0356"
     },
     {
       "path": "docs/images/workflow.svg",
       "bytes": 3780,
-      "sha256": "64e50178632e709e1c09b7386cfba24073e5eaac3272ae0bfc19fd53f1a20ae3"
+      "sha256": "7478ab8704386bac538825524ed9b1ba5328c6ea6d6ddad32941888e9701811c"
     },
     {
       "path": "docs/images/youtube.png",
