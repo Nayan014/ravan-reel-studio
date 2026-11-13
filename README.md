@@ -21,27 +21,27 @@ Install Ravan Reel Studio from https://github.com/Nayan014/ravan-reel-studio and
 
 On the first launch, the studio downloads its tools and opens the bundled demo in your browser. Press **Play** to watch the six-second reel. If you already have a local checkout, run `npm start` from the project folder.
 
+## How the studio works
+
+Start with an idea or bring recordings. Both paths lead through a scene plan, frame and audio review, your approval, and a finished reel.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="docs/images/workflow-mobile.svg">
+  <img src="docs/images/workflow.svg" width="1260" alt="Idea → Script → Record, or existing recordings → Scene plan → Frame and audio review → Your approval → Render and download">
+</picture>
+
 ## Create your first reel
 
-```mermaid
-flowchart TD
-    A["Have an idea? · /wf-reel-plan"] --> B["Approve your script and record your takes"]
-    B --> C["Have recordings? · /wf-reel"]
-    C --> D["Review the scene plan and choose effects"]
-    D --> E["Check actual frames and audition music"]
-    E --> F["Approve, render and download your reel"]
-```
+| Step | What you do | What happens next |
+| --- | --- | --- |
+| **1. Start the studio** | Paste the installation prompt above into your coding agent. | The studio opens the demo dashboard. |
+| **2. Bring your recordings** | Save numbered clips in `inputs/my-first-reel/`, then send `/wf-reel` in your agent and choose that folder. | The agent transcribes your takes and prepares the scene plan. |
+| **3. Review the direction** | Comment on the plan and approve it to see actual preview frames. Give frame feedback and choose music. | The agent revises the affected scenes and refreshes the review. |
+| **4. Finish your reel** | Approve the current frames and audio. | The studio renders effects, captions and sound, then adds your export to the dashboard. |
 
-**Start with what you have.**
+> **Starting with an idea?** Send `/wf-reel-plan` first. Develop the script and shooting plan with your agent, approve it, then record your numbered takes and continue with `/wf-reel`.
 
-| Starting point | What to do |
-| --- | --- |
-| An idea | Send `/wf-reel-plan`. Review the script, give feedback on any scene, then record the approved takes. |
-| Recorded clips | Put your clips in `inputs/my-first-reel/`, named `1.mp4`, `2.mp4` and so on. Send `/wf-reel` and choose that folder. |
-
-**Review your footage.** The studio transcribes the takes locally and proposes a scene plan. Choose effects, then approve the plan to see preview frames from your recordings. Type feedback beneath any frame you want to change.
-
-**Finish the reel.** Listen to music against your voice and approve the frames and audio. The studio renders the effects, adds captions and sound cues, and makes your export available in the local dashboard.
+Name the clips `1.mp4`, `2.mp4`, `3.mp4` and so on. If your assistant does not recognise slash commands, ask it to read `AGENTS.md` and use the corresponding skill.
 
 The workflow matches recording quality up to portrait **4K/60**, including fractional frame rates. When takes differ, you choose the output profile.
 
@@ -60,16 +60,32 @@ The workflow matches recording quality up to portrait **4K/60**, including fract
 
 ## Commands
 
-Type any command below directly into your coding assistant. If you open the menu with `/wf`, reply with the number in the last column. For example, replying **5** in that menu starts `/wf-reel`.
+Send these shortcuts directly to your coding assistant.
 
-| Command | Purpose | Reply in the `/wf` menu |
-| --- | --- | --- |
-| `/wf-video` | Guided edit of a single video | 1 |
-| `/wf-reel-plan` | Develop and approve a script before recording | 6 |
-| `/wf-reel` | Combine numbered recorded takes | 5 |
-| `/wf-gallery` | Browse the effect reference pictures | 2 |
-| `/wf-effects` | Apply a named effect | 3 |
-| `/wf-resume` | Resume a saved single-video edit | 4 |
+| Command | Purpose |
+| --- | --- |
+| `/wf-video` | Guided edit of a single video |
+| `/wf-reel-plan` | Develop and approve a script before recording |
+| `/wf-reel` | Combine numbered recorded takes |
+| `/wf-gallery` | Browse the effect reference pictures |
+| `/wf-effects` | Apply a named effect |
+| `/wf-resume` | Resume a saved single-video edit |
+
+<details>
+<summary>Prefer the numbered workflow menu?</summary>
+
+Send `/wf`, then reply with a menu number. For example, `/wf` followed by **5** starts the same workflow as `/wf-reel`.
+
+| Reply | Workflow |
+| --- | --- |
+| 1 | Single-video edit |
+| 2 | Effect gallery |
+| 3 | Named effect |
+| 4 | Resume an edit |
+| 5 | Recorded reel |
+| 6 | Script and shooting plan |
+
+</details>
 
 `/wf reel`, `/wf reel-plan`, `/video-edit` and `/effects` remain available. Command discovery varies by agent; reading the shared instructions is the portable fallback.
 
@@ -105,19 +121,20 @@ Original project contributions use the [MIT licence](LICENSE). Third-party code,
 
 ## About the creator
 
-<table>
-<tr>
-<td align="center" width="150"><a href="https://vekariya.ai.studio/"><img src="https://github.com/Nayan014.png?size=320" width="124" alt="Nayan Vekariya"></a></td>
-<td>
+<div align="center">
 
-**Nayan Vekariya** · Techno Ravan
+<a href="https://vekariya.ai.studio/"><img src="https://github.com/Nayan014.png?size=400" width="160" height="160" alt="Nayan Vekariya, creator of Ravan Reel Studio"></a>
 
-I build Ravan Reel Studio and share tutorials on the Techno Ravan channel.
+### Nayan Vekariya
 
-<a href="https://www.youtube.com/@techno_ravan"><img src="docs/images/youtube.png" width="20" alt=""> <strong>Watch on YouTube</strong></a>
+**Techno Ravan**
 
-[Website](https://vekariya.ai.studio/) · [LinkedIn](https://www.linkedin.com/in/nayan-vekariya/) · [Instagram](https://www.instagram.com/techno_ravan/)
+I build Ravan Reel Studio and share tutorials on the Techno Ravan channel.<br>
+Explore the project with me on YouTube, or connect through my website and socials.
 
-</td>
-</tr>
-</table>
+<a href="https://www.youtube.com/@techno_ravan"><img src="docs/images/social-youtube.svg" width="168" height="48" alt="Watch Techno Ravan on YouTube"></a>
+<a href="https://www.linkedin.com/in/nayan-vekariya/"><img src="docs/images/social-linkedin.svg" width="168" height="48" alt="Connect with Nayan on LinkedIn"></a>
+<a href="https://www.instagram.com/techno_ravan/"><img src="docs/images/social-instagram.svg" width="168" height="48" alt="Follow Techno Ravan on Instagram"></a>
+<a href="https://vekariya.ai.studio/"><img src="docs/images/social-website.svg" width="168" height="48" alt="Visit Nayan’s website"></a>
+
+</div>
