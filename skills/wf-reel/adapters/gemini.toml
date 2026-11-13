@@ -1,0 +1,8 @@
+description = "Combine numbered recorded takes with caption-free Vibha effects and source-matched Hyperframes finishing."
+prompt = """
+Read AGENTS.md in this workspace and locate video-effects-studio if needed.
+Read the canonical skills/wf-reel/SKILL.md. Follow it as /wf-reel, preserving text verification, visual selection and actual preview approval before final rendering.
+User arguments:
+
+{{args}}
+"""

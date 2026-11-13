@@ -1,0 +1,93 @@
+{
+  "repository": "https://github.com/Vibha-Ramprakash/claude-video-effects",
+  "commit": "a6c05c5acfadbc6730b3a6dae0fde7b886eb2207",
+  "packaged_on": "2026-11-11",
+  "license": "skills/effects/LICENSE",
+  "local_changes": [
+    "Platform neutral usage instructions and project entry files",
+    "54 rendered reference previews and machine readable catalogue",
+    "Local setup cache configuration",
+    "Guided local video-edit skill with recent input selection, sample recommendations and approval of real preview frames",
+    "Shared wf command menu and routes with project-local skill links and Gemini command adapters",
+    "Standalone wf-video, wf-gallery, wf-effects and wf-resume shortcuts plus a numbered workflow menu",
+    "Speech timing decodes via ffmpeg PCM to avoid PyAV API incompatibility and caches its model inside the local skill",
+    "Guided workflow supports combined selections and samples every selected effect window while preserving single-effect sessions and requiring fresh approval",
+    "Combined wf-reel workflow bundles local Techno Reel code, uses source voice, per-shot Vibha treatments and Remotion captions/graphics, and fingerprints actual combined previews before export",
+    "Optional pinned Hyperframes 0.9.30 runtime for separate captions, final assembly, transitions and sound; renderer guards prevent accidental Remotion export",
+    "Local effect extensions for supplied tool-logo cards, timed green/red timeline status, fitted mobile-card fans and fitted closing titles; documented in docs/REEL_EFFECT_EXTENSIONS.md",
+    "Studio dashboard with native question forms, scene feedback and revision-bound approval submissions; shared visual text layers for effects/Remotion/Hyperframes and a local Hyperframes Studio launcher",
+    "New reel-plan command and source-matched Vibha\u2192Hyperframes pipeline: cached batch speech, exact-rate portrait profiles, script/scene/frame feedback, credited local audio auditions and revision-bound final approval; removed custom review canvas/endpoints, preserved legacy authored layers/exports",
+    "Ravan Reel Studio public packaging: prominent attribution, MIT project licence, local hardware/setup guidance, opt-in reel transcription dependencies and private-media exclusions",
+    "Explicit Git/publication exclusions for private media outside input/output folders; pre-rendered synthetic colour-card demo and safe Node-only demo installer",
+    "Single npm start launcher: isolated compatible Node when needed, missing system prerequisites through supported package managers, cached effects/speech/Hyperframes setup, safe demo installation, workspace-aware local dashboard reuse and browser opening"
+  ],
+  "upstream_file_sha256": {
+    "scripts/setup.sh": "b84c0e6b55e0428b37778fa9a72d3744b37c8e4062fbd375bd9754fd6702f10b",
+    "scripts/words.py": "2c3c2f999ba9586244a2fcb75ce6bee9817123f8ca5560da00955e4c27bcc94a",
+    "scripts/fx.py": "81a6afab260c615157262549b30204fcdd844221e7d3b965251cf81c406a49a0",
+    "fonts/LICENSE-PermanentMarker.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "fonts/InstrumentSerif-Italic.ttf": "08939b8bdf534afec24ae0ef5e03f948940cd9a8fe08e7fecbad040e62327385",
+    "fonts/OFL-Anton.txt": "8a01fa313c348593347f4d1f9e3c32868d47da165443bb568acc87e2a95f838b",
+    "fonts/ArchivoBlack-Regular.ttf": "dd9a89a019b4849f66ab75455fe7bdf931311042cbb0f0f97acc061539703180",
+    "fonts/OFL-InstrumentSerif.txt": "129ed7618959716959f2941fdd5b49e0ad6e6c1d78726761786a00253d865521",
+    "fonts/Anton-Regular.ttf": "28beb8f6542f642ba4143bd4a1d1cfc7be7b1dedc951096efd8e0942502ea1bf",
+    "fonts/OFL-PlayfairDisplay.txt": "566be814f8e96e93dfa16101331557eb6b5467e9e03f627c0910fe93ca12300e",
+    "fonts/OFL-Montserrat.txt": "7465bdcb36dd284c4ca2eb9992a5971d3e5c7529db14a4b44c16a8ed29b10984",
+    "fonts/PermanentMarker-Regular.ttf": "28f82c8a7943cb8e9d599f8554da1d4fc75dbcf69b9885ad6c0611d20c6946c5",
+    "fonts/SpaceMono-Bold.ttf": "405e73d41afb7e5906efce206a326af5c956f38e255f35421c260e861e599c59",
+    "fonts/OFL-SpaceMono.txt": "8e4ee42b2553e1e01504e61cb0d46d148cd8c9e5eacaa3622a7df2d4f2955b9f",
+    "fonts/PlayfairDisplay-Italic.ttf": "a5e26dc5e2e77fb2803a0bf02fd4f81ee136ec8dea863ccdb0c59a263b21378b",
+    "fonts/OFL-ArchivoBlack.txt": "3173acd82f8c6159b5b1037b539fcbd4edff68e65c2ea8b9412b5a5ca97b08ff",
+    "fonts/Inter.ttf": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+    "fonts/Montserrat.ttf": "0f7b311b2f3279e4eef9b2f968bcdbab6e28f4daeb1f049f4f278a902bcd82f7",
+    "fonts/OFL-Inter.txt": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
+    "fonts/PlayfairDisplay.ttf": "c40f2293766a503bc70cce9e512ef844a4ccb7cbcde792fe2ea31d191917d8d6",
+    "models/yunet.onnx": "8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4",
+    "models/selfie_segmenter.tflite": "191ac9529ae506ee0beefa6b2c945a172dab9d07d1e802a290a4e4038226658b",
+    "models/NOTICE.md": "e3d80680faf40865ef38a364a63ba6a83dc0c09f1e4c6d13e6538a13085d3402"
+  },
+  "modified_upstream_files": [
+    "SKILL.md",
+    "scripts/setup.sh",
+    "scripts/words.py",
+    "scripts/fx.py"
+  ],
+  "validation": {
+    "skill_manifest": "passed",
+    "base_effects": 51,
+    "reference_previews": 54,
+    "local_setup": "READY",
+    "local_video_export": "H264 video and AAC audio verified",
+    "relocation": "Engine, fonts and models rendered previews from a copied location; discovery links resolved",
+    "other_agent_sessions": "Not launched; native discovery depends on tool version and workspace trust",
+    "guided_workflow": {
+      "focused_tests": 14,
+      "result": "passed",
+      "media_fixture": "source analysis, sample board, selected effect, three actual preview frames, blocked render before approval, approved MP4 export with audio",
+      "arrival_order": "actual filesystem copy with old timestamps verified; registered edits do not reorder inputs",
+      "transcription": "failure handling tested; speech interpretation is performed by the active agent using available transcription",
+      "combined_effects": "Three selected effects validated and previewed on the user clip; old single-effect approval fingerprint remains compatible; any combined-plan change invalidates approval"
+    },
+    "wf_commands": {
+      "skills": [
+        "wf",
+        "wf-video",
+        "wf-gallery",
+        "wf-effects",
+        "wf-resume",
+        "video-edit",
+        "effects"
+      ],
+      "manifest_checks": "passed",
+      "project_links": "root and studio links resolve to shared skills",
+      "gemini_toml": "all three definitions parsed and include argument forwarding",
+      "native_clients": "Command definitions checked against official documentation; clients not launched",
+      "shortcuts": "Four standalone skills and Gemini commands validated at root and studio; native autocomplete not UI tested"
+    },
+    "speech_timing": {
+      "result": "Transcript and word times successfully produced from the selected clip after a PyAV decoder incompatibility was corrected",
+      "decoder": "ffmpeg float32 PCM passed to faster-whisper",
+      "model_cache": "skills/effects/.cache/huggingface"
+    }
+  }
+}

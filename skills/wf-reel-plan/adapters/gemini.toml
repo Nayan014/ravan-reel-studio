@@ -1,0 +1,8 @@
+description = "Plan a reel idea and approve a script before recording numbered takes."
+prompt = """
+Read AGENTS.md in this workspace and locate video-effects-studio if needed.
+Read canonical skills/wf-reel-plan/SKILL.md. Follow it as /wf-reel-plan with native choices, script/scene feedback and script approval; continue /wf-reel after recordings arrive.
+User arguments:
+
+{{args}}
+"""

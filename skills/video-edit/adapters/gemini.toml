@@ -1,0 +1,8 @@
+description = "Start the guided video edit with sample selection and preview approval."
+prompt = """
+Read AGENTS.md in the current workspace and locate the shared video-edit skill.
+Read its SKILL.md and start its guided workflow. Keep all video selection, sample selection and actual preview approval steps.
+User notes:
+
+{{args}}
+"""

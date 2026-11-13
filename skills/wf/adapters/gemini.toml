@@ -1,0 +1,9 @@
+description = "Open the workflow menu or run video-edit, reel, gallery, effects or resume."
+prompt = """
+Read AGENTS.md in the current workspace and locate the shared wf skill in its skill index or studio workspace.
+Read that skill's SKILL.md and route the following /wf arguments using it:
+
+{{args}}
+
+If the arguments are empty, show the menu and wait. Preserve the existing video-edit preview approval requirement.
+"""

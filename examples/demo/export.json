@@ -1,0 +1,14 @@
+{
+  "synthetic": true,
+  "file": "export/demo.mp4",
+  "cover": {
+    "png": "export/cover.png"
+  },
+  "duration": 6,
+  "width": 720,
+  "height": 1280,
+  "fps": 30,
+  "caption_ready": true,
+  "generator": "examples/generate_demo.py",
+  "notice": "Pre-rendered demonstration only; not an approved workflow export or a Vibha effect showcase."
+}

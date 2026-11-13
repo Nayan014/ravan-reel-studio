@@ -1,0 +1,387 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "sfx-whoosh-1",
+      "kind": "sfx",
+      "title": "Woosh",
+      "file": "tools/techno-reel/public/sfx/whoosh-1.wav",
+      "moods": [
+        "transition"
+      ],
+      "duration": 0.137,
+      "source": "https://freesound.org/s/831936/",
+      "author": "1bob",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-whoosh-2",
+      "kind": "sfx",
+      "title": "quick woosh",
+      "file": "tools/techno-reel/public/sfx/whoosh-2.wav",
+      "moods": [
+        "transition"
+      ],
+      "duration": 0.168,
+      "source": "https://freesound.org/s/683101/",
+      "author": "florianreichelt",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-whoosh-3",
+      "kind": "sfx",
+      "title": "Transition Swoosh",
+      "file": "tools/techno-reel/public/sfx/whoosh-3.wav",
+      "moods": [
+        "transition"
+      ],
+      "duration": 0.252,
+      "source": "https://freesound.org/s/632763/",
+      "author": "adh.dreaming",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-whip",
+      "kind": "sfx",
+      "title": "SWSH_Badminton Racquet_Recording_01",
+      "file": "tools/techno-reel/public/sfx/whip.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.169,
+      "source": "https://freesound.org/s/838766/",
+      "author": "JW_Audio",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-swipe-1",
+      "kind": "sfx",
+      "title": "Casino Audio: card-slide-1.ogg",
+      "file": "tools/techno-reel/public/sfx/swipe-1.wav",
+      "moods": [
+        "transition"
+      ],
+      "duration": 0.394,
+      "source": "https://kenney.nl/assets/casino-audio",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-swipe-2",
+      "kind": "sfx",
+      "title": "Casino Audio: card-slide-5.ogg",
+      "file": "tools/techno-reel/public/sfx/swipe-2.wav",
+      "moods": [
+        "transition"
+      ],
+      "duration": 0.6,
+      "source": "https://kenney.nl/assets/casino-audio",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-pop-1",
+      "kind": "sfx",
+      "title": "Pop sound",
+      "file": "tools/techno-reel/public/sfx/pop-1.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.205,
+      "source": "https://freesound.org/s/202230/",
+      "author": "deraj",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-pop-2",
+      "kind": "sfx",
+      "title": "Pop 9",
+      "file": "tools/techno-reel/public/sfx/pop-2.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.093,
+      "source": "https://freesound.org/s/328119/",
+      "author": "D.S.G.",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-pop-3",
+      "kind": "sfx",
+      "title": "Pop11",
+      "file": "tools/techno-reel/public/sfx/pop-3.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.088,
+      "source": "https://freesound.org/s/850097/",
+      "author": "lbrady240",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-click-1",
+      "kind": "sfx",
+      "title": "Interface Sounds: click_001.ogg",
+      "file": "tools/techno-reel/public/sfx/click-1.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.041,
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-click-2",
+      "kind": "sfx",
+      "title": "Interface Sounds: click_002.ogg",
+      "file": "tools/techno-reel/public/sfx/click-2.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.012,
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-key-1",
+      "kind": "sfx",
+      "title": "keyboard5.wav",
+      "file": "tools/techno-reel/public/sfx/key-1.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.4,
+      "source": "https://freesound.org/s/194799/",
+      "author": "jim-ph",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-key-2",
+      "kind": "sfx",
+      "title": "keyboard5.wav",
+      "file": "tools/techno-reel/public/sfx/key-2.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.425,
+      "source": "https://freesound.org/s/194799/",
+      "author": "jim-ph",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-key-3",
+      "kind": "sfx",
+      "title": "keyboard5.wav",
+      "file": "tools/techno-reel/public/sfx/key-3.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.377,
+      "source": "https://freesound.org/s/194799/",
+      "author": "jim-ph",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-key-4",
+      "kind": "sfx",
+      "title": "keyboard5.wav",
+      "file": "tools/techno-reel/public/sfx/key-4.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.357,
+      "source": "https://freesound.org/s/194799/",
+      "author": "jim-ph",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-blip",
+      "kind": "sfx",
+      "title": "Interface Sounds: select_003.ogg",
+      "file": "tools/techno-reel/public/sfx/blip.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.22,
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-ding",
+      "kind": "sfx",
+      "title": "bell ding 1.wav",
+      "file": "tools/techno-reel/public/sfx/ding.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 1.2,
+      "source": "https://freesound.org/s/611113/",
+      "author": "5ro4",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-impact-1",
+      "kind": "sfx",
+      "title": "JM_FX_Boom 01a.wav",
+      "file": "tools/techno-reel/public/sfx/impact-1.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 2.0,
+      "source": "https://freesound.org/s/201571/",
+      "author": "Julien_Matthey",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-impact-2",
+      "kind": "sfx",
+      "title": "Tonal_Impact_E",
+      "file": "tools/techno-reel/public/sfx/impact-2.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 1.5,
+      "source": "https://freesound.org/s/315725/",
+      "author": "Renovatio871",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-riser",
+      "kind": "sfx",
+      "title": "Riser sound effect short.wav",
+      "file": "tools/techno-reel/public/sfx/riser.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 2.0,
+      "source": "https://freesound.org/s/685256/",
+      "author": "syntheffects",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-shutter",
+      "kind": "sfx",
+      "title": "DSLR Shutter fast 006.wav",
+      "file": "tools/techno-reel/public/sfx/shutter.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.265,
+      "source": "https://freesound.org/s/539136/",
+      "author": "ristooooo1",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-coin",
+      "kind": "sfx",
+      "title": "Cash Register Purchase",
+      "file": "tools/techno-reel/public/sfx/coin.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 1.3,
+      "source": "https://freesound.org/s/209578/",
+      "author": "Zott820",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "sfx-success",
+      "kind": "sfx",
+      "title": "Interface Sounds: confirmation_004.ogg",
+      "file": "tools/techno-reel/public/sfx/success.wav",
+      "moods": [
+        "accent"
+      ],
+      "duration": 0.485,
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "music-lofi",
+      "kind": "music",
+      "title": "Happy Lo-Fi: Poor, But Happy",
+      "file": "tools/techno-reel/public/music/lofi.mp3",
+      "moods": [
+        "calm",
+        "tutorial"
+      ],
+      "duration": 50.0,
+      "source": "https://opengameart.org/content/happy-lo-fi-lofi-collection",
+      "author": "HoliznaCC0",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "music-upbeat",
+      "kind": "music",
+      "title": "Happy Lo-Fi: Puppy Love",
+      "file": "tools/techno-reel/public/music/upbeat.mp3",
+      "moods": [
+        "energetic",
+        "demo"
+      ],
+      "duration": 50.0,
+      "source": "https://opengameart.org/content/happy-lo-fi-lofi-collection",
+      "author": "HoliznaCC0",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "music-chill",
+      "kind": "music",
+      "title": "Chill Beats: Autumn",
+      "file": "tools/techno-reel/public/music/chill.mp3",
+      "moods": [
+        "reflective",
+        "explainer"
+      ],
+      "duration": 50.0,
+      "source": "https://opengameart.org/content/chill-beats-collection",
+      "author": "HoliznaCC0",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    },
+    {
+      "id": "music-funk",
+      "kind": "music",
+      "title": "Funk: Make Funk",
+      "file": "tools/techno-reel/public/music/funk.mp3",
+      "moods": [
+        "playful",
+        "showcase"
+      ],
+      "duration": 50.0,
+      "source": "https://opengameart.org/content/funk-collection",
+      "author": "HoliznaCC0",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+    }
+  ]
+}

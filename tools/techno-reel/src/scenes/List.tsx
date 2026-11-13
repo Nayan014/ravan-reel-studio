@@ -1,0 +1,143 @@
+import React from "react";
+import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { Logo, useMonoLogo } from "../components/Logo";
+import { Card, Sfx, cueFrames, fitText, usePop } from "../components/ui";
+import { useShot, useTheme } from "../context";
+
+export type ListItem = {
+  text: string;
+  /** A logo path under public/, shown instead of the number. */
+  icon?: string;
+};
+
+type Props = {
+  title?: string;
+  /** 2–4 items. Each one appears when its first word is spoken. */
+  items: Array<ListItem | string>;
+};
+
+/** Numbered items that pop in as they are spoken; only the newest one is in focus. */
+export const List: React.FC<Props> = ({ title, items }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const shot = useShot();
+  const normalizedItems: ListItem[] = items.map((item) =>
+    typeof item === "string" ? { text: item } : item,
+  );
+  const cues = cueFrames(
+    shot.words,
+    normalizedItems.map((it) => it.text),
+    fps,
+    shot.frames,
+  );
+  const current = cues.filter((cue) => frame >= cue).length - 1;
+  const titleIn = usePop(0);
+  const theme = useTheme();
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        gap: 34,
+      }}
+    >
+      {title && (
+        <div
+          style={{
+            fontFamily: theme.display,
+            fontSize: fitText(
+              title.toUpperCase(),
+              900,
+              1,
+              [104, 92, 80],
+              theme.displayWidth,
+            ),
+            lineHeight: 1,
+            textTransform: "uppercase",
+            marginBottom: 10,
+            opacity: titleIn,
+            transform: `translateY(${interpolate(titleIn, [0, 1], [-40, 0])}px)`,
+          }}
+        >
+          {title}
+        </div>
+      )}
+      {normalizedItems.map((item, i) => (
+        <Row
+          key={i}
+          index={i}
+          text={item.text}
+          icon={item.icon}
+          at={cues[i]}
+          focused={i === current}
+        />
+      ))}
+      {cues.map((cue, i) => (
+        <Sfx key={i} name="pop" at={cue} variant={i} />
+      ))}
+    </div>
+  );
+};
+
+const Row: React.FC<{
+  index: number;
+  text: string;
+  icon?: string;
+  at: number;
+  focused: boolean;
+}> = ({ index, text, icon, at, focused }) => {
+  const theme = useTheme();
+  const s = usePop(at);
+  const size = fitText(text, 560, 2, [52, 46, 40], 0.62);
+  const mono = useMonoLogo(icon);
+  const colorLogo = icon && !mono;
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 28,
+        opacity: Math.min(1, s * 2) * (focused ? 1 : 0.45),
+        transform: `translateX(${interpolate(s, [0, 1], [160, 0])}px) scale(${focused ? 1 : 0.96})`,
+      }}
+    >
+      <div
+        style={{
+          width: 104,
+          height: 104,
+          flexShrink: 0,
+          borderRadius: 999,
+          // A colour logo sits on card, never on the accent it could clash with.
+          background: colorLogo ? theme.card : theme.accent,
+          border: theme.edge(6),
+          boxShadow: theme.shadow(6),
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: theme.display,
+          fontSize: 60,
+          color: theme.card,
+        }}
+      >
+        {icon ? (
+          <Logo src={icon} size={54} tint={mono ? theme.card : undefined} />
+        ) : (
+          index + 1
+        )}
+      </div>
+      <Card
+        style={{
+          flex: 1,
+          padding: "26px 34px",
+          boxShadow: theme.shadow(10),
+        }}
+      >
+        <div style={{ fontWeight: 800, fontSize: size, lineHeight: 1.15 }}>
+          {text}
+        </div>
+      </Card>
+    </div>
+  );
+};

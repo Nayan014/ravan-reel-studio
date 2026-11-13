@@ -1,0 +1,3 @@
+-r requirements.txt
+# Tested CPU transcription backend. Model weights download on first analysis.
+faster-whisper==1.2.1

@@ -1,0 +1,872 @@
+[
+  {
+    "id": 1,
+    "name": "noise",
+    "desc": "Show many pieces of content at once.",
+    "use": "Content volume",
+    "prompt": "/effects noise from 3 to 6 seconds. Use my covers folder.",
+    "options": "`images` (folder of screenshots or clips), `size`",
+    "preview": "assets/reference-previews/noise.jpg",
+    "config": {
+      "fx": "noise",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 2,
+    "name": "lineup",
+    "desc": "Arrange numbered tiles above the speaker.",
+    "use": "A short ranked list",
+    "prompt": "/effects lineup from 3 to 6 seconds. Use text Hook|Story|Offer.",
+    "options": "`text` (tile names joined with `\\|`)",
+    "preview": "assets/reference-previews/lineup.jpg",
+    "config": {
+      "fx": "lineup",
+      "start": 0,
+      "end": 4,
+      "text": "Hook|Story|Offer"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 3,
+    "name": "locked-on",
+    "desc": "Track the face with brackets and a following zoom.",
+    "use": "Focus and urgency",
+    "prompt": "/effects locked-on from 3 to 6 seconds. Use zoom 1.35.",
+    "options": "`zoom` (default 1.35), `text` (tag)",
+    "preview": "assets/reference-previews/locked-on.jpg",
+    "config": {
+      "fx": "locked-on",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 4,
+    "name": "orbit",
+    "desc": "Move reel cards around the speaker with depth.",
+    "use": "A content showcase",
+    "prompt": "/effects orbit from 3 to 6 seconds. Use my covers folder.",
+    "options": "`images`, `count`, `speed`, `size`",
+    "preview": "assets/reference-previews/orbit.jpg",
+    "config": {
+      "fx": "orbit",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 5,
+    "name": "lean-in",
+    "desc": "Make a fast punch in to the speaker.",
+    "use": "One important word",
+    "prompt": "/effects lean-in from 3 to 6 seconds. Use zoom 1.45.",
+    "options": "`zoom` (default 1.45, max 2), `speed`",
+    "preview": "assets/reference-previews/lean-in.jpg",
+    "config": {
+      "fx": "lean-in",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 6,
+    "name": "backdrop-word",
+    "desc": "Place a large word behind the speaker.",
+    "use": "A clear topic reveal",
+    "prompt": "/effects backdrop-word from 3 to 6 seconds. Use text CREATE.",
+    "options": "`text`, `color` (hex), `font` (`bold` or `serif`)",
+    "preview": "assets/reference-previews/backdrop-word.jpg",
+    "config": {
+      "fx": "backdrop-word",
+      "start": 0,
+      "end": 4,
+      "text": "CREATE"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 7,
+    "name": "spotlight",
+    "desc": "Dim the room while keeping the person bright.",
+    "use": "A dramatic statement",
+    "prompt": "/effects spotlight from 3 to 6 seconds. Use text FOCUS.",
+    "options": "`text` (glowing word behind you), `color`, `push`",
+    "preview": "assets/reference-previews/spotlight.jpg",
+    "config": {
+      "fx": "spotlight",
+      "start": 0,
+      "end": 4,
+      "text": "FOCUS"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 8,
+    "name": "the-bill",
+    "desc": "Print a receipt of instructions above the head.",
+    "use": "A workflow recap",
+    "prompt": "/effects the-bill from 3 to 6 seconds. Use text Plan|Film|Edit|Post.",
+    "options": "`text` (lines joined with `\\|`)",
+    "preview": "assets/reference-previews/the-bill.jpg",
+    "config": {
+      "fx": "the-bill",
+      "start": 0,
+      "end": 4,
+      "text": "Plan|Film|Edit|Post"
+    },
+    "frame_time": 2.9
+  },
+  {
+    "id": 9,
+    "name": "moody",
+    "desc": "Apply a darker cinematic colour treatment.",
+    "use": "A reflective moment",
+    "prompt": "/effects moody from 3 to 6 seconds. Use grade moody.",
+    "options": "`grade` (`moody`, `bw`, `warm`, `cool`, `pop`)",
+    "preview": "assets/reference-previews/moody.jpg",
+    "config": {
+      "fx": "moody",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 10,
+    "name": "swipe",
+    "desc": "Sweep a divider between original and graded views.",
+    "use": "A colour before and after",
+    "prompt": "/effects swipe from 3 to 6 seconds. Use grade warm.",
+    "options": "`grade` (the \"after\" look)",
+    "preview": "assets/reference-previews/swipe.jpg",
+    "config": {
+      "fx": "swipe",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 11,
+    "name": "todo",
+    "desc": "Tick a small list beside the speaker.",
+    "use": "Steps explained aloud",
+    "prompt": "/effects todo from 3 to 6 seconds. Use text Plan|Film|Post.",
+    "options": "`text` (items with `\\|`), `ticks` (video seconds with `\\|`), `title`",
+    "preview": "assets/reference-previews/todo.jpg",
+    "config": {
+      "fx": "todo",
+      "start": 0,
+      "end": 4,
+      "text": "Plan|Film|Post"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 12,
+    "name": "comment-box",
+    "desc": "Type and post a word in a comment interface.",
+    "use": "A comment call to action",
+    "prompt": "/effects comment-box from 3 to 6 seconds. Use text GUIDE.",
+    "options": "`text` (default EFFECTS)",
+    "preview": "assets/reference-previews/comment-box.jpg",
+    "config": {
+      "fx": "comment-box",
+      "start": 0,
+      "end": 4,
+      "text": "GUIDE"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 13,
+    "name": "tap",
+    "desc": "Turn a Follow button into Following.",
+    "use": "A follow call to action",
+    "prompt": "/effects tap from 3 to 6 seconds. Flip at 4 seconds.",
+    "options": "`at` (video second of the flip), `x`, `y` (0 to 1), `color`",
+    "preview": "assets/reference-previews/tap.jpg",
+    "config": {
+      "fx": "tap",
+      "start": 0,
+      "end": 4,
+      "at": 2
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 14,
+    "name": "pause-point",
+    "desc": "Freeze the image and draw an arrow to the person.",
+    "use": "A moment to explain",
+    "prompt": "/effects pause-point from 3 to 6 seconds. Use text Watch this.",
+    "options": "`text` (label), `color`, `label_x`",
+    "preview": "assets/reference-previews/pause-point.jpg",
+    "config": {
+      "fx": "pause-point",
+      "start": 0,
+      "end": 4,
+      "text": "Watch this"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 15,
+    "name": "uninstall",
+    "desc": "Glitch the image around an uninstall interface.",
+    "use": "Dropping an old habit",
+    "prompt": "/effects uninstall from 3 to 6 seconds. Use text Old workflow.",
+    "options": "`text`",
+    "preview": "assets/reference-previews/uninstall.jpg",
+    "config": {
+      "fx": "uninstall",
+      "start": 0,
+      "end": 4,
+      "text": "Old workflow"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 16,
+    "name": "reel-frame",
+    "desc": "Shrink the video into a social reel card.",
+    "use": "A social media insert",
+    "prompt": "/effects reel-frame from 3 to 6 seconds. Use text @yourhandle.",
+    "options": "`text` (handle)",
+    "preview": "assets/reference-previews/reel-frame.jpg",
+    "config": {
+      "fx": "reel-frame",
+      "start": 0,
+      "end": 4,
+      "text": "@yourhandle"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 17,
+    "name": "shortcut-rain",
+    "desc": "Drop keyboard keys behind the person.",
+    "use": "An editing shortcut tip",
+    "prompt": "/effects shortcut-rain from 3 to 6 seconds. Use text CMD|K|SHIFT.",
+    "options": "`text` (keys with `\\|`), `count`",
+    "preview": "assets/reference-previews/shortcut-rain.jpg",
+    "config": {
+      "fx": "shortcut-rain",
+      "start": 0,
+      "end": 4,
+      "text": "CMD|K|SHIFT"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 18,
+    "name": "reject-stamp",
+    "desc": "Slam a large rejection stamp onto the image.",
+    "use": "A myth or bad idea",
+    "prompt": "/effects reject-stamp from 3 to 6 seconds. Use text NOPE.",
+    "options": "`text`, `color`, `angle`, `y`",
+    "preview": "assets/reference-previews/reject-stamp.jpg",
+    "config": {
+      "fx": "reject-stamp",
+      "start": 0,
+      "end": 4,
+      "text": "NOPE"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 19,
+    "name": "countdown-flip",
+    "desc": "Show a mechanical countdown above the head.",
+    "use": "A reveal or launch",
+    "prompt": "/effects countdown-flip from 3 to 6 seconds. Count down from 3.",
+    "options": "`from`",
+    "preview": "assets/reference-previews/countdown-flip.jpg",
+    "config": {
+      "fx": "countdown-flip",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 1.3
+  },
+  {
+    "id": 20,
+    "name": "rabbit-hole",
+    "desc": "Repeat the image into a receding tunnel.",
+    "use": "A spiral or rabbit hole",
+    "prompt": "/effects rabbit-hole from 3 to 6 seconds. Use speed 1.",
+    "options": "`ratio`, `speed`, `spin`",
+    "preview": "assets/reference-previews/rabbit-hole.jpg",
+    "config": {
+      "fx": "rabbit-hole",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 21,
+    "name": "cover-star",
+    "desc": "Build a magazine cover around the speaker.",
+    "use": "An editorial introduction",
+    "prompt": "/effects cover-star from 3 to 6 seconds. Use text CREATOR.",
+    "options": "`text` (title), `lines` (with `\\|`), `issue`, `color`",
+    "preview": "assets/reference-previews/cover-star.jpg",
+    "config": {
+      "fx": "cover-star",
+      "start": 0,
+      "end": 4,
+      "text": "CREATOR",
+      "lines": "One clip|Three ideas|Start today"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 22,
+    "name": "scribble",
+    "desc": "Draw marker loops and doodles around the person.",
+    "use": "A playful explanation",
+    "prompt": "/effects scribble from 3 to 6 seconds. Use text Me.",
+    "options": "`text` (label), `color`",
+    "preview": "assets/reference-previews/scribble.jpg",
+    "config": {
+      "fx": "scribble",
+      "start": 0,
+      "end": 4,
+      "text": "Me"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 23,
+    "name": "glass-widgets",
+    "desc": "Surround the head with translucent stat widgets.",
+    "use": "A compact results recap",
+    "prompt": "/effects glass-widgets from 3 to 6 seconds. Use text 197K and name Creator.",
+    "options": "`text` (big number), `name`, `handle`, `look` (`simple` for the 3-widget version)",
+    "preview": "assets/reference-previews/glass-widgets.jpg",
+    "config": {
+      "fx": "glass-widgets",
+      "start": 0,
+      "end": 4,
+      "text": "197K",
+      "name": "Creator"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 24,
+    "name": "red-collage",
+    "desc": "Combine a monochrome subject with red type.",
+    "use": "An assertive hook",
+    "prompt": "/effects red-collage from 3 to 6 seconds. Use text EDIT and lines One clip|Three ideas|Ready.",
+    "options": "`text` (red word), `lines` (with `\\|`), `tag`",
+    "preview": "assets/reference-previews/red-collage.jpg",
+    "config": {
+      "fx": "red-collage",
+      "start": 0,
+      "end": 4,
+      "text": "EDIT",
+      "lines": "One clip|Three ideas|Ready"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 25,
+    "name": "split-headline",
+    "desc": "Slide a headline into the top half of the image.",
+    "use": "An announcement",
+    "prompt": "/effects split-headline from 3 to 6 seconds. Use text My new|workflow and hl new.",
+    "options": "`text` (lines with `\\|`), `hl` (highlighted word), `pill`",
+    "preview": "assets/reference-previews/split-headline.jpg",
+    "config": {
+      "fx": "split-headline",
+      "start": 0,
+      "end": 4,
+      "text": "My new|workflow",
+      "hl": "new"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 26,
+    "name": "pastel-word",
+    "desc": "Add a lavender setting and a profile follow card.",
+    "use": "A softer creator intro",
+    "prompt": "/effects pastel-word from 3 to 6 seconds. Use text CREATE and handle @you.",
+    "options": "`text`, `name`, `handle`",
+    "preview": "assets/reference-previews/pastel-word.jpg",
+    "config": {
+      "fx": "pastel-word",
+      "start": 0,
+      "end": 4,
+      "text": "CREATE",
+      "name": "Creator",
+      "handle": "@you"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 27,
+    "name": "check-pills",
+    "desc": "Click blue pills over a grid and pinned content.",
+    "use": "A set of features",
+    "prompt": "/effects check-pills from 3 to 6 seconds. Use text Hooks|Cuts|Captions.",
+    "options": "`text` (pills with `\\|`), `images`",
+    "preview": "assets/reference-previews/check-pills.jpg",
+    "config": {
+      "fx": "check-pills",
+      "start": 0,
+      "end": 4,
+      "text": "Hooks|Cuts|Captions"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 28,
+    "name": "timeline",
+    "desc": "Add a red film treatment and an editing timeline.",
+    "use": "An editing process story",
+    "prompt": "/effects timeline from 3 to 6 seconds. Use text AUTO EDIT.",
+    "options": "`text` (title), `sub`, `tc`",
+    "preview": "assets/reference-previews/timeline.jpg",
+    "config": {
+      "fx": "timeline",
+      "start": 0,
+      "end": 4,
+      "text": "AUTO EDIT"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 29,
+    "name": "headline-box",
+    "desc": "Punch in with a clean two line headline.",
+    "use": "A direct opening hook",
+    "prompt": "/effects headline-box from 3 to 6 seconds. Use text One clip|Three ideas.",
+    "options": "`text` (lines with `\\|`), `zoom`",
+    "preview": "assets/reference-previews/headline-box.jpg",
+    "config": {
+      "fx": "headline-box",
+      "start": 0,
+      "end": 4,
+      "text": "One clip|Three ideas"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 30,
+    "name": "profile-wall",
+    "desc": "Fill the background with reels and a rising total.",
+    "use": "A content performance recap",
+    "prompt": "/effects profile-wall from 3 to 6 seconds. Use count 197000 and label views.",
+    "options": "`images`, `count`, `label`",
+    "preview": "assets/reference-previews/profile-wall.jpg",
+    "config": {
+      "fx": "profile-wall",
+      "start": 0,
+      "end": 4,
+      "count": 197000,
+      "label": "views"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 31,
+    "name": "tier-list",
+    "desc": "Animate an item into the top row of a tier list.",
+    "use": "A ranking or comparison",
+    "prompt": "/effects tier-list from 3 to 6 seconds. Use item My pick.",
+    "options": "`title`, `item`, `others`",
+    "preview": "assets/reference-previews/tier-list.jpg",
+    "config": {
+      "fx": "tier-list",
+      "start": 0,
+      "end": 4,
+      "item": "My pick"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 32,
+    "name": "broll-split",
+    "desc": "Put supporting imagery above the speaker.",
+    "use": "Explain a product visually",
+    "prompt": "/effects broll-split from 3 to 6 seconds. Use my images folder and text New tool.",
+    "options": "`images`, `text` (tag)",
+    "preview": "assets/reference-previews/broll-split.jpg",
+    "config": {
+      "fx": "broll-split",
+      "start": 0,
+      "end": 4,
+      "text": "New tool"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 33,
+    "name": "phone-fan",
+    "desc": "Spread reel cards in a fan under a headline.",
+    "use": "Show several posts together",
+    "prompt": "/effects phone-fan from 3 to 6 seconds. Use text My best|reels and my covers folder.",
+    "options": "`images`, `text` (lines with `\\|`)",
+    "preview": "assets/reference-previews/phone-fan.jpg",
+    "config": {
+      "fx": "phone-fan",
+      "start": 0,
+      "end": 4,
+      "text": "My best|reels"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 34,
+    "name": "dot-reveal",
+    "desc": "Resolve glowing dots into the full image.",
+    "use": "A digital transition",
+    "prompt": "/effects dot-reveal from 3 to 6 seconds. Use color FFD60A.",
+    "options": "`color`, `cell`",
+    "preview": "assets/reference-previews/dot-reveal.jpg",
+    "config": {
+      "fx": "dot-reveal",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 0.6
+  },
+  {
+    "id": 35,
+    "name": "headline-wall",
+    "desc": "Stack headlines behind the person and show a total.",
+    "use": "A collection of achievements",
+    "prompt": "/effects headline-wall from 3 to 6 seconds. Use text First post::Launch|Next post::Week 2 and total 197K.",
+    "options": "`text` (`headline::meta\\|...`), `total`, `label`",
+    "preview": "assets/reference-previews/headline-wall.jpg",
+    "config": {
+      "fx": "headline-wall",
+      "start": 0,
+      "end": 4,
+      "text": "First post::Launch|Next post::Week 2",
+      "total": "197K"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 36,
+    "name": "checklist",
+    "desc": "Animate a dark task panel with progress and ticks.",
+    "use": "A workflow demonstration",
+    "prompt": "/effects checklist from 3 to 6 seconds. Use text Plan::done|Film::done|Post::next.",
+    "options": "`text` (`step::meta\\|...`), `title`",
+    "preview": "assets/reference-previews/checklist.jpg",
+    "config": {
+      "fx": "checklist",
+      "start": 0,
+      "end": 4,
+      "text": "Plan::done|Film::done|Post::next",
+      "title": "My workflow"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 37,
+    "name": "liquid-glass-graph",
+    "desc": "Raise a line graph and count up a metric.",
+    "use": "One measurable result",
+    "prompt": "/effects liquid-glass-graph from 3 to 6 seconds. Use text Views, from 0, to 197K.",
+    "options": "`text` (label), `from`, `to` (e.g. `197K`, `59%`), `color`",
+    "preview": "assets/reference-previews/liquid-glass-graph.jpg",
+    "config": {
+      "fx": "liquid-glass-graph",
+      "start": 0,
+      "end": 4,
+      "text": "Views",
+      "from": "0",
+      "to": "197K"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 38,
+    "name": "carousel-spin",
+    "desc": "Rotate reel cards in a carousel and ease to a stop.",
+    "use": "A portfolio reveal",
+    "prompt": "/effects carousel-spin from 3 to 6 seconds. Use my covers folder.",
+    "options": "`images`, `count`, `size`, `turns`",
+    "preview": "assets/reference-previews/carousel-spin.jpg",
+    "config": {
+      "fx": "carousel-spin",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 39,
+    "name": "match-cut",
+    "desc": "Switch page layouts around one fixed word.",
+    "use": "A recurring topic or idea",
+    "prompt": "/effects match-cut from 3 to 6 seconds. Use text CREATE.",
+    "options": "`text` (the word, default Claude), `color`",
+    "preview": "assets/reference-previews/match-cut.jpg",
+    "config": {
+      "fx": "match-cut",
+      "start": 0,
+      "end": 4,
+      "text": "CREATE"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 40,
+    "name": "apple-toggles",
+    "desc": "Turn on settings switches one row at a time.",
+    "use": "A set of enabled features",
+    "prompt": "/effects apple-toggles from 3 to 6 seconds. Use text Hooks|Cuts|Captions.",
+    "options": "`text` (rows with `\\|`), `ticks` (seconds with `\\|`), `color`",
+    "preview": "assets/reference-previews/apple-toggles.jpg",
+    "config": {
+      "fx": "apple-toggles",
+      "start": 0,
+      "end": 4,
+      "text": "Hooks|Cuts|Captions"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 41,
+    "name": "led-sign",
+    "desc": "Darken the room and type a glowing sign behind you.",
+    "use": "A neon announcement",
+    "prompt": "/effects led-sign from 3 to 6 seconds. Use text READY|TO CREATE.",
+    "options": "`text` (lines with `\\|`), `color`, `push`",
+    "preview": "assets/reference-previews/led-sign.jpg",
+    "config": {
+      "fx": "led-sign",
+      "start": 0,
+      "end": 4,
+      "text": "READY|TO CREATE"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 42,
+    "name": "slow-push",
+    "desc": "Slowly move closer as the background softens.",
+    "use": "A calm important point",
+    "prompt": "/effects slow-push from 3 to 6 seconds. Use zoom 1.6.",
+    "options": "`zoom` (default 1.6), `blur`",
+    "preview": "assets/reference-previews/slow-push.jpg",
+    "config": {
+      "fx": "slow-push",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 43,
+    "name": "over-the-shoulder-zoom",
+    "desc": "Move between two corners with glass charts.",
+    "use": "Compare two related metrics",
+    "prompt": "/effects over-the-shoulder-zoom from 3 to 6 seconds. Use text Views|Reach and to 197K|672K.",
+    "options": "`text` (two labels with `\\|`), `to` (two numbers with `\\|`, e.g. `197K\\|672K`), `zoom` (default 2.0)",
+    "preview": "assets/reference-previews/over-the-shoulder-zoom.jpg",
+    "config": {
+      "fx": "over-the-shoulder-zoom",
+      "start": 0,
+      "end": 4,
+      "text": "Views|Reach",
+      "to": "197K|672K"
+    },
+    "frame_time": 2.6
+  },
+  {
+    "id": 44,
+    "name": "messages",
+    "desc": "Stack soft glass message notifications.",
+    "use": "A conversation or reaction",
+    "prompt": "/effects messages from 3 to 6 seconds. Use text Is it ready?|Just posted!.",
+    "options": "`text` (messages with `\\|`), `title` (default Messages), `y`",
+    "preview": "assets/reference-previews/messages.jpg",
+    "config": {
+      "fx": "messages",
+      "start": 0,
+      "end": 4,
+      "text": "Is it ready?|Just posted!"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 45,
+    "name": "place-in-grid",
+    "desc": "Shrink the speaker into a grid of nine reel tiles.",
+    "use": "A profile or portfolio reveal",
+    "prompt": "/effects place-in-grid from 3 to 6 seconds. Use my covers folder and real view counts.",
+    "options": "`images` (folder of your reels or covers), `views` (9 counts with `\\|`, the 9th is yours)",
+    "preview": "assets/reference-previews/place-in-grid.jpg",
+    "config": {
+      "fx": "place-in-grid",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 46,
+    "name": "tape-label",
+    "desc": "Land a yellow tape label on the chest.",
+    "use": "A short takeaway",
+    "prompt": "/effects tape-label from 3 to 6 seconds. Use text Start here.",
+    "options": "`text`",
+    "preview": "assets/reference-previews/tape-label.jpg",
+    "config": {
+      "fx": "tape-label",
+      "start": 0,
+      "end": 4,
+      "text": "Start here"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 47,
+    "name": "select-resize",
+    "desc": "Select a number and drag it larger.",
+    "use": "Emphasise a multiplier",
+    "prompt": "/effects select-resize from 3 to 6 seconds. Use text 2X.",
+    "options": "`text` (default 2X)",
+    "preview": "assets/reference-previews/select-resize.jpg",
+    "config": {
+      "fx": "select-resize",
+      "start": 0,
+      "end": 4,
+      "text": "2X"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 48,
+    "name": "wave-trim",
+    "desc": "Animate a waveform with its silent ends collapsing.",
+    "use": "Illustrate an editing idea",
+    "prompt": "/effects wave-trim from 3 to 6 seconds. Show the waveform animation.",
+    "options": "none",
+    "preview": "assets/reference-previews/wave-trim.jpg",
+    "config": {
+      "fx": "wave-trim",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 0.43
+  },
+  {
+    "id": 49,
+    "name": "huge-strike",
+    "desc": "Cross out a large serif phrase behind the head.",
+    "use": "Reject an old assumption",
+    "prompt": "/effects huge-strike from 3 to 6 seconds. Use text 8 HOURS.",
+    "options": "`text`, `at` (seconds into the effect when the strike lands, default 0.6)",
+    "preview": "assets/reference-previews/huge-strike.jpg",
+    "config": {
+      "fx": "huge-strike",
+      "start": 0,
+      "end": 4,
+      "text": "8 HOURS"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": 50,
+    "name": "crayon-write",
+    "desc": "Write and underline a word with a red crayon.",
+    "use": "A handmade emphasis",
+    "prompt": "/effects crayon-write from 3 to 6 seconds. Use text CREATE.",
+    "options": "`text`",
+    "preview": "assets/reference-previews/crayon-write.jpg",
+    "config": {
+      "fx": "crayon-write",
+      "start": 0,
+      "end": 4,
+      "text": "CREATE"
+    },
+    "frame_time": 1.0
+  },
+  {
+    "id": 51,
+    "name": "fan-build",
+    "desc": "Deal reel covers into a fan one card at a time.",
+    "use": "Build a portfolio reveal",
+    "prompt": "/effects fan-build from 3 to 6 seconds. Use my covers folder and count 13.",
+    "options": "`images` (folder of your covers), `count` (default 13)",
+    "preview": "assets/reference-previews/fan-build.jpg",
+    "config": {
+      "fx": "fan-build",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": "B1",
+    "name": "glitter-spotlight",
+    "desc": "Add golden rays and sparkles to the spotlight.",
+    "use": "A celebration",
+    "prompt": "/effects glitter-spotlight from 3 to 6 seconds. Use text SHINE.",
+    "options": "",
+    "preview": "assets/reference-previews/glitter-spotlight.jpg",
+    "config": {
+      "fx": "spotlight",
+      "start": 0,
+      "end": 4,
+      "text": "SHINE",
+      "look": "sparkle"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": "B2",
+    "name": "cover-star-editorial",
+    "desc": "Use a warm serif magazine cover treatment.",
+    "use": "An elegant introduction",
+    "prompt": "/effects cover-star from 3 to 6 seconds. Use text CREATOR and look editorial.",
+    "options": "",
+    "preview": "assets/reference-previews/cover-star-editorial.jpg",
+    "config": {
+      "fx": "cover-star",
+      "start": 0,
+      "end": 4,
+      "text": "CREATOR",
+      "look": "editorial",
+      "lines": "One clip|Three ideas|Start today"
+    },
+    "frame_time": 2.2
+  },
+  {
+    "id": "B3",
+    "name": "liquid-glass-graph-bento",
+    "desc": "Combine a background graph with glass metric tiles.",
+    "use": "Several related results",
+    "prompt": "/effects liquid-glass-graph from 3 to 6 seconds. Use text Views, to 197K and look bento.",
+    "options": "",
+    "preview": "assets/reference-previews/liquid-glass-graph-bento.jpg",
+    "config": {
+      "fx": "liquid-glass-graph",
+      "start": 0,
+      "end": 4,
+      "text": "Views",
+      "to": "197K",
+      "look": "bento",
+      "donut": "29%::Growth",
+      "kpi": "672K::Reach",
+      "bars": "197|140|124::Views"
+    },
+    "frame_time": 2.2
+  }
+]

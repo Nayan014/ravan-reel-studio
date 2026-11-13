@@ -1,0 +1,6 @@
+{
+  "effects": [
+    {"fx": "orbit", "start": 3.0, "end": 6.0},
+    {"fx": "backdrop-word", "start": 6.0, "end": 8.0, "text": "CREATE"}
+  ]
+}

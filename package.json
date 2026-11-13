@@ -1,0 +1,16 @@
+{
+  "name": "ravan-reel-studio",
+  "version": "0.1.0",
+  "description": "Create, review and finish reels locally with your coding agent.",
+  "author": "Techno Ravan",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "start": "node scripts/start.mjs",
+    "dashboard": "node scripts/dashboard.mjs",
+    "demo": "node scripts/install-demo.mjs",
+    "test:dashboard": "node --test tests/dashboard.test.mjs tests/review.test.mjs tests/demo.test.mjs tests/start.test.mjs"
+  }
+}

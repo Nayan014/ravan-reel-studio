@@ -1,0 +1,11 @@
+{
+  "name": "studio-hyperframes",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "hyperframes": "0.9.30"
+  },
+  "overrides": {
+    "undici": "7.30.1"
+  }
+}

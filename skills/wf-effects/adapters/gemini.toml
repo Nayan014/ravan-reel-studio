@@ -1,0 +1,8 @@
+description = "Use an existing named effect directly."
+prompt = """
+Read AGENTS.md in the current workspace and locate the shared wf skill.
+Read its SKILL.md and handle this as /wf effects. Preserve all existing selection and preview approval requirements.
+User arguments:
+
+{{args}}
+"""

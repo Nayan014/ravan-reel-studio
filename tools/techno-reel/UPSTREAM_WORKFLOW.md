@@ -1,0 +1,382 @@
+# Techno Reel
+
+This folder turns one line ("make a reel about X") into a finished, animated 1080×1920 reel:
+script → voice → scenes in code → self-check → mp4 + caption. It also edits the user's own
+talking-head recording into a reel (see **Talking head**). Video is React, rendered by
+[Remotion](https://www.remotion.dev). Everything renders locally.
+
+When the user asks for a reel, first ask **Auto** or **Plan** (see **Modes**). In Auto mode, run autonomously end-to-end. In Plan mode, first list the project's themes for review so the user can choose which theme to create/use before script and storyboard generation. Ask nothing else unless the topic is missing. Reply in the user's language and
+write the reel in it too.
+
+## Conversation style
+
+- Keep updates, questions and handovers short and direct. Lead with the result or the
+  decision needed; include details only when they help the user act.
+- When a question has clear choices, use the chat host's native choice buttons if available
+  and permitted. For Plan reviews, offer **Approve** and **Revise**; invite the user to say
+  what to change. For mode selection offer **Auto** and **Plan**. Never simulate buttons as
+  plain text or treat a default selection as approval. If the host has no suitable choice
+  control, ask the same concise question in text. Follow the host's tool and approval rules.
+
+
+## Learn from feedback and grow skills
+
+- **During Video Editing**: When the user requests tweaks or modifications to a specific reel, record actionable preferences in `FEEDBACK.md` so they are remembered during future edits for that creator.
+- **Project & Workflow Improvements**: When the user requests structural improvements to how videos, assets, or processes are generated, codify and move those notes into the dedicated skill files under `.claude/skills/` (e.g. `reel-visuals`, `reel-captions`, `reel-animation`, `brand-logos`, `cartoon-host`). Keep `FEEDBACK.md` focused on active creator fine-tuning while skills evolve the kit overall.
+- Verify checks on the current render; do not claim that the model trained itself.
+
+
+## Local projects and dashboard
+
+The AI chat drives the workflow. The dashboard (`npm run dashboard`,
+`http://127.0.0.1:4173`) is a local viewer: it can open an export folder on this device,
+and can save local defaults for new projects, supports local avatar-reference uploads and voice auditions, but has no AI access or approvals. Use it to review projects, plans, stills, videos, captions and checks.
+It refreshes every five seconds. Approvals and feedback happen in this chat.
+
+- Create a project with `npm run project -- <slug> [Display name]`. Existing names are never overwritten. If dashboard settings have been saved, `projects/<slug>/video-settings.json` captures them at creation. Read that file before writing a script: use its style, palette, handle, host and music as defaults unless the user requests otherwise. For style or palette `auto`, choose a supported value to fit the topic; never put `auto` into script.json. If avatarReference is set, the selected source is `.local/avatar-references/<avatarReference>`; use it when the user asks to create/update the cartoon host, following the cartoon-host guide. A reference upload alone is not a prepared animated host. Map host `character` to `"host": "character"`, `none` to `"host": false`, and `default` to no host override; omit music for `none`, and choose by topic for `auto`. Talking-head music rules still apply. Voice uses the captured settings automatically. Existing projects without this file retain their previous environment configuration.
+- Ask the user to put originals into `projects/<slug>/raw/`; when importing from elsewhere,
+  copy rather than move. Never overwrite originals. Select one main recording for talking-head work.
+- Working files live in `projects/<slug>/working/`; previews in `preview/`; finals in `export/`.
+- Browser asset paths remain `reels/<slug>/…`, relative to `working/`. Render/Studio generates
+  disposable staging in `.local/render/`; never edit it or maintain a second copy in public/reels.
+- Update `project.json` as you work: preserve `version`, `name`, and `createdAt`; set `mode`
+  (`auto` or `plan`), `stage`, and `nextAction` in the user's language. Stages: `new`, `planning`,
+  `awaiting-plan-review`, `awaiting-frame-review`, `producing`, `exported`, `needs-attention`.
+  These are AI-reported stages, not inferred quality guarantees. Record useful failure details
+  in `nextAction`; never mark exported until the required gates and caption are complete.
+- In Plan mode, record explicit user approvals in `approvals.json`, keyed by `plan` and `frames`,
+  with `status: "approved"`, `approvedAt`, and the `fingerprint` from `outputs.json` for that
+  reviewed plan/stills revision. Regenerate and request approval when the approved content changes.
+- Scripts save preview/export fingerprints in `outputs.json` and check results in `checks.json`.
+  The dashboard flags old outputs and checks when working inputs or shared rendering assets change.
+  Never invent a pass result or approval. An existing MP4 alone does not mean the reel passed.
+- Custom scenes go in `working/scenes/`; reusable kit files change only at the user's request.
+- All `projects/` and `.local/` data is ignored by Git. The example in `examples/example/`
+  is the only intentionally shared project template. Never force-add private project data.
+- Old installations: `npm run migrate` previews; `npm run migrate -- --apply` copies files
+  into the new layout without changing originals. Conflicts stop migration.
+  `npm run migrate -- --rollback` removes unchanged copied files; changed copies are preserved.
+  Keep legacy originals until the user chooses to remove them. Assign any legacy custom scenes
+  to their project manually and update their relative imports.
+
+## Styles & Palettes
+
+`style` and `palette` in `script.json` establish the channel's visual identity; every scene works in all combinations.
+
+- **Canonical Channel Standard**: `flat` style with the `clay` palette (`#C8643B` terracotta accent, `#F3EEE6` warm paper, `#FFFCF7` card, `#161412` dark ink). Use this as the default visual standard across all reels for consistent, recognizable channel branding.
+
+### Styles
+
+- `flat` (default): bold outlines, hard shadows, dot grid, Anton headlines.
+- `print`: a cut-paper studio. Grainy lit card stock, soft depth, paper-strip captions that
+  fill in word by word, and a paper host standing bottom left who changes pose every shot and
+  lip-syncs to the voice. Pick it for tips, explainers and lists, or when the user asks for
+  paper, print or a host.
+  `"host": false` hides the host. A shot's `pose` overrides its default: `idle`, `point`,
+  `present`, `think`, `shrug`, `shock`, `cheer`, `wave`.
+
+`"host": "character"` puts the user's own cartoon in place of the paper host, in either style,
+with the same poses. It's made once from their photo with the `cartoon-host` skill
+(`.claude/skills/cartoon-host/SKILL.md`) and kept in `.local/host/`. Offer it when the user wants
+a host that looks like them.
+
+### Palettes
+
+- `clay` (channel default): warm terracotta editorial (`#C8643B` accent, `#F3EEE6` paper, `#FFFCF7` card, `#161412` ink).
+- `cobalt`: electric blue tech (`#2C4BDB` accent, `#ECEFF6` paper, `#FBFCFF` card, `#10131A` ink).
+- `forest`: natural deep green (`#2E6B4A` accent, `#ECF1E8` paper, `#FBFDF9` card, `#121712` ink).
+- `mono`: stark monochrome (`#111111` accent, `#EFEFEC` paper, `#FFFFFF` card, `#111111` ink).
+
+
+## First run
+
+If `node_modules/` or the voice engine is missing, run `npm run setup` (installs packages,
+makes `.env`, installs VoiceStudio into `./voicestudio`, then runs the doctor). Otherwise run
+`npm run doctor`. For rendering the shipped example without voice, use
+`npm run setup -- --render-only` and `npm run doctor -- --render-only`. Walk the user through every ✗ either prints.
+
+The voice is **VoiceStudio**: free, local, served on `127.0.0.1:3900` from the headless install
+in `./voicestudio` (made by `npm run setup`), or `~/VoiceStudio` if that's where it already is
+(`VOICESTUDIO_DIR` overrides both). When it isn't running, `npm run voice` and `npm run doctor`
+start it in the background themselves (about 30 s, log in `.local/logs/voicestudio.log`) and leave it
+running for later reels; don't start it by hand. Default engine is Kokoro (`mlx-audio`, voice
+`af_heart`): Apache-2.0, English, no German. For German or a cloned voice the user must switch
+to OmniVoice and accept its non-commercial licence themselves; never accept a model licence for
+them.
+
+There is no fallback. When VoiceStudio won't answer or start, `npm run voice` stops without
+recording. Stop too: show the user its error and the end of `.local/logs/voicestudio.log`, try what the
+log points to (`npm run doctor`, a stale process on port 3900), and ask before anything else.
+Never switch to another voice provider yourself. The dashboard offers VoiceStudio only.
+The `say` and `elevenlabs` CLI paths remain for older project compatibility; never offer them
+for new videos. Model/voice choices and install status are available in dashboard Settings.
+Kokoro voices come from VoiceStudio metadata or its local model cache; OmniVoice voices are
+saved profiles. Missing weights download only on the user's explicit dashboard action.
+If a model requires licence acceptance, direct the user to review it in VoiceStudio; never
+accept terms for them.
+Set defaults for new projects in the dashboard; they live in `.local/video-settings.json`. API keys and advanced connection settings remain in `.env` or the process environment. Dashboard settings do not restrict a local assistant’s filesystem access; use host permissions to protect secrets.
+
+## Modes
+
+When the user gives you a topic or a video, ask once, as a two-choice question: **Auto** or
+**Plan**? Skip the question when they already said which (`plan it first`, `just make it`).
+
+- **Auto**: run the whole workflow on your own at full speed ("go crazy") and hand over the mp4. Pick the style, palette, and music to best fit the topic (or use dashboard defaults) without pausing for intermediate questions.
+- **Plan**: the user reviews the theme, storyboard, and frames before anything is rendered:
+  1. **Theme selection**: List the project's available themes (the 8 style & palette combinations: Flat / Print across Clay, Cobalt, Forest, Mono) with concise visual descriptions and ask the user which theme they want to create/use before drafting the script.
+  2. Do steps 1–2 (draft script in `projects/<slug>/working/script.json` with the chosen theme; create/generate a dedicated thematic background image tied to the topic at `projects/<slug>/working/images/background.png` and set `"background": "images/background.png"` in `script.json`; a talking head: Transcribe, Find the face and Cut first). If a shot needs a scene that doesn't exist yet, name it anyway; its card says "new scene, to write".
+  3. `npm run plan -- <slug>` writes `projects/<slug>/preview/plan.html`: displays the thematic background concept for approval and one card per shot with its frame, line, captions, on-screen text, and tools. Durations are estimated. Show the page to the user (open it in your browser pane or file preview if you have one, else `open projects/<slug>/preview/plan.html`) and present the storyboard and background for review. For each change they ask for ("03: make it a BigNumber"), edit `script.json`, re-run `plan`, show it again. Voice and render nothing yet.
+  4. When they approve: write any new scenes, then step 5 (Look gate; fix what you find
+     yourself) without recording the voice: `stills` times every line that has none yet by
+     estimate. A talking head runs `voice` first; it only cuts the take. Then
+     `npm run plan -- <slug> --frames` and show it again: real stills, estimated durations.
+     Stop. For each change: edit (a talking head: re-run `voice` if a `clip` changed),
+     `npm run stills -- <slug> --shot=<id>` for every changed shot, then `plan --frames`.
+  5. When they approve the frames: steps 3–4 (Voice, Pace gate), then steps 6–10 (Render, Motion
+     gate, Platform captions, Cover, Hand over). If a gate makes you change an approved shot, re-run its still and
+     `plan --frames` and show the user before you render.
+
+## Workflow
+
+Pick a short kebab-case slug for the reel (`why-planes-curve`). All its files live in
+`projects/<slug>/`. Create it first with `npm run project -- <slug>`.
+
+A reel stays out of the kit. While making one, write only inside `projects/<slug>/`, ignored by git. When a kit scene lacks something
+this reel needs, write a local scene instead of changing the kit one. Change kit files (`src/`,
+`scripts/`, `public/sfx/`, the docs) only when the user asks to improve the kit itself.
+
+1. **Plan.** Read `.claude/skills/reel-visuals/SKILL.md` and `.claude/skills/reel-animation/SKILL.md`
+   for backgrounds, cover direction and explanatory graphics. The channel focuses on technology
+   and AI: connect news to the technology and its users, with an AI/technology CTA. Use company
+   finances when they explain the story; avoid turning the reel into investor or ticker coverage.
+   Write the script as 5–9 shots, one spoken line each, 20–45 s total. Follow the
+   playbook below. Pick a scene for every shot.
+2. **Write `projects/<slug>/working/script.json`.** Copy the shape of `examples/example/script.json`.
+   Default `palette` to `clay` and `style` to `flat` (the channel standard) unless requested otherwise.
+   `palette` is one of `clay`, `cobalt`, `forest`, `mono`; `style` is `flat` or `print`;
+   `handle` is the user's @handle (ask once if you don't know it, then reuse it).
+   `music` is a bed under the voice that dips while a line is spoken: `lofi`, `upbeat`, `chill`
+   or `funk`, picked to fit the topic. Leave it out when the user says no music, will add
+   Instagram audio themselves, or on a talking head whose take already has music or noise.
+   When a shot is about a product (ChatGPT, Claude, Cursor…), follow the `brand-logos` skill
+   (`.claude/skills/brand-logos/SKILL.md`) to fetch its current logo, and set the shot's `icon`.
+3. **Voice.** `npm run voice -- <slug>`. Writes `voice.json` and one audio file per shot.
+   Unchanged lines are cached, so re-run it after every edit to a `say` line, its delivery marks
+   included (see **Delivery** in the playbook). Lines marked `~`
+   have estimated word timing. With VoiceStudio, a reel in another language times captions better
+   with `VOICESTUDIO_LANGUAGE` set (`de`, `es`, …).
+4. **Pace gate.** `npm run check -- <slug>`. Fix every `FAIL` (usually by shortening or splitting
+   a line) and re-run voice + check until it passes. Treat warnings as a nudge, not a rule.
+5. **Look gate.** `npm run stills -- <slug>` renders one PNG per shot into `projects/<slug>/preview/stills/`,
+   taken just before the cut when everything is on screen. Read every PNG and check:
+   - text is big, fully inside the frame, nothing overlapping or clipped
+   - the stage content and the captions don't collide
+   - one clear focal point per shot; the shot reads in under a second
+   - consecutive shots look different from each other
+
+   Fix by editing `props`, picking another scene, or writing a new scene (below). Re-render a
+   single shot with `--shot=03`. Repeat until every still passes.
+
+6. **Render.** `npm run render -- <slug> --draft` for a fast half-size check if you changed a lot,
+   then `npm run render -- <slug>` for the final `projects/<slug>/export/<slug>.mp4`.
+7. **Motion gate.** `npm run pace -- <slug>` watches the mp4 and lists every stretch where nothing
+   on screen changes. Fix every `FAIL` (still over 1.2 s) with a pop, a cue, a zoom or a shorter
+   shot, re-render, re-run. A warn in the first 2 s is worth fixing too: that's where people swipe.
+8. **Platform captions.** Read `.claude/skills/reel-captions/SKILL.md` before writing post copy.
+   Write separate Instagram and YouTube sections in `projects/<slug>/export/caption.txt`.
+   Instagram needs its own brief caption and hashtags; YouTube needs a distinct title,
+   short description and hashtags. Use natural, easy-to-scan language: a quick takeaway, not
+   every detail or figure from the reel. A question or CTA is optional; avoid stacking them.
+   Never hand over one generic caption for both.
+   Check both sections are complete and contain no invented handles before marking exported.
+9. **Cover.** Read `.claude/skills/reel-visuals/SKILL.md` during planning, so the cover is part
+   of the initial visual review. Design a purposeful poster with a clear topic, short headline
+   or curiosity question, and mobile-readable type. Review crop safety and avoid revealing the
+   answer. The renderer writes a frame-based cover: verify `export/cover.png` after the final
+   render and replace it with the dedicated poster when needed. Do not treat an arbitrary still
+   as a finished cover.
+10. **Hand over.** Provide the MP4, platform captions and final cover paths and reel duration.
+   Mention `npm run studio -- <slug>` for browser scrubbing and `npm run dashboard` for all projects.
+   Mark exported only after the required gates, both platform captions and cover review are complete.
+
+## Talking head
+
+When the user gives you a video of themselves talking ("edit this", a path to a .mov/.mp4),
+cut it into a reel instead of writing and voicing one.
+
+1. **Transcribe.** `npm run transcribe -- <slug> <path/to/video>` makes `take.mp4` (30 fps, voice
+   levelled to −14 LUFS, denoised when Homebrew ffmpeg is installed), `transcript.json` and
+   `transcript.txt`. The video can live anywhere; the original is copied into `raw/` and the processed take is written to `working/`.
+   Read `transcript.txt`: one phrase per line with its times, `[um]`-style fillers, pauses, and
+   gaps with unworded sound (usually a filler Whisper skipped).
+2. **Find the face.** Extract a frame and look at it
+   (`npx remotion ffmpeg -ss 2 -i projects/<slug>/working/take.mp4 -frames:v 1 projects/<slug>/preview/face.png`),
+   then set `focus` to where the face is, 0–1 from left and top (default `[0.5, 0.4]`).
+3. **Cut.** Write `script.json` with `"take": "take.mp4"`. Each shot plays one `clip: [in, out]`
+   of the take (seconds) and has `say` = the words in it, spelled right (captions use it).
+   - Keep the best take of every line; drop fillers, false starts, repeats and rambles. A clip
+     may stop and start mid-sentence; the voice step tightens it to its first and last word.
+   - Use the user's words; never write words they didn't say. Reorder only if it still makes
+     sense. The hook is still shot one, the best ≤ 1.5 s line in the take.
+   - `layout` frames each shot: `full` (face fills the frame), `punch` (zoomed in on the face),
+     `split` (a scene on top, the face in a window below) or `graphic` (a scene fills the frame,
+     the voice keeps going). Alternate them so no two face shots in a row share a framing; that
+     hides the jump cut. Put a scene on roughly every second or third shot: a `BigNumber` when a
+     number is said, a `List` for steps, a `Screenshot` of what they're talking about.
+   - A scene on a `full` or `punch` shot is laid over the face on a paper veil (good for a Hook).
+   - The style applies to the scenes and captions; there is no print host on a talking head.
+4. Then run the normal workflow from **Voice** on: `npm run voice` cuts the clips (instant, no
+   recording), `check`, `stills`, `render`, `pace`, caption. Re-run `voice` after changing a clip.
+
+## Playbook
+
+Writing
+
+- The hook is shot one, said in ≤ 1.5 s (≤ 5 words). It states the payoff or a surprising claim.
+  Never open with "Hey guys", "In this video" or a question you don't answer.
+- One idea per shot. A shot's line is ≤ 12 words, ideally 5–9.
+- Write for the ear: short words, active voice, no lists of more than 4.
+- Spell numbers out in `say` ("one point two seconds") and show digits on screen (`1.2`).
+- End on a CTA shot: one action (follow, comment a keyword, save).
+- Facts must be true. If unsure, write it as opinion or leave it out.
+
+Hooks
+
+Pick a shape, fill it with the topic, keep it ≤ 5 words, and stage the shot after it as shown.
+
+| shape         | pattern                       | example                    | next shot              |
+| ------------- | ----------------------------- | -------------------------- | ---------------------- |
+| result first  | My [thing] just [did X].      | My phone just wrote this.  | `Screenshot` of it     |
+| the number    | [Number] [things] [do X].     | Nine in ten skip this.     | `BigNumber`            |
+| free vs paid  | [Thing]: $[X]. Mine: free.    | Course: $400. Mine: free.  | `Compare`              |
+| the annoyance | You paid. Still [annoying X]? | You paid. Still ads?       | the answer, `List`     |
+| the warning   | Don't [act] before this.      | Don't upgrade before this. | `Statement` with why   |
+
+- The payoff is in frame one: a result, a number, a thing doing something surprising. The `Hook`
+  scene is readable from its first frame, and that frame can seed the dedicated cover design; follow the visual guide before export.
+- First person, present tense when it's the user's own story: "My…", "I just…".
+- A question hook is answered within the reel, by the shot right after it when possible.
+- When Insights shows a high skip rate (over ~60 %), re-cut only the first 2 s, a new hook line
+  and scene, and keep the body.
+- Never re-post the same body: Instagram marks it as already shared. New voice, new visuals.
+
+Delivery
+
+A line read in one even breath sounds robotic. Give the voice rhythm with marks in `say`;
+captions never show them, and VoiceStudio records each marked phrase on its own.
+
+- `|` is a beat (0.3 s), `||` a long pause (0.7 s). Put one before a payoff or between two
+  short punches: `It does not make energy. | It borrows it.`
+- `*words*` are said heavy: slower and louder. Use it on the payoff, 1–3 words, at the end of a
+  line or right after a `|`: `Every cup pulls focus | *from tomorrow.*` At most one per line.
+  A single heavy word mid-sentence (`It *borrows* it.`) gets choppy; save that for a hard stop.
+- A `||` at the end of a line holds the silence before the cut, so the line can land.
+- Punctuation shapes the read too: `?` rises, `,` is a breath, `.` ends with a fall.
+- Vary it across the reel: some lines plain, some with a beat, a few with a heavy payoff. The
+  hook is usually plain and fast; the CTA plain.
+- Never on a talking head: its pauses are the user's own.
+
+Staging
+
+- Never two of the same scene in a row (Statement is the only exception).
+- Show less than you say: on-screen text is the keyword, not the sentence.
+- Hook uses `"captions": false` because it already shows the words.
+- Nothing sits still for more than 1.2 s: every scene already floats or drifts; new scenes must too.
+- Keep content inside the stage. Instagram covers the top ~220 px, the bottom ~380 px and a
+  ~150 px column on the right; the layout in `src/theme.ts` (`LAYOUT`) already respects that.
+
+## Scenes
+
+| scene       | use for                | props                                                                       |
+| ----------- | ---------------------- | --------------------------------------------------------------------------- |
+| `Hook`      | shot one               | `lines: string[]` (1–3 short lines), `highlight?: string`                   |
+| `Statement` | one big idea on a card | `text` (≤ 8 words), `kicker?` (small tag), `icon?` (logo path)              |
+| `Stamp`     | the payoff word, slammed down | `text` (1–3 words), `kicker?`, `cue?` (spoken word that slams it, default its first word; end the line with `||` when it's the last word, so it can land) |
+| `ChatPrompt` | asking an AI something | `prompt` (typed in over the shot), `title?`, `kicker?`, `app?` (default "Chat"), `icon?` (logo path) |
+| `BigNumber` | a stat that counts up  | `value: number`, `label`, `prefix?`, `suffix?`, `decimals?`, `locale?`      |
+| `List`      | 2–4 steps or rules     | `title?`, `items`: strings or `{text, icon?}` (each pops in when its first word is spoken; a logo `icon` replaces the number) |
+| `Compare`   | this vs that           | `left: {label, value}`, `right: {label, value}`, `winner?: "left"\|"right"` |
+| `Meter`     | something building up  | `label`, `top?`, `bottom?` (scale ends), `level?` (0–1, default 0.9)        |
+| `Swarm`     | one spawns many        | `title?`, `lead?` (centre label), `count?` (3–12) or `items` (strings or `{name, icon?}`), `cue?` (word that spawns them, default "swarm") |
+| `Screenshot` | a real screen or photo | `src` (path under `public/`), `label?`, `focus?: [x, y]` (0–1, where to push in) |
+| `CTA`       | last shot              | `text`, `button?` (default "Follow")                                        |
+
+Every shot also takes `"captions": false` to hide the word-by-word captions, and `"zoom": "word"`:
+the stage snaps in 6 % with a whip when that word is said. Use it on the payoff word of a shot
+that would otherwise sit still, at most every few shots, or it stops landing.
+
+`icon` is a path under `public/` to a product's logo, like `Screenshot`'s `src`:
+`"reels/<slug>/icons/chatgpt.svg"`. The kit ships no logos; the `brand-logos` skill fetches the
+current official one into the reel's `icons/` folder. Use one only when the shot is about that
+product, and leave it out when no real logo is found. A black, white or grey SVG is redrawn in the
+theme's colours; a coloured logo or PNG keeps its own.
+
+### Writing a new scene
+
+When no scene fits, make one rather than forcing a bad fit. Put it in
+`projects/<slug>/working/scenes/<Name>.tsx` with `export const <Name>`: it loads by itself, git ignores it, and
+it stays out of the kit. Don't register it in `src/scenes/index.ts`. The bundler selects only this project's scenes.
+Use `../../../../src/` for imports from the kit (for example `../../../../src/components/ui`). Only when the user asks to
+add it to the kit, move it to `src/scenes/`, register it there, give it a default pose in
+`src/poses.ts`, and add it to the table above and to `README.md`. Build it from what's there:
+
+- `useTheme()` for colours (`paper`, `ink`, `accent`, `card`) and the style's look:
+  `theme.display` (headline font; pass `theme.displayWidth` to `fitText`), `theme.edge(px)`,
+  `theme.shadow(depth)`, `theme.textShadow(depth)` and `theme.surface(fill)` for card fills.
+  Never hardcode hex, outlines or shadows, or the scene breaks in the other style.
+- `body` font from `src/fonts.ts`.
+- `usePop(delay)`, `useFloat()`, `Card`, `Sfx`, `fitText()` and `cueFrames()` from
+  `src/components/ui.tsx`.
+- `<Logo src size tint?>` and `useMonoLogo(src)` from `src/components/Logo.tsx` for an `icon`
+  prop: pass `tint` (a theme colour) only when `useMonoLogo` says the logo is mono.
+- `<Sfx name at? volume? variant?>` plays a sound at a frame of the shot. Names (in
+  `src/sound.ts`): `whoosh`, `whip` (fast punch-in), `swipe` (paper or card slide), `pop`,
+  `click`, `key` (one keystroke), `blip`, `ding`, `impact` (something big lands), `riser`
+  (`RISER_SECONDS` long, peaks at its end), `shutter`, `coin`, `success`. Every file is levelled
+  the same, so `volume` is the mix: about 0.3 for a hit, 0.1–0.2 for repeats. Sounds with several
+  takes vary by themselves; pass `variant={i}` to step through them. One sound per beat: the cut
+  already has a whoosh, so don't add one at frame 0.
+- `useShot()` gives `words` (with timings), `frames` and `say`, so you can time a beat to the
+  moment a word is spoken: `cueFrames(shot.words, ["keyword"], fps, shot.frames)`.
+- Animate with `useCurrentFrame()` + `spring` / `interpolate`. No CSS transitions or
+  `setTimeout`: Remotion renders frame by frame.
+
+Read `src/scenes/List.tsx` first; it uses most of these. Check a new scene in both styles.
+Run `npm run typecheck -- <slug>` after to check the kit and this project's scenes.
+
+## Files
+
+- `src/Reel.tsx`: lays shots end to end, adds voice, captions, a whoosh between shots with clean cuts, each shot's snap `zoom`, the
+  music bed, handle, the print host, and on a talking head the take framed by each shot's
+  `layout`.
+- `src/theme.ts`: palettes, the two styles (`makeTheme`) and the safe-area `LAYOUT`.
+- `src/components/`: `Background`, `Captions`, `Host` (print presenter), `Take` (your video),
+  `Music` (the ducked music bed), `Logo` (draws a reel's fetched logo for `icon` props), `Cut`
+  (the wipe at each cut), `Character` (the user's own cartoon host).
+- `src/sound.ts`: the sound effect and music names (also used by the scripts).
+- `src/scenes/`: the kit's scenes, registered in `index.ts`. `projects/<slug>/working/scenes/`: scenes for one
+  reel, loaded by themselves, ignored by git.
+- `src/timeline.ts`: joins `script.json` and `voice.json` into timed shots (also used by the scripts).
+- `src/poses.ts`: the print host's poses and each scene's default (also used by `plan`).
+- `src/components/Captions.tsx`: word-by-word captions.
+- `scripts/`: `setup`, `doctor`, `transcribe`, `voice`, `host`, `check`, `plan`, `stills`, `render`,
+  `pace`, `sfx` (downloads the CC0 sources, masters them into `public/sfx/` and `public/music/`,
+  writes `public/sfx/CREDITS.md` and an audition page at `.local/cache/sfx-preview/index.html`). To swap a sound,
+  change its source in `scripts/sfx.mjs` and re-run it.
+- `public/sfx/`, `public/music/`: the sounds and music beds, all CC0 (public domain); sources in
+  `public/sfx/CREDITS.md`.
+- `.claude/skills/brand-logos/`: how to fetch and check a product's current logo for a reel.
+- `.claude/skills/cartoon-host/`: how to turn the user's photo into their own cartoon host.
+- `.local/host/`: the user's cartoon, one PNG per pose and `host.json`; ignored by git.
+- `projects/`: private project folders, all ignored. `examples/example/` is the shipped template.
+- `projects/<slug>/preview/`: storyboard, draft and shot stills; regenerable.
+- `projects/<slug>/export/`: final MP4, cover and caption.
+- `projects/<slug>/raw/`: untouched originals; never delete as cache.
+- `projects/<slug>/working/`: authored scripts, processed media and project scenes; preserve these.
+
+## Optional direct publishing
+
+Reel creation does not publish. For direct Instagram/YouTube uploads or local scheduling,
+follow `.claude/skills/reel-publishing/SKILL.md` and `docs/publishing.md`. Keep tokens in
+ignored local settings, review the exact publishing plan, and only execute within the
+user's publication authorization. Never upload during setup or validation.

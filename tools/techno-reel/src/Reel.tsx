@@ -1,0 +1,234 @@
+import React from "react";
+import {
+  AbsoluteFill,
+  Html5Audio,
+  Img,
+  Sequence,
+  interpolate,
+  spring,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
+import { Background } from "./components/Background";
+import { Captions } from "./components/Captions";
+import { Character } from "./components/Character";
+import { Handle } from "./components/Handle";
+import { Host } from "./components/Host";
+import { Music } from "./components/Music";
+import { Take } from "./components/Take";
+import { Sfx, cueFrames } from "./components/ui";
+import { ShotContext, ThemeContext, useTheme } from "./context";
+import { body } from "./fonts";
+import { scenes } from "./scenes";
+import { LAYOUT, makeTheme } from "./theme";
+import type { Layout, ReelData, Shot, VoiceLine } from "./types";
+
+export type ReelProps = {
+  slug: string;
+  /** Filled in by calculateMetadata from projects/<slug>/working/. */
+  reel: ReelData | null;
+  /** Timing for lines not recorded yet, by shot id: `npm run stills` sends it, a render never. */
+  estimates?: Record<string, VoiceLine>;
+};
+
+export const Reel: React.FC<ReelProps> = ({ slug, reel }) => {
+  if (!reel) throw new Error(`Reel "${slug}" was not loaded`);
+  const theme = makeTheme(reel.palette, reel.style);
+  // On a talking head you are the host. Your own cartoon hosts in either style, the paper one in print.
+  const host =
+    !reel.take &&
+    (reel.host === "character" || (theme.style === "print" && reel.host !== false));
+  return (
+    <ThemeContext.Provider value={theme}>
+      <AbsoluteFill style={{ fontFamily: body, color: theme.ink }}>
+        <Background />
+        {reel.background && (
+          <AbsoluteFill>
+            <Img src={staticFile(`reels/${slug}/${reel.background}`)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <AbsoluteFill style={{ background: "linear-gradient(to bottom, rgba(243,238,230,0.12), rgba(243,238,230,0.86) 31%, rgba(243,238,230,0.86) 72%, rgba(243,238,230,0.20))" }} />
+          </AbsoluteFill>
+        )}
+        {reel.shots.map((shot, i) => (
+          <Sequence
+            key={shot.id}
+            from={shot.from}
+            durationInFrames={shot.frames}
+            name={`${shot.id} · ${shot.layout ?? ""} ${shot.scene ?? ""}`}
+          >
+            <ShotView
+              shot={shot}
+              index={i}
+              previous={reel.shots[i - 1]}
+              take={reel.take ? `reels/${slug}/${reel.take}` : undefined}
+              focus={reel.focus ?? [0.5, 0.4]}
+              host={host}
+            />
+          </Sequence>
+        ))}
+        {host &&
+          (reel.character ? (
+            <Character shots={reel.shots} config={reel.character} />
+          ) : (
+            <Host shots={reel.shots} />
+          ))}
+        {reel.music && <Music name={reel.music} shots={reel.shots} />}
+        {reel.handle?.trim() && <Handle text={reel.handle.trim()} />}
+      </AbsoluteFill>
+    </ThemeContext.Provider>
+  );
+};
+
+/** How far the stage snaps in on a shot's `zoom` word. */
+const SNAP = 0.06;
+
+const layoutOf = (shot: Shot, take: boolean): Layout =>
+  take ? (shot.layout ?? (shot.scene ? "graphic" : "full")) : "graphic";
+
+const ShotView: React.FC<{
+  shot: Shot;
+  index: number;
+  previous?: Shot;
+  take?: string;
+  focus: [number, number];
+  host: boolean;
+}> = ({ shot, index, previous, take, focus, host }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const theme = useTheme();
+  const Scene = shot.scene ? scenes[shot.scene] : undefined;
+  if (shot.scene && !Scene) {
+    throw new Error(
+      `Unknown scene "${shot.scene}" in shot ${shot.id}. Add it to this project’s working/scenes/.`,
+    );
+  }
+  if (!Scene && !take) throw new Error(`Shot ${shot.id} needs a scene.`);
+  const layout = layoutOf(shot, Boolean(take));
+  const captions = shot.captions !== false;
+  // Cuts between two face shots are jump cuts: no whoosh, or every sentence would swoosh.
+  const whoosh =
+    previous && (Scene || layoutOf(previous, Boolean(take)) === "graphic");
+  const spoken = Math.round(shot.end * fps);
+  // Hook already animates its headline; a second stage snap repeats that beat.
+  const [snapAt] = shot.zoom && shot.scene !== "Hook"
+    ? cueFrames(shot.words, [shot.zoom], fps, shot.frames)
+    : [];
+  const zoom =
+    snapAt === undefined
+      ? 1
+      : 1 +
+        SNAP *
+          spring({
+            frame: frame - snapAt,
+            fps,
+            config: { damping: 14, stiffness: 500, mass: 0.4 },
+          });
+
+  return (
+    <ShotContext.Provider value={shot}>
+      {take && layout !== "graphic" && (
+        <Take
+          src={take}
+          trimBefore={Math.round((shot.offset ?? 0) * fps)}
+          layout={layout}
+          focus={focus}
+        />
+      )}
+      {Scene && layout === "split" && (
+        <Stage height={LAYOUT.splitStageHeight} zoom={zoom}>
+          <div
+            style={{
+              width: 1080 - 2 * LAYOUT.stageSide,
+              height: LAYOUT.stageHeight,
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transform: `scale(${LAYOUT.splitStageHeight / LAYOUT.stageHeight})`,
+            }}
+          >
+            <Scene {...shot.props} />
+          </div>
+        </Stage>
+      )}
+      {Scene && take && layout !== "graphic" && layout !== "split" && (
+        <Veil />
+      )}
+      {Scene && layout !== "split" && (
+        <Stage
+          height={captions ? LAYOUT.stageHeight : LAYOUT.stageHeightTall}
+          zoom={zoom}
+        >
+          <Scene {...shot.props} />
+        </Stage>
+      )}
+      {captions && (
+        <Captions
+          top={layout === "split" ? LAYOUT.splitCaptionTop : undefined}
+          left={host ? LAYOUT.captionLeftWithHost : undefined}
+        />
+      )}
+      {/* A line timed by estimate, before the voice is recorded, has no audio. */}
+      {shot.audio &&
+        (take ? (
+          <Html5Audio
+            src={staticFile(shot.audio)}
+            trimBefore={Math.round((shot.offset ?? 0) * fps)}
+            // Fade in and out over a few frames so the cut doesn't click or spill the next word.
+            volume={(f) =>
+              interpolate(f, [0, 2, spoken, spoken + 3], [0, 1, 1, 0], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+              })
+            }
+          />
+        ) : (
+          <Html5Audio src={staticFile(shot.audio)} />
+        ))}
+      {whoosh && (
+        // Paper slides between cut-paper shots; air everywhere else. Takes alternate per cut.
+        <Sfx
+          name={theme.style === "print" ? "swipe" : "whoosh"}
+          volume={0.3}
+          variant={index}
+        />
+      )}
+      {snapAt !== undefined && <Sfx name="whip" at={snapAt} volume={0.25} />}
+    </ShotContext.Provider>
+  );
+};
+
+/** Frosted paper over the top of your take, so a scene laid over your face stays readable. */
+const Veil: React.FC = () => {
+  const theme = useTheme();
+  const bottom = LAYOUT.stageTop + LAYOUT.stageHeight + 60;
+  return (
+    <AbsoluteFill
+      style={{
+        background: `linear-gradient(${theme.paper}f0 0px, ${theme.paper}d9 ${bottom - 220}px, transparent ${bottom}px)`,
+      }}
+    />
+  );
+};
+
+const Stage: React.FC<{
+  height: number;
+  zoom: number;
+  children: React.ReactNode;
+}> = ({ height, zoom, children }) => (
+  <div
+    style={{
+      position: "absolute",
+      top: LAYOUT.stageTop,
+      left: LAYOUT.stageSide,
+      right: LAYOUT.stageSide,
+      height,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      transform: `scale(${zoom})`,
+    }}
+  >
+    {children}
+  </div>
+);
