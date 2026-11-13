@@ -1,7 +1,7 @@
 {
   "project": "Ravan Reel Studio",
   "repository_name": "ravan-reel-studio",
-  "source_bytes": 24562635,
+  "source_bytes": 24586546,
   "files": [
     {
       "path": ".agents/skills/effects",
@@ -148,8 +148,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 6362,
-      "sha256": "3d07cd27bf030e8dfedff95814f3ab3bcaa7f4c9d9b5688724c783e4dd818e6a"
+      "bytes": 6561,
+      "sha256": "50cf696116b9028e414b4b2fe0a561d3e050c77532f690515ab91be180708233"
     },
     {
       "path": "SOURCE.json",
@@ -290,6 +290,16 @@
       "path": "docs/images/review.jpg",
       "bytes": 48854,
       "sha256": "8a373ebfcb4a2eaa57a19f35095d1a0f6bfc016c042adfe1dabbd34ef5abde1d"
+    },
+    {
+      "path": "docs/images/wordmark.png",
+      "bytes": 23238,
+      "sha256": "f2b108c7559b692cde62e87e9d72de367e5f6507cb14afca3ef0a15052828fb8"
+    },
+    {
+      "path": "docs/images/youtube.png",
+      "bytes": 474,
+      "sha256": "4295467fb822cce7865bdd36c2a67b9688c7b66a8adcb6c920e5633e2d933d31"
     },
     {
       "path": "examples/demo/README.md",

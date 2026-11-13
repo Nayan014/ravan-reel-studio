@@ -1,20 +1,15 @@
 <div align="center">
 
-# Ravan Reel Studio
+<h1><img src="docs/images/wordmark.png" width="900" alt="Ravan Reel Studio"></h1>
 
-**Create, review and finish reels locally with your coding agent.**
+**Create → Review → Finish**  
+Make reels locally with your coding agent.
 
-[🚀 Get started](#start-with-your-ai-assistant) · [⌨️ Commands](#commands) · [💻 Laptop guide](#can-my-laptop-run-it) · [▶️ Techno Ravan on YouTube](https://www.youtube.com/@techno_ravan)
+[🚀 Get started](#start-with-your-ai-assistant) · [⌨️ Commands](#commands) · [💻 System requirements](#system-requirements) · <a href="https://www.youtube.com/@techno_ravan"><img src="docs/images/youtube.png" width="20" alt=""> Techno Ravan on YouTube</a>
+
+Built by **[Nayan Vekariya (Techno Ravan)](#about-the-creator)**
 
 </div>
-
-Turn numbered takes into a captioned reel, or start with an idea and write the shooting plan first. Choose effects, leave feedback on individual frames and listen to music against your voice before you approve the render.
-
-Built by **Nayan Vekariya (Techno Ravan)**, using [Vibha Ramprakash’s open-source video effects engine](https://github.com/Vibha-Ramprakash/claude-video-effects).
-
-![Studio dashboard showing reel covers and saved demonstration projects](docs/images/dashboard.jpg)
-
-*The local library brings together your reels, covers, downloads and posting copy. The screenshot uses synthetic demonstration projects.*
 
 ## Start with your AI assistant
 
@@ -28,9 +23,25 @@ On the first launch, the studio downloads its tools and opens the bundled demo i
 
 ## Create your first reel
 
-1. **Bring an idea or recordings.** For an idea, send `/wf-reel-plan` to draft the script and shooting plan. For existing recordings, put `1.mp4`, `2.mp4` and your other numbered takes in `inputs/my-first-reel/`, then send `/wf-reel`.
-2. **Review the cut.** Read the transcribed speech alongside the scene plan. Pick from 51 effects and three bonus looks, then comment directly beneath any preview frame you want to change.
-3. **Choose the sound and approve.** Audition the music with your voice. Once you approve the frames and audio, Vibha renders the effects and Hyperframes assembles the clips, captions, music and sound cues. The finished export appears in the dashboard.
+```mermaid
+flowchart TD
+    A["Have an idea? · /wf-reel-plan"] --> B["Approve your script and record your takes"]
+    B --> C["Have recordings? · /wf-reel"]
+    C --> D["Review the scene plan and choose effects"]
+    D --> E["Check actual frames and audition music"]
+    E --> F["Approve, render and download your reel"]
+```
+
+**Start with what you have.**
+
+| Starting point | What to do |
+| --- | --- |
+| An idea | Send `/wf-reel-plan`. Review the script, give feedback on any scene, then record the approved takes. |
+| Recorded clips | Put your clips in `inputs/my-first-reel/`, named `1.mp4`, `2.mp4` and so on. Send `/wf-reel` and choose that folder. |
+
+**Review your footage.** The studio transcribes the takes locally and proposes a scene plan. Choose effects, then approve the plan to see preview frames from your recordings. Type feedback beneath any frame you want to change.
+
+**Finish the reel.** Listen to music against your voice and approve the frames and audio. The studio renders the effects, adds captions and sound cues, and makes your export available in the local dashboard.
 
 The workflow matches recording quality up to portrait **4K/60**, including fractional frame rates. When takes differ, you choose the output profile.
 
@@ -49,9 +60,9 @@ The workflow matches recording quality up to portrait **4K/60**, including fract
 
 ## Commands
 
-Use a shortcut directly, or send `/wf` to open the numbered menu.
+Type any command below directly into your coding assistant. If you open the menu with `/wf`, reply with the number in the last column. For example, replying **5** in that menu starts `/wf-reel`.
 
-| Command | Purpose | Menu choice |
+| Command | Purpose | Reply in the `/wf` menu |
 | --- | --- | --- |
 | `/wf-video` | Guided edit of a single video | 1 |
 | `/wf-reel-plan` | Develop and approve a script before recording | 6 |
@@ -62,7 +73,7 @@ Use a shortcut directly, or send `/wf` to open the numbered menu.
 
 `/wf reel`, `/wf reel-plan`, `/video-edit` and `/effects` remain available. Command discovery varies by agent; reading the shared instructions is the portable fallback.
 
-## Can my laptop run it?
+## System requirements
 
 | Use | Processor guidance | RAM | Suggested free SSD space |
 | --- | --- | ---: | ---: |
@@ -75,14 +86,6 @@ These figures are practical starting points. Allow the suggested free space in a
 Tested on macOS with an **Apple M4 Pro and 48 GB of memory**. Windows and Linux setup instructions are available, with end-to-end validation pending. Default speech recognition runs on the CPU. [Setup and troubleshooting](docs/SETUP.md) · [Upstream CPU documentation](https://github.com/SYSTRAN/faster-whisper#small-model-on-cpu)
 
 Speech recognition, trimming and rendering run locally. Your coding assistant may use an external service and incur charges. Git ignores your recordings and generated exports.
-
-## About the creator
-
-<a href="https://vekariya.ai.studio/"><img src="https://github.com/Nayan014.png?size=240" width="112" height="112" alt="Nayan Vekariya’s GitHub profile image"></a>
-
-**Nayan Vekariya** builds Ravan Reel Studio and publishes tutorials as **Techno Ravan**. Follow the channel for tutorials or connect with Nayan through the links below.
-
-[YouTube](https://www.youtube.com/@techno_ravan) · [Website](https://vekariya.ai.studio/) · [LinkedIn](https://www.linkedin.com/in/nayan-vekariya/) · [Instagram](https://www.instagram.com/techno_ravan/)
 
 ## Guides and contributions
 
@@ -99,3 +102,22 @@ Speech recognition, trimming and rendering run locally. Your coding assistant ma
 | Music, sound effects, fonts and tracking models | Individual authors listed in [third-party notices](THIRD_PARTY_NOTICES.md) |
 
 Original project contributions use the [MIT licence](LICENSE). Third-party code, media, fonts and models retain their own licences and notices. The project licence does not replace those terms. Upstream versions and local adaptations are recorded in [SOURCE.json](SOURCE.json).
+
+## About the creator
+
+<table>
+<tr>
+<td align="center" width="150"><a href="https://vekariya.ai.studio/"><img src="https://github.com/Nayan014.png?size=320" width="124" alt="Nayan Vekariya"></a></td>
+<td>
+
+**Nayan Vekariya** · Techno Ravan
+
+I build Ravan Reel Studio and share tutorials on the Techno Ravan channel.
+
+<a href="https://www.youtube.com/@techno_ravan"><img src="docs/images/youtube.png" width="20" alt=""> <strong>Watch on YouTube</strong></a>
+
+[Website](https://vekariya.ai.studio/) · [LinkedIn](https://www.linkedin.com/in/nayan-vekariya/) · [Instagram](https://www.instagram.com/techno_ravan/)
+
+</td>
+</tr>
+</table>
