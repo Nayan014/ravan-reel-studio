@@ -1,97 +1,51 @@
+<div align="center">
+
 # Ravan Reel Studio
 
 **Create, review and finish reels locally with your coding agent.**
 
-Built by **Techno Ravan**, using **[Vibha Ramprakash’s open-source video effects engine](https://github.com/Vibha-Ramprakash/claude-video-effects)**. Vibha created the original effects engine; this project adds guided workflows, interactive review, a project dashboard and finishing integrations.
+[Get started](#start-with-your-ai-assistant) · [Commands](#commands) · [Laptop guide](#can-my-laptop-run-it) · [Techno Ravan on YouTube](https://www.youtube.com/@techno_ravan)
 
-Turn a folder of recorded takes into a reel, or develop an idea into a script before recording. Review the script, comment on individual scenes and frames, choose music, then approve the finished direction before rendering.
+</div>
+
+Turn numbered takes into a captioned reel, or start with an idea and write the shooting plan first. Choose effects, leave feedback on individual frames and listen to music against your voice before you approve the render.
+
+Built by **Nayan Vekariya (Techno Ravan)**, using [Vibha Ramprakash’s open-source video effects engine](https://github.com/Vibha-Ramprakash/claude-video-effects).
+
+![Studio dashboard showing reel covers and saved demonstration projects](docs/images/dashboard.jpg)
+
+*The local library brings together your reels, covers, downloads and posting copy. The screenshot uses synthetic demonstration projects.*
 
 ## Start with your AI assistant
 
-Open a coding assistant that can access files and run commands on your computer, such as Codex or Gemini CLI. Paste this message:
+Paste this into a coding assistant with access to your computer’s files and terminal, such as Codex or Gemini CLI.
 
 ```text
 Install Ravan Reel Studio from https://github.com/Nayan014/ravan-reel-studio and open the demo dashboard on my computer.
 ```
 
-The first launch downloads the tools it needs and loads the bundled demo. Your computer may ask you to approve an installation. When the dashboard opens, press **Play** to watch the six-second demo.
-
-If you already have the repository open in a terminal, run `npm start`. For manual installation or dashboard-only use, see the [setup guide](docs/SETUP.md).
-
-## What you can do
-
-- Apply **51 talking-head effects and 3 bonus looks** from the bundled catalogue.
-- Plan short recording takes, transcribe speech locally and trim recordings.
-- Review HTML plans and actual frames with feedback attached to the right revision.
-- Finish new reels with **Vibha → Hyperframes**: effects, one spoken-caption layer, music and sound cues.
-- Match source resolution and frame rate up to portrait **4K/60**, including fractional rates. Mixed sources require an explicit choice.
-- Browse reels, covers, posting copy and downloads in a local dashboard.
-
-Existing Remotion projects remain compatible. Creation and editing happen with your coding agent; the dashboard collects review feedback and does not run AI on its own.
-
-## A look inside
-
-![Ravan Reel Studio library with demonstration projects](docs/images/dashboard.jpg)
-
-*Actual dashboard with synthetic demonstration projects: colour-card footage, tones and a credited upstream example voice. No personal recordings are shown. The bundled six-second demo described below is installed by `npm start`; this screenshot also shows separate test projects.*
-
-<details>
-<summary>See feedback beneath actual preview frames</summary>
-
-![Ravan Reel Studio frame feedback](docs/images/review.jpg)
-
-*This review example uses colour cards and tones. Its sample captions demonstrate the interface; they are not transcriptions of the tones.*
-
-</details>
-
-| Original effects: orbit | Original effects: spotlight | Original effects: glass widgets |
-| --- | --- | --- |
-| <img src="skills/effects/assets/reference-previews/orbit.jpg" width="170" alt="Orbit effect reference"> | <img src="skills/effects/assets/reference-previews/spotlight.jpg" width="170" alt="Spotlight effect reference"> | <img src="skills/effects/assets/reference-previews/glass-widgets.jpg" width="170" alt="Glass widgets effect reference"> |
-
-*Bundled effect references, not effects applied to your footage. [Browse the illustrated guide](docs/Video_Effects_Visual_Guide.pdf).*
-
-## Can my laptop run it?
-
-These are **practical starting recommendations, not benchmarked minimum requirements**. A desktop with comparable specifications also works.
-
-| Use | Processor guidance | RAM | Suggested free SSD space |
-| --- | --- | ---: | ---: |
-| Dashboard and reviewing files | Modern laptop supporting Node.js | 8 GB | Space for your media |
-| Short 1080p reels | Apple Silicon or a modern multicore Intel/AMD CPU | 16 GB | 20 GB+ |
-| 4K/60 reels | Apple Silicon Pro-class or a strong modern multicore CPU | 32 GB+ | 50 GB+ |
-
-Rendering space is **additional to original recordings**. Copied sources, intermediate videos, actual-frame previews, model downloads and caches consume more disk space. Longer takes and complex effects increase memory use and render time; real-time rendering is not promised.
-
-The reference machine is **Apple M4 Pro with 48 GB memory**. This is the tested configuration, not a requirement. macOS is validated; Windows and Linux have setup guidance but have not been validated end to end. The default transcription backend runs on CPU; a dedicated NVIDIA GPU is not required for that path. See the [upstream CPU implementation](https://github.com/SYSTRAN/faster-whisper#small-model-on-cpu) and [setup details](docs/SETUP.md).
+On the first launch, the studio downloads its tools and opens the bundled demo in your browser. Press **Play** to watch the six-second reel. If you already have a local checkout, run `npm start` from the project folder.
 
 ## Create your first reel
 
-### 1. Add your recordings
+1. **Bring an idea or recordings.** For an idea, send `/wf-reel-plan` to draft the script and shooting plan. For existing recordings, put `1.mp4`, `2.mp4` and your other numbered takes in `inputs/my-first-reel/`, then send `/wf-reel`.
+2. **Review the cut.** Read the transcribed speech alongside the scene plan. Pick from 51 effects and three bonus looks, then comment directly beneath any preview frame you want to change.
+3. **Choose the sound and approve.** Audition the music with your voice. Once you approve the frames and audio, Vibha renders the effects and Hyperframes assembles the clips, captions, music and sound cues. The finished export appears in the dashboard.
 
-Create a folder such as:
+The workflow matches recording quality up to portrait **4K/60**, including fractional frame rates. When takes differ, you choose the output profile.
 
-```text
-inputs/my-first-reel/
-  1.mp4
-  2.mp4
-  3.mp4
-```
+<details>
+<summary><strong>See a frame review and three sample effects</strong></summary>
 
-Use unique numbered filenames. Keep your original recordings; the workflow imports copies. Videos and generated output are ignored by Git.
+![Review page with feedback fields beneath individual preview frames](docs/images/review.jpg)
 
-### 2. Start the reel workflow
+| Orbit | Spotlight | Glass widgets |
+| :---: | :---: | :---: |
+| <img src="skills/effects/assets/reference-previews/orbit.jpg" width="170" alt="Orbit reference"> | <img src="skills/effects/assets/reference-previews/spotlight.jpg" width="170" alt="Spotlight reference"> | <img src="skills/effects/assets/reference-previews/glass-widgets.jpg" width="170" alt="Glass widgets reference"> |
 
-Use an agent with local file and terminal access. Ask it to **read `AGENTS.md`**, then send:
+[Browse the illustrated effects guide](docs/Video_Effects_Visual_Guide.pdf)
 
-```text
-/wf-reel
-```
-
-Choose the recording folder, confirm the speech, choose treatments, review the plan and actual frames, and audition music. Full rendering waits for approval of the current frames and audio. If slash commands are unavailable, say **“Read AGENTS.md and use the wf-reel skill.”**
-
-Starting without footage? Use **`/wf-reel-plan`** to choose an idea, review the script and shooting plan, then attach numbered recordings later.
-
-Finished reels, previews and posting copy live in `outputs/reels/`. Single-video edits live in `outputs/edits/`. Feedback is processed by the active agent or collected when you resume. [Full reel workflow →](docs/COMBINED_REEL_WORKFLOW.md)
+</details>
 
 ## Commands
 
@@ -108,21 +62,29 @@ Use a shortcut directly, or send `/wf` to open the numbered menu.
 
 `/wf reel`, `/wf reel-plan`, `/video-edit` and `/effects` remain available. Command discovery varies by agent; reading the shared instructions is the portable fallback.
 
-## Local processing, privacy and costs
+## Can my laptop run it?
 
-Speech analysis, trimming and video rendering run locally in the default reel workflow. Your chosen coding agent may use an external AI service and may incur subscription or API costs. Idea research can use the internet. Do not assume media or chat attachments stay on your device merely because rendering is local.
+| Use | Processor guidance | RAM | Suggested free SSD space |
+| --- | --- | ---: | ---: |
+| Dashboard and reviewing files | Modern laptop supporting Node.js | 8 GB | Space for your media |
+| Short 1080p reels | Apple Silicon or a modern multicore Intel/AMD CPU | 16 GB | 20 GB+ |
+| 4K/60 reels | Apple Silicon Pro-class or a strong modern multicore CPU | 32 GB+ | 50 GB+ |
 
-The first run downloads packages, a browser if needed, and a speech model. Once cached, the default media-processing steps can run without a model API. Caches are reused for unchanged speech, clips and effects. No social account, voice-generation service or automatic publishing is required.
+These figures are practical starting points. Allow the suggested free space in addition to your original footage. Long takes and complex effects need more time and memory.
 
-## Help and development
+Tested on macOS with an **Apple M4 Pro and 48 GB of memory**. Windows and Linux setup instructions are available, with end-to-end validation pending. Default speech recognition runs on the CPU. [Setup and troubleshooting](docs/SETUP.md) · [Upstream CPU documentation](https://github.com/SYSTRAN/faster-whisper#small-model-on-cpu)
 
-- **Empty library:** expected with dashboard-only setup. Run `npm start` for the bundled demo, or create a project with your agent.
-- **Port busy:** set `DASHBOARD_PORT=4174` before `npm run dashboard`.
-- **Missing speech dependency:** rerun `bash skills/effects/scripts/setup.sh --reel`.
-- **Changed plan or frames:** generate a fresh review and approve that revision.
-- **Slow rendering:** close heavy apps, keep takes short and use an SSD. Changing music reuses valid effect clips; changing output quality requires new video artifacts.
+Speech recognition, trimming and rendering run locally. Your coding assistant may use an external service and incur charges. Git ignores your recordings and generated exports.
 
-See [setup and troubleshooting](docs/SETUP.md), [review controls](docs/WORKFLOW_REVIEW.md), and [contributing and verification](CONTRIBUTING.md).
+## About the creator
+
+**Nayan Vekariya** builds Ravan Reel Studio and publishes tutorials as **Techno Ravan**. Follow the channel for tutorials or connect with Nayan through the links below.
+
+[YouTube](https://www.youtube.com/@techno_ravan) · [Website](https://vekariya.ai.studio/) · [LinkedIn](https://www.linkedin.com/in/nayan-vekariya/) · [Instagram](https://www.instagram.com/techno_ravan/)
+
+## Guides and contributions
+
+[Reel workflow](docs/COMBINED_REEL_WORKFLOW.md) · [Review controls](docs/WORKFLOW_REVIEW.md) · [Contributing](CONTRIBUTING.md)
 
 ## Credits and licence
 

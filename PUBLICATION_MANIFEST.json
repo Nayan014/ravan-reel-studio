@@ -1,7 +1,7 @@
 {
   "project": "Ravan Reel Studio",
   "repository_name": "ravan-reel-studio",
-  "source_bytes": 24564871,
+  "source_bytes": 24562444,
   "files": [
     {
       "path": ".agents/skills/effects",
@@ -148,8 +148,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 8598,
-      "sha256": "2e4b0f53f886688d2548154e817c52507cc5e208c03284331388266749791344"
+      "bytes": 6171,
+      "sha256": "5a3e4861b4c13489d0eb5279afb946c94007343433849a6413dfbb1edb1a9ef6"
     },
     {
       "path": "SOURCE.json",
