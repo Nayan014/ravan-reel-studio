@@ -4,7 +4,7 @@
 
 **Create, review and finish reels locally with your coding agent.**
 
-[Get started](#start-with-your-ai-assistant) · [Commands](#commands) · [Laptop guide](#can-my-laptop-run-it) · [Techno Ravan on YouTube](https://www.youtube.com/@techno_ravan)
+[🚀 Get started](#start-with-your-ai-assistant) · [⌨️ Commands](#commands) · [💻 Laptop guide](#can-my-laptop-run-it) · [▶️ Techno Ravan on YouTube](https://www.youtube.com/@techno_ravan)
 
 </div>
 
@@ -77,6 +77,8 @@ Tested on macOS with an **Apple M4 Pro and 48 GB of memory**. Windows and Linux 
 Speech recognition, trimming and rendering run locally. Your coding assistant may use an external service and incur charges. Git ignores your recordings and generated exports.
 
 ## About the creator
+
+<a href="https://vekariya.ai.studio/"><img src="https://github.com/Nayan014.png?size=240" width="112" height="112" alt="Nayan Vekariya’s GitHub profile image"></a>
 
 **Nayan Vekariya** builds Ravan Reel Studio and publishes tutorials as **Techno Ravan**. Follow the channel for tutorials or connect with Nayan through the links below.
 
