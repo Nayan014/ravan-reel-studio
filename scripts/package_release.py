@@ -20,6 +20,7 @@ PUBLIC_AUDIO_DIRS={'tools/techno-reel/public/music','tools/techno-reel/public/sf
 
 def excluded(path):
     """Do not infer private footage from its extension: credited library media is public."""
+    if path.parts and path.parts[0]=='references':return True
     name=path.name.lower()
     if path.suffix.lower() in VIDEO_TYPES and path.as_posix()!='examples/demo/export/demo.mp4':return True
     if path.suffix.lower() in AUDIO_TYPES and path.parent.as_posix() not in PUBLIC_AUDIO_DIRS:return True
@@ -84,12 +85,12 @@ def package(destination,root=ROOT):
         else:
             shutil.copy2(src,out);content=out.read_bytes();size+=len(content)
             records.append({'path':rel.as_posix(),'bytes':len(content),'sha256':hashlib.sha256(content).hexdigest()})
-    for name in ['inputs','outputs']:
+    for name in ['inputs','outputs','references']:
         (destination/name).mkdir();(destination/name/'.gitkeep').touch()
         records.append({'path':f'{name}/.gitkeep','bytes':0,'sha256':hashlib.sha256(b'').hexdigest()})
     manifest={'project':'Ravan Reel Studio','repository_name':'ravan-reel-studio','source_bytes':size,
               'files':sorted(records,key=lambda r:r['path']),
-              'excluded':'Private recordings, outputs, personal documents, environments, caches and credential files. Inspect source text separately before publishing.'}
+              'excluded':'Private recordings, reference media and analysis, outputs, personal documents, environments, caches and credential files. Inspect source text separately before publishing.'}
     (destination/'PUBLICATION_MANIFEST.json').write_text(json.dumps(manifest,indent=2)+'\n')
     return {'destination':str(destination),'files':len(records),'source_bytes':size,'manifest':str(destination/'PUBLICATION_MANIFEST.json')}
 

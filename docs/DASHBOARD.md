@@ -87,3 +87,7 @@ render code, original footage, and approval files are not changed by browsing.
 ## YouTube videos
 
 The Videos filter discovers planned and exported YouTube projects under `outputs/videos/`. Plans, feedback, actual preview frames, music auditions, native Hyperframes Studio and downloads follow the same review stages as reels. Start with `/wf-video-plan`; use `/wf-reel-plan` for reels. The quick single-video editor remains `/wf-video`.
+
+## Reference style notes
+
+A selected reference appears as a saved style record and in production review summaries. Its pinned profile and readable notes are available in project supporting files. Original reference videos remain in the private root references/ folder.

@@ -1,7 +1,7 @@
 {
   "project": "Ravan Reel Studio",
   "repository_name": "ravan-reel-studio",
-  "source_bytes": 24650883,
+  "source_bytes": 24679835,
   "files": [
     {
       "path": ".agents/skills/effects",
@@ -114,8 +114,8 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 933,
-      "sha256": "5b8f4e8bf5ae8610b0fe3cbff2c95f12e821c289117da637daeb65c0ec645cd7"
+      "bytes": 967,
+      "sha256": "574f9ad8419419bc06348c84906f4b38934dc3ec3949103369ccb67bd4dfb44d"
     },
     {
       "path": ".nvmrc",
@@ -124,8 +124,8 @@
     },
     {
       "path": "AGENTS.md",
-      "bytes": 4914,
-      "sha256": "3eab541898d170f435161454b64dda23201c24c166384b63d7a79e44e9a3f50f"
+      "bytes": 5340,
+      "sha256": "aa5b3e6bfddfa2bc0eb2031b358c612dc441a1b1ece05ab564873e5765f28a7d"
     },
     {
       "path": "CLAUDE.md",
@@ -149,13 +149,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 8136,
-      "sha256": "f517fefbe3bdffaf7e24ae8b7c958efdcb8fd647578b4e0f88448bbad2197301"
+      "bytes": 9268,
+      "sha256": "cb5f578636381fdd2b6d9cd90bc1c847a78a0c7950dcff96282b673618c1f5ed"
     },
     {
       "path": "SOURCE.json",
-      "bytes": 7418,
-      "sha256": "dd5164dc0a70fb380dca1f8e783b5d63a2ada429f568e885245c406f0c82362c"
+      "bytes": 7674,
+      "sha256": "6369e26f1c1a5d3060f50717561253cce4a0613615ece7b26335f5a08bb14827"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -199,8 +199,8 @@
     },
     {
       "path": "dashboard/review.js",
-      "bytes": 11246,
-      "sha256": "6005fd5d4d8f5afa9e97792001f3ff959d9e50ac6d1b6acd5082c9b0c56d8ece"
+      "bytes": 11684,
+      "sha256": "4979f9fe0b0ff6dd4566d771e3a53513e83702008b1b29d270f0169bf33ba619"
     },
     {
       "path": "dashboard/style.css",
@@ -214,8 +214,8 @@
     },
     {
       "path": "docs/DASHBOARD.md",
-      "bytes": 5253,
-      "sha256": "81309d624e8b5b72ae31a4459bbc8390413f6eb987bb458b42612d4bf88ae529"
+      "bytes": 5523,
+      "sha256": "e5136743f6550275ba0d59ba41a59da5effe2a4eff37e1b377de3a5ba6ff45b7"
     },
     {
       "path": "docs/REEL_EFFECT_EXTENSIONS.md",
@@ -224,8 +224,13 @@
     },
     {
       "path": "docs/REEL_PLAN_FORMAT.md",
-      "bytes": 7857,
-      "sha256": "23c98a81df832480334a1fbbdab102a40507908c6135ec0acf9e1233a0161bc4"
+      "bytes": 8479,
+      "sha256": "7f0fd6ebe928ad7945ef833e43f246fe6913cce286ffc61130bb86f37070b3f1"
+    },
+    {
+      "path": "docs/REFERENCE_STYLES.md",
+      "bytes": 3612,
+      "sha256": "36dc64c0632dcb206cde16f69835cf73a3fa47fb57ec82d1fde91ccaec90789b"
     },
     {
       "path": "docs/SETUP.md",
@@ -433,6 +438,11 @@
       "sha256": "a94f8617fa08a12c1c170b771ea3982ec685b2cef1fadf2e12f2e20d7c7fedcd"
     },
     {
+      "path": "references/.gitkeep",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
       "path": "scripts/audio-library.mjs",
       "bytes": 2536,
       "sha256": "6f3da8a1e9a82e140563c153bcb0876911b0cd3224e96d124d51573714c642ef"
@@ -444,8 +454,8 @@
     },
     {
       "path": "scripts/dashboard-library.mjs",
-      "bytes": 10028,
-      "sha256": "1328adbb701257462ed4757831c74f3adbfcec1f8b12d583d3c179870c69a4a7"
+      "bytes": 10072,
+      "sha256": "84f6822e213b7736521dfe9ad8cc6802157093bf5b42cba2647a97dff3cf1a94"
     },
     {
       "path": "scripts/dashboard.mjs",
@@ -469,8 +479,8 @@
     },
     {
       "path": "scripts/package_release.py",
-      "bytes": 5768,
-      "sha256": "4e460bd43d8374ffb5c95c2d58b7a96670575ccc5c1ee1d7601dbce19be76d6a"
+      "bytes": 5873,
+      "sha256": "2c4ab2dcd453fa9d1a00b8126b07bc72661df2538b3218853313c0d8d8bd22ac"
     },
     {
       "path": "scripts/prepare-speech.py",
@@ -489,13 +499,18 @@
     },
     {
       "path": "scripts/reel_workflow.py",
-      "bytes": 37659,
-      "sha256": "0ffb516edfe06175f89f93225dea27e4201888192a508d84c6f83e66ab21d511"
+      "bytes": 38295,
+      "sha256": "4fb0374931689ae9102b433bd2e58b5aeb40a2391d6f50e94b9c4475da048a79"
+    },
+    {
+      "path": "scripts/reference_styles.py",
+      "bytes": 13893,
+      "sha256": "62b6a0ac7d3a4fe138bc3f93256f44970a477fa0b3e3d78d62c6cc8abf84ba10"
     },
     {
       "path": "scripts/review-store.mjs",
-      "bytes": 15851,
-      "sha256": "cc0cb420da069c3f1a2a0d49c74ac5f9df04183b0c44512c38237d2c2431e055"
+      "bytes": 16210,
+      "sha256": "550460fdb7083b119ee5d6caaeb348e5d0c8d875992e621e735eac7351402f75"
     },
     {
       "path": "scripts/review.mjs",
@@ -1024,13 +1039,18 @@
     },
     {
       "path": "skills/wf-reel-plan/references/planning.md",
-      "bytes": 5197,
-      "sha256": "b4dee2273a9b96a9aeb35e9b2f4d4cc08b040265ad785ce1ec16f7b72a2d2adc"
+      "bytes": 6408,
+      "sha256": "470f4ccd0fdedc03d720665f913b33e6c516ab51dd90118ad1e98ccb9f76996c"
     },
     {
       "path": "skills/wf-reel-plan/references/production.md",
-      "bytes": 6210,
-      "sha256": "fe353d9b5b49682cdc89be30b47a8eaf3cb8ed44ecb9246b4d76f9e4b4c55f8c"
+      "bytes": 6584,
+      "sha256": "6c80149a99ad640f7cc8e19ee35bac9aa5fb00ae5b852eca95311af8fd94d579"
+    },
+    {
+      "path": "skills/wf-reel-plan/references/reference-style.md",
+      "bytes": 5540,
+      "sha256": "018fef9b8e4d74d386d103bbeb98448c07c9dbf35fd66f6d7dee17ef86de650d"
     },
     {
       "path": "skills/wf-resume/SKILL.md",
@@ -1903,5 +1923,5 @@
       "sha256": "340258ba4ad95f7acea99c40e82e399d9c3e857a6d1d2b2e2d5fedc15b389cb0"
     }
   ],
-  "excluded": "Private recordings, outputs, personal documents, environments, caches and credential files. Inspect source text separately before publishing."
+  "excluded": "Private recordings, reference media and analysis, outputs, personal documents, environments, caches and credential files. Inspect source text separately before publishing."
 }

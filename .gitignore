@@ -7,6 +7,8 @@ outputs/*
 !outputs/.gitkeep
 inputs/*
 !inputs/.gitkeep
+references/*
+!references/.gitkeep
 **/node_modules/
 .env
 .env.*

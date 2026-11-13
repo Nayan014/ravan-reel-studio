@@ -54,3 +54,7 @@ The final approval page includes recommended music preselected, playable alterna
 Use `/wf-reel-plan` for portrait reels and `/wf-video-plan` for landscape YouTube videos. Both accept ideas, three suggested ideas, existing footage and saved projects. Ask for topic and intended length when starting from an idea; ask for a folder when footage already exists. Bare folder names resolve under inputs/. Continue in the selected command through final production.
 
 YouTube scripts include a hook, sections and a conclusion, with shooting cues and the full script before the integrated scene table. Keep approved script text when mapping continuous footage into several source ranges. The video profile is 16:9, up to 3840×2160 at 60 FPS; preserve fractional rates, confirm mixed profiles and show crop or fit. Adapt selected effects/captions for landscape actual-frame review. New videos use the same feedback, music and approval rules as reels.
+
+## Optional reference style
+
+Once recordings are ready, the two planning commands may offer videos from root `references/`, with a No reference choice. An empty library skips the question. Reuse the saved project choice on resume. Show the selected reference filename/summary and describe each proposed reference-inspired treatment in the scene table using `reference_note`. Observations are cached with evidence and uncertainty, then pinned to the project; use those notes instead of repeatedly watching the reference. The normal effect-selection and actual-frame/audio approval stages apply. See `REFERENCE_STYLES.md`.

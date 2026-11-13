@@ -51,7 +51,7 @@ function context(root, kind, id, stage, document) {
     try { const path = mediaPath(root, name); files.push([name, hash(readFileSync(path))]); return parse(path); }
     catch { return null; }
   };
-  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[];
+  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[], referenceStyle=null;
   if (kind !== 'plans') {
     const base = `outputs/${kind}/${id}`;
     const plan = add(`${base}/plan.json`), session = add(`${base}/session.json`);
@@ -84,6 +84,11 @@ function context(root, kind, id, stage, document) {
     const preview = kind === 'edits' ? session?.preview : add(`${base}/preview.json`);
     if (!plan && !session) throw new ReviewError('A saved workflow plan or session is required.', 404);
     if(plan) files.push(['project-type',plan.project_type||'reel']);
+    if(plan?.reference_style){
+      const ref=plan.reference_style;
+      referenceStyle={name:String(ref.name||''),summary:String(ref.summary||'')};
+      if(typeof ref.profile==='string'&&ref.profile.startsWith('assets/reference-styles/')) add(`${base}/${ref.profile}`);
+    }
     title = plan?.title || session?.source?.split('/').at(-1) || title;
     outputProfile=plan?.output_profile||null;sourceProfiles=plan?.source_profiles||[];
     audio=plan?.pipeline_version===2?{...plan.audio,mixSample:preview?.mix_sample?mediaUrl(slash(relative(root,preview.mix_sample))):null}:null;
@@ -96,7 +101,7 @@ function context(root, kind, id, stage, document) {
         : `Displayed source ${source.width}×${source.height} · crop ${Math.round(outputProfile.width/scale)}×${Math.round(outputProfile.height/scale)} · scale ${scale.toFixed(3)}×`
         : '';
       return { id: String(s.id), text: String(s.say || s.expected_say || ''),timeline:[start,cursor],
-      source:s.source||'Awaiting numbered recording',shootingNote:s.shooting_note||'',clip:s.clip||null,
+      source:s.source||'Awaiting numbered recording',shootingNote:s.shooting_note||'',referenceNote:String(s.reference_note||''),clip:s.clip||null,
       captions:s.caption_pages||[],effects:s.vibha||{},finish:s.hyperframes_note||'Hyperframes assembly, captions and audio',
       sourceFrame:s.source_frame?mediaUrl(`${base}/${s.source_frame}`):null,focus:s.focus||[.5,.4],framing };});
     if(stage==='frames')for(const file of preview?.audio_files||[]){
@@ -142,7 +147,7 @@ function context(root, kind, id, stage, document) {
     files.push(['draft-text-layers',hash(JSON.stringify(design))]);
     if (!scenes.length) scenes=[{id:'01',text:'Draft text design'}];
   }
-  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio, fingerprint: hash(JSON.stringify([stage, files])) };
+  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio,referenceStyle, fingerprint: hash(JSON.stringify([stage, files])) };
 }
 
 export function prepareReview(root, { kind, id, stage = 'plan', document = null }) {

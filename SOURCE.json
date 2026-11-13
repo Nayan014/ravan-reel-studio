@@ -20,7 +20,8 @@
     "Ravan Reel Studio public packaging: prominent attribution, MIT project licence, local hardware/setup guidance, opt-in reel transcription dependencies and private-media exclusions",
     "Explicit Git/publication exclusions for private media outside input/output folders; pre-rendered synthetic colour-card demo and safe Node-only demo installer",
     "Single npm start launcher: isolated compatible Node when needed, missing system prerequisites through supported package managers, cached effects/speech/Hyperframes setup, safe demo installation, workspace-aware local dashboard reuse and browser opening",
-    "Unified reel-plan and YouTube video-plan entry points, landscape source-matched production, continuous-source scene mapping and Videos dashboard/review support; public wf-reel command retired. Verification deferred by creator request."
+    "Unified reel-plan and YouTube video-plan entry points, landscape source-matched production, continuous-source scene mapping and Videos dashboard/review support; public wf-reel command retired. Verification deferred by creator request.",
+    "Optional private reference library in both planning commands, local bounded frame/cut sampling, reusable content-hashed agent style profiles and pinned per-project style notes. Reference media excluded from publication; testing deferred by creator."
   ],
   "upstream_file_sha256": {
     "scripts/setup.sh": "b84c0e6b55e0428b37778fa9a72d3744b37c8e4062fbd375bd9754fd6702f10b",

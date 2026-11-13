@@ -128,7 +128,7 @@ function projectData(root, kind, id) {
   const previews = recordedFrames.length ? recordedFrames : all.filter(f => f.type === 'image' && /^(previews\/|preview-|analysis\/|working\/analysis\/)/.test(f.name));
   const records = [
     ['Workflow stage', session ? { stage: session.stage } : null],
-    ['Saved approval', approval || session?.approval], ['Saved checks', checks],
+    ['Reference style', plan?.reference_style], ['Saved approval', approval || session?.approval], ['Saved checks', checks],
     ['Saved self-review', selfReview], ['Export record', exported], ['Package provenance', provenance],
   ].filter(([, data]) => data).map(([label, data]) => ({ label, data }));
   const title = typeof plan?.title === 'string' ? plan.title : session?.source ? basename(String(session.source), extname(String(session.source))) : id.replace(/[-_]/g, ' ');

@@ -56,6 +56,20 @@ Output follows the recordings up to **4K/60**: portrait 2160×3840 for reels or 
 
 </details>
 
+## Use a video as a style reference
+
+Drop a video whose editing style you like into `references/`, then run `/wf-reel-plan` or `/wf-video-plan`. Choose **I have footage** if your own recordings are ready. The agent will offer the reference filenames and a **No reference** option when it prepares the production plan.
+
+```text
+inputs/       Your recordings
+references/   Videos whose editing style you want to draw from
+outputs/      Your projects and finished exports
+```
+
+The agent samples the selected reference locally, records observed pacing, text, colours, framing and transitions, then uses those notes to propose treatments for your scenes. Saved analysis is reused across projects. The first interpretation uses your agent's normal image-reasoning credits; subsequent runs read the cached style notes. Reference videos and cached analysis stay ignored by Git.
+
+Already have footage? The planning command skips idea and pre-recording script steps. Reference-inspired effects still appear in the production plan and actual-frame review. [Reference workflow details](docs/REFERENCE_STYLES.md)
+
 ## Commands
 
 Send these shortcuts directly to your coding assistant.
@@ -101,7 +115,7 @@ Tested on macOS with an **Apple M4 Pro and 48 GB of memory**. Windows and Linux 
 
 Speech recognition, trimming and rendering run locally. Your coding assistant may use an external service and incur charges. Git ignores your recordings and generated exports.
 
-> The two planning entry points and landscape YouTube pipeline are implemented. Workflow testing is pending.
+> The planning entry points, landscape YouTube pipeline and optional reference-style workflow are implemented. Workflow testing is pending.
 
 ## Guides and contributions
 

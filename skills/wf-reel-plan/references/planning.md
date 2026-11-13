@@ -8,7 +8,7 @@ Offer four clickable choices: **I have an idea**, **Suggest ideas**, **I have fo
 
 - **Idea:** ask for topic and intended length. Keep the creator's language/channel preferences. For YouTube, build an opening hook, ordered sections and a conclusion, with manageable recording takes and clear shooting cues. Reels use a concise hook and short takes.
 - **Suggestions:** offer exactly three ideas, each with a hook and angle, based on channel context. Research current factual claims using primary sources. Let the creator select an idea and intended length.
-- **Footage:** ask for a folder name or path. A bare name resolves inside `inputs/`; `inputs/name` is studio-relative. Run `init --kind KIND --project SLUG --folder FOLDER --title TITLE`, then follow the production reference. A single continuous recording may have any filename; multiple takes use unique numbered filenames. Base the production plan on actual transcribed speech, not a newly invented script.
+- **Footage:** ask for a folder name or path. A bare name resolves inside `inputs/`; `inputs/name` is studio-relative. Run `init --kind KIND --project SLUG --folder FOLDER --title TITLE`, then follow the production reference. A single continuous recording may have any filename; multiple takes use unique numbered filenames. Base the production plan on actual transcribed speech. This route skips idea selection and writing a pre-recording script. After speech analysis and scene mapping, use the optional reference-style step in the production reference.
 - **Resume:** show saved projects only from `outputs/KIND/`. Run `status --kind KIND --project SLUG`, read pending feedback, and continue its recorded phase. Drafts await script review or attached takes; recorded projects continue through production. Do not restart or overwrite a saved project.
 
 ## Idea to recorded production
@@ -18,7 +18,7 @@ Offer four clickable choices: **I have an idea**, **Suggest ideas**, **I have fo
 3. Run `node scripts/review.mjs prepare --kind KIND --id SLUG --stage script --document outputs/KIND/SLUG/review.html`. Open the returned URL. Handle full-script and per-scene feedback in that review. Record explicit approval using `approve-script --kind KIND --project SLUG --message "Exact user approval"`.
 4. Ask the creator to record the takes and provide their folder. Run `attach --kind KIND --project SLUG --folder FOLDER`. Numbered takes map to approved scene numbers. Never overwrite originals or replace the approved script.
 5. If a continuous recording covers several approved scenes, obtain the scene boundaries from real audio/transcription and create a mapping JSON `{"scenes":[{"id":"01","source":"recording.mp4","clip":[0,12.4]},{"id":"02","source":"recording.mp4","clip":[12.4,30]}]}`. Use `attach ... --mapping ABSOLUTE_MAPPING` to attach one source to several scenes. Do not guess time ranges from expected dialogue.
-6. Continue `skills/wf-reel-plan/references/production.md` at quality inspection within the same planning command. Script approval does not approve unseen frames, effects or final audio.
+6. Once footage is attached, use the optional reference-style step before choosing treatments. Continue `skills/wf-reel-plan/references/production.md` at quality inspection within the same planning command. Script approval does not approve unseen frames, effects or final audio.
 
 ## Continuous recordings and scene revisions
 
@@ -27,3 +27,9 @@ After importing footage, `analyze --kind KIND --project SLUG` caches the source 
 All helper commands require `--kind KIND` when working on YouTube. Choose `profile --kind KIND --project SLUG --width W --height H --fps RATE` when matching sources cannot select a profile. For mismatched orientations, discuss crop versus fit, set `framing` to `crop` or `fit` on each shot, and review the actual result. Portrait reels default to crop; YouTube defaults to a centred crop unless the creator selects fit. Fit preserves the whole picture with padding. Confirm the proposed framing before actual-frame approval.
 
 Keep feedback linked to script, scene or actual frame and to its review revision. Use Hyperframes Studio for direct visual edits. Keep cached speech, effect clips and valid previews where their inputs are unchanged. Process saved feedback on resume. Wait at most once for 45 seconds when presenting a review, then yield and collect submissions on resume.
+
+## Skip answered questions and reuse reference decisions
+
+A supplied folder enters the footage path directly. Existing footage skips idea generation, script drafting and recording instructions. Supplied topic, language, duration, chosen reference or saved project details skip those corresponding questions. Ask only for genuinely missing information in the current stage. If footage has not been attached, wait until it exists before offering reference styles.
+
+Use `skills/wf-reel-plan/references/reference-style.md` after footage analysis and scene mapping, before production-plan approval. This applies to both reel and YouTube projects. Reuse `reference_selection: selected` or `none` on resume. A request to change the reference reopens that choice. If no reference videos exist, continue without asking a reference question. Keep an existing selected snapshot when the library file is later renamed, removed or changed, unless the user requests a different style.

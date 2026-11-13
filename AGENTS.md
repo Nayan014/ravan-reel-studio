@@ -37,3 +37,7 @@ For `/wf` commands, read `skills/wf/SKILL.md` and route there. Bare `/wf` shows 
 - Report the output file path and ask the user to watch the result before posting.
 
 For new skills, add their complete package under `skills/` and update the index above. Do not introduce a dependency on a particular provider or a home directory installation.
+
+## Reference styles
+
+Both planning commands use `skills/wf-reel-plan/references/reference-style.md` once footage is imported/attached. Offer reference filenames from root `references/` only when videos exist and no project choice is saved. Skip idea/script preparation for supplied footage. Reuse content-hashed analysis and pinned project style notes. The reference library is private and stays out of Git/public packaging.

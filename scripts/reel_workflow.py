@@ -475,6 +475,8 @@ def make_html(folder,plan,output=None,images=None):
         if decision.get('effects'):
             fx='<br>'.join(f'<b>#{esc(str(e["id"]))} — {esc(catalogue()[str(e["id"]).lower()]["name"])}</b><p>{e["start"]:.2f}–{e["end"]:.2f}s within this shot</p>'
                           + ''.join(f'<p>{esc(line)}</p>' for line in option_text(e.get('options',{}))) for e in decision['effects'])
+        if shot.get('reference_note'):
+            fx+=f'<p><b>Reference treatment:</b> {esc(str(shot["reference_note"]))}</p>'
         graphic=shot['remotion']; mg='Pending your choice' if graphic['status']=='pending' else 'None'
         if graphic['status']=='pending' and graphic.get('suggestion'):
             suggestion=graphic['suggestion']
@@ -491,6 +493,9 @@ def make_html(folder,plan,output=None,images=None):
     template=(STUDIO/'skills/wf-reel-plan/assets/review-template.html').read_text()
     if plan.get('renderer')=='hyperframes':
         template=template.replace('Remotion graphic','Hyperframes finish').replace('<b>Remotion:</b> graphics made with code','<b>Hyperframes:</b> captions and final assembly')
+    reference=plan.get('reference_style')
+    if reference:
+        takes.append('<aside><h3>Reference style · '+esc(str(reference['name']))+'</h3><p>'+esc(str(reference['summary']))+'</p><p>Style notes guide the proposed treatments below. Review their actual appearance in your preview frames.</p></aside>')
     result=template.replace('{{TITLE}}',esc(plan['title'])).replace('{{CHANNEL}}',esc(plan.get('channel','Techno Ravan')))
     result=result.replace('{{TAKES}}',''.join(takes)).replace('{{ROWS}}',''.join(rows))
     if not plan.get('visual_selection'):
@@ -501,7 +506,9 @@ def make_html(folder,plan,output=None,images=None):
     else:
         summary=f'{cursor:.1f}s planned · {human:.1f}s you / {cursor-human:.1f}s full-screen graphics · final render requires your approval'
     quality=plan.get('output_profile')
-    if quality: summary+=f' · Portrait {quality["width"]}×{quality["height"]} · {quality["fps"]} FPS · crop reviewed in actual frames'
+    if quality:
+        orientation='Landscape' if quality['width']>quality['height'] else 'Portrait'
+        summary+=f' · {orientation} {quality["width"]}×{quality["height"]} · {quality["fps"]} FPS · framing reviewed in actual frames'
     elif plan.get('pipeline_version')==2: summary+=' · output profile pending source inspection / explicit choice'
     result=result.replace('{{SUMMARY}}',summary)
     gallery=''
@@ -591,7 +598,7 @@ def main():
                 'export':read_json(folder/'export.json') if (folder/'export.json').exists() else None}
         if plan.get('pipeline_version')==2:
             record=result['preview']
-            result.update(stage=plan.get('phase'),output_profile=plan.get('output_profile'),quality_choice_required=not bool(plan.get('output_profile')))
+            result.update(stage=plan.get('phase'),output_profile=plan.get('output_profile'),quality_choice_required=not bool(plan.get('output_profile')),reference_selection=plan.get('reference_selection'),reference_style=plan.get('reference_style'))
             if record:result['preview']={k:record.get(k) for k in ['id','review','mix_sample','output_profile']};result['preview']['frames']=len(record.get('frame_details',[]))
     print(json.dumps(result,indent=2))
 
