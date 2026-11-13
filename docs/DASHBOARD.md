@@ -91,3 +91,7 @@ The Videos filter discovers planned and exported YouTube projects under `outputs
 ## Reference style notes
 
 A selected reference appears as a saved style record and in production review summaries. Its pinned profile and readable notes are available in project supporting files. Original reference videos remain in the private root references/ folder.
+
+## Nafay projects
+
+Standalone Nafay edits use renderer nafay under outputs/videos/. The Videos category shows their source, plans, actual frame reviews, voice/effects preview, exports and cover. They use Nafay's graphics editor in chat. Hyperframes Studio is available for Hyperframes projects.

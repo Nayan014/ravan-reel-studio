@@ -78,7 +78,8 @@ Send these shortcuts directly to your coding assistant.
 | --- | --- |
 | `/wf-reel-plan` | Create a portrait reel from an idea, recordings or a saved project |
 | `/wf-video-plan` | Create a landscape YouTube video from an idea, footage or a saved project |
-| `/wf-video` | Quick guided edit of a single video |
+| `/wf-video` | Choose Vibha effects or Nafay graphics for a single video |
+| `/wf-nafay` | Edit one landscape video with Nafay 3D’s motion-graphics styles |
 | `/wf-gallery` | Browse the effect reference pictures |
 | `/wf-effects` | Apply a named effect |
 | `/wf-resume` | Resume a saved single-video edit |
@@ -101,6 +102,12 @@ Send `/wf`, then reply with a menu number. For example, `/wf` followed by **5** 
 
 `/wf reel-plan`, `/wf video-plan`, `/video-edit` and `/effects` remain available. Command discovery varies by agent; reading the shared instructions is the portable fallback.
 
+## Nafay 3D motion graphics
+
+Choose **Nafay motion graphics** in `/wf-video`, or send `/wf-nafay` with your recording. The standalone editor offers seven styles, including Warm Canvas, Clean Tech, Chalk Talk and Data Story, with cut review, actual-frame feedback and source-quality landscape output.
+
+[Explore all seven styles and the editing flow](docs/NAFAY_VIDEO_EDITOR.md) · [Nafay 3D](https://nafay3d.com/)
+
 ## System requirements
 
 | Use | Processor guidance | RAM | Suggested free SSD space |
@@ -115,7 +122,7 @@ Tested on macOS with an **Apple M4 Pro and 48 GB of memory**. Windows and Linux 
 
 Speech recognition, trimming and rendering run locally. Your coding assistant may use an external service and incur charges. Git ignores your recordings and generated exports.
 
-> The planning entry points, landscape YouTube pipeline and optional reference-style workflow are implemented. Workflow testing is pending.
+> The planning, reference-style and standalone Nafay integrations are implemented. Workflow testing is pending.
 
 ## Guides and contributions
 
@@ -128,6 +135,7 @@ Speech recognition, trimming and rendering run locally. Your coding assistant ma
 | Original effects engine and bundled effect catalogue | [Vibha Ramprakash — claude-video-effects](https://github.com/Vibha-Ramprakash/claude-video-effects) |
 | Guided workflows, review integration and Ravan Reel Studio | Techno Ravan |
 | Adapted dashboard and legacy Remotion kit | [Techno Reel by Nayan V.](https://github.com/Nayan014/techno-reel) |
+| Seven motion-graphics styles and standalone AI Video Editor | [Nafay 3D](https://nafay3d.com/) · [YouTube](https://www.youtube.com/@nafay3d) |
 | HTML finishing and Studio editor | [Hyperframes by HeyGen](https://github.com/heygen-com/hyperframes) |
 | Music, sound effects, fonts and tracking models | Individual authors listed in [third-party notices](THIRD_PARTY_NOTICES.md) |
 

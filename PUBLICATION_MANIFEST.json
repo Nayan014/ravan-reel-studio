@@ -1,7 +1,7 @@
 {
   "project": "Ravan Reel Studio",
   "repository_name": "ravan-reel-studio",
-  "source_bytes": 24679835,
+  "source_bytes": 31948357,
   "files": [
     {
       "path": ".agents/skills/effects",
@@ -22,6 +22,10 @@
     {
       "path": ".agents/skills/wf-gallery",
       "symlink": "../../skills/wf-gallery"
+    },
+    {
+      "path": ".agents/skills/wf-nafay",
+      "symlink": "../../skills/wf-nafay"
     },
     {
       "path": ".agents/skills/wf-reel-plan",
@@ -60,6 +64,10 @@
       "symlink": "../../skills/wf-gallery"
     },
     {
+      "path": ".claude/skills/wf-nafay",
+      "symlink": "../../skills/wf-nafay"
+    },
+    {
       "path": ".claude/skills/wf-reel-plan",
       "symlink": "../../skills/wf-reel-plan"
     },
@@ -90,6 +98,11 @@
     {
       "path": ".gemini/commands/wf-gallery.toml",
       "symlink": "../../skills/wf-gallery/adapters/gemini.toml"
+    },
+    {
+      "path": ".gemini/commands/wf-nafay.toml",
+      "bytes": 381,
+      "sha256": "08f349611ebcde9435457eeb0789c2024422c7fad7163a94e5ca04fc5833d28a"
     },
     {
       "path": ".gemini/commands/wf-reel-plan.toml",
@@ -124,8 +137,8 @@
     },
     {
       "path": "AGENTS.md",
-      "bytes": 5340,
-      "sha256": "aa5b3e6bfddfa2bc0eb2031b358c612dc441a1b1ece05ab564873e5765f28a7d"
+      "bytes": 5998,
+      "sha256": "7dfad8e59c26535639274f496fdada4c3f848bc431d9b0522a7d7b68bb176865"
     },
     {
       "path": "CLAUDE.md",
@@ -149,23 +162,28 @@
     },
     {
       "path": "README.md",
-      "bytes": 9268,
-      "sha256": "cb5f578636381fdd2b6d9cd90bc1c847a78a0c7950dcff96282b673618c1f5ed"
+      "bytes": 9906,
+      "sha256": "aaf00719f4e033efba1694f95a9d7e5edf1bc2bbc3aadc70af59467399b6f9de"
     },
     {
       "path": "SOURCE.json",
-      "bytes": 7674,
-      "sha256": "6369e26f1c1a5d3060f50717561253cce4a0613615ece7b26335f5a08bb14827"
+      "bytes": 8005,
+      "sha256": "0d5d0296717c0a09470d499725d0420950be82cf19f04da5c8001be9cf52cc20"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
-      "bytes": 3254,
-      "sha256": "e4195f5340d1c033ae61456cc3763e34a99df197aa8d13233c66b2cb1d1fe389"
+      "bytes": 3763,
+      "sha256": "fa10103bd232868e9f1eb0a960f33dd669596de876d4505487e2e77c611224c2"
     },
     {
       "path": "assets/audio/catalogue.json",
       "bytes": 10786,
       "sha256": "df9d579dd37f1d5fb53a302141d0c8b8a16d4369782a486ae30b56f35c34e68b"
+    },
+    {
+      "path": "assets/styles/nafay.json",
+      "bytes": 9116,
+      "sha256": "a32cf7c69c71ad31c15b93a5b00e9d6d82c32d079508717a4c7e1e02cf3e9708"
     },
     {
       "path": "dashboard/LICENSE",
@@ -174,8 +192,8 @@
     },
     {
       "path": "dashboard/app.js",
-      "bytes": 15164,
-      "sha256": "233d751c3aeb9aedd2fb9476c5b321642a85d0a315ea5de31a9f50f6e78bb60f"
+      "bytes": 15385,
+      "sha256": "b2f3812b6bd886b0e84b815a8fd9bb9f9289d75e70b1f5563bca623f1c635d92"
     },
     {
       "path": "dashboard/captions.mjs",
@@ -199,8 +217,8 @@
     },
     {
       "path": "dashboard/review.js",
-      "bytes": 11684,
-      "sha256": "4979f9fe0b0ff6dd4566d771e3a53513e83702008b1b29d270f0169bf33ba619"
+      "bytes": 11991,
+      "sha256": "e6283bc803763decd0e859a6660772bb760dcf17fd41822b62c2f3b056de047b"
     },
     {
       "path": "dashboard/style.css",
@@ -214,8 +232,13 @@
     },
     {
       "path": "docs/DASHBOARD.md",
-      "bytes": 5523,
-      "sha256": "e5136743f6550275ba0d59ba41a59da5effe2a4eff37e1b377de3a5ba6ff45b7"
+      "bytes": 5819,
+      "sha256": "21f605fafa6569e6c7fff9e27ad7d4250d8f68f909c960534e3d683493e2daa2"
+    },
+    {
+      "path": "docs/NAFAY_VIDEO_EDITOR.md",
+      "bytes": 7262,
+      "sha256": "64f24c569923ad744c17aa405461f612a2837a036f28b9b11292ce55f6e63ab5"
     },
     {
       "path": "docs/REEL_EFFECT_EXTENSIONS.md",
@@ -234,8 +257,8 @@
     },
     {
       "path": "docs/SETUP.md",
-      "bytes": 11191,
-      "sha256": "3ed800b401720cebf360fc7a8ff4e70cdff9b1b6f43b8f2f15cf2ef89482f61c"
+      "bytes": 11613,
+      "sha256": "9a0ef4b53432f13942d995cce6e941db2b43aac699c0bd6b9b74e506398de5e5"
     },
     {
       "path": "docs/VIDEO_EDIT_WORKFLOW.md",
@@ -473,6 +496,16 @@
       "sha256": "7ebc6e589c22f7c543378afbe790f1e621dfe3312ca87c75e8d39c7fbf91d632"
     },
     {
+      "path": "scripts/nafay_setup.py",
+      "bytes": 2529,
+      "sha256": "1426b2f0a57f767672d6a0652d0ce18650dcfb1e1c6de4d6f38eb7309da2f019"
+    },
+    {
+      "path": "scripts/nafay_workflow.py",
+      "bytes": 28588,
+      "sha256": "29fbb24e746532a9da83517fd024393abd7404ccda71c6de94c6a27d7a5df9a1"
+    },
+    {
       "path": "scripts/native-studio.mjs",
       "bytes": 2322,
       "sha256": "b2896d2589aa8fe1be0ff50ce62e7ecf91e905ee23b37fb6b25f71272160b9e8"
@@ -509,8 +542,8 @@
     },
     {
       "path": "scripts/review-store.mjs",
-      "bytes": 16210,
-      "sha256": "550460fdb7083b119ee5d6caaeb348e5d0c8d875992e621e735eac7351402f75"
+      "bytes": 19072,
+      "sha256": "2d1b245f4630bbd575086a2284b04d8ef1a3be08bb27854a03e74fa8ea408685"
     },
     {
       "path": "scripts/review.mjs",
@@ -963,6 +996,11 @@
       "sha256": "83191e4eade25e5358bf989a40874dc18a71a3be5d42b6dce77b03470e1fda91"
     },
     {
+      "path": "skills/effects/requirements-nafay.txt",
+      "bytes": 121,
+      "sha256": "3cf0aa7d2468002d6c6136d79c52c954b4b67748f3e57753d243460f86c830e3"
+    },
+    {
       "path": "skills/effects/requirements-reel.txt",
       "bytes": 120,
       "sha256": "1aac1d85c1272f598175362ab177b2a45904bf49a15b678b08d2df16515a21df"
@@ -994,8 +1032,8 @@
     },
     {
       "path": "skills/video-edit/SKILL.md",
-      "bytes": 7127,
-      "sha256": "372f550f0781f9ae42333b09e8e1747f9658df7f9b7cf63e94de13274d932fef"
+      "bytes": 7823,
+      "sha256": "65ecac8e2812b9d29e8fb62307402974b7e61950bfbc1a9815a33529426bf5d7"
     },
     {
       "path": "skills/video-edit/adapters/gemini.toml",
@@ -1023,6 +1061,16 @@
       "sha256": "12d3429f878b63a55c986c2844ca32977e8ebd3d7139ce9b9e78709f335007c9"
     },
     {
+      "path": "skills/wf-nafay/SKILL.md",
+      "bytes": 7549,
+      "sha256": "edf3a6b9cb45ee8eabd25d3b0b2389cb29595e56a0f31d944a4c7002a8cd6235"
+    },
+    {
+      "path": "skills/wf-nafay/adapters/gemini.toml",
+      "bytes": 381,
+      "sha256": "08f349611ebcde9435457eeb0789c2024422c7fad7163a94e5ca04fc5833d28a"
+    },
+    {
       "path": "skills/wf-reel-plan/SKILL.md",
       "bytes": 611,
       "sha256": "6a22a8f3ad5908f032edac804c423176ea1373425cf70a1eedec9b712c944ca8"
@@ -1039,8 +1087,8 @@
     },
     {
       "path": "skills/wf-reel-plan/references/planning.md",
-      "bytes": 6408,
-      "sha256": "470f4ccd0fdedc03d720665f913b33e6c516ab51dd90118ad1e98ccb9f76996c"
+      "bytes": 7314,
+      "sha256": "67defbf88cf70989ab3c47d74dd835d8b183227b0f8918cf372d1367a7ea5d2a"
     },
     {
       "path": "skills/wf-reel-plan/references/production.md",
@@ -1084,8 +1132,8 @@
     },
     {
       "path": "skills/wf/SKILL.md",
-      "bytes": 5498,
-      "sha256": "8f4613524e7177d5d2370358c64a127d4e25636b93086f3903ab2a3f548b9300"
+      "bytes": 5900,
+      "sha256": "a079320052db5edcfa08f03529a8525ea274513e1a807da53793af95f9601bd8"
     },
     {
       "path": "skills/wf/adapters/gemini.toml",
@@ -1166,6 +1214,296 @@
       "path": "tools/hyperframes/package.json",
       "bytes": 174,
       "sha256": "9f44cec2a0b115d47aeecbe1df2405bdcdecf0bf8179eefa2f6839fe1ab601bf"
+    },
+    {
+      "path": "tools/nafay-video-editor/FONT_NOTICES.md",
+      "bytes": 2690,
+      "sha256": "5974f430d0c07b70a6c34cb1f4ff78bbc7247f8ebea89c1ad4764d0f2a4b5b20"
+    },
+    {
+      "path": "tools/nafay-video-editor/README.md",
+      "bytes": 1569,
+      "sha256": "84481a145261a7adcc15f44582a8dfd82bcc2bc6a9a503fd07e8936dbbd2aeb3"
+    },
+    {
+      "path": "tools/nafay-video-editor/SKILL.md",
+      "bytes": 8775,
+      "sha256": "cf4472975aa299feeb008511f0dcd7132f3d02e5bb8f5b5e1b94f2a17bbff0b7"
+    },
+    {
+      "path": "tools/nafay-video-editor/STUDIO_INTEGRATION.md",
+      "bytes": 1284,
+      "sha256": "7c9c06fefd31d8780b05e24dffbc10c4eccca52d601980271cad6ea145b9ba7c"
+    },
+    {
+      "path": "tools/nafay-video-editor/STUDIO_SOURCE.json",
+      "bytes": 10507,
+      "sha256": "28ed3c2df2b6ba84c9cc634706646fd2988f284c815ee4b10a8a1d74b7ec48d9"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/fonts.css",
+      "bytes": 4849676,
+      "sha256": "15a036a78d2fe847858cb631d313f20f76113f8e3382eab3d904898d123c3abf"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/anton-400.ttf",
+      "bytes": 95072,
+      "sha256": "e63d543966ff24a3b7770c3e195ed098ac035cc6acdbbe655c7eea684fab255d"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/archivo-800.ttf",
+      "bytes": 85256,
+      "sha256": "3cbcf418337199a719ca084f3ebc50748ea62db84443a60b44f1c297acf289de"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/cabin-sketch-700.ttf",
+      "bytes": 257876,
+      "sha256": "da9c861ce1769539ee96fff42468f8d390253082f7e8ab31f49e132c66b58fb8"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/dm-sans-700.ttf",
+      "bytes": 49596,
+      "sha256": "40009e80b316eebe58569f2033f290368bb18f2a66ddd032407a0d4c9b4019d3"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/fraunces-600.ttf",
+      "bytes": 76324,
+      "sha256": "31ee921c4a13994fa504eec65a33bb7b6fcbc84e87be86af78bf20b6a04304aa"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/fraunces-700.ttf",
+      "bytes": 76352,
+      "sha256": "e98e43996766eca787ed1f4011348270f593c33b29cb0ce1d07c8b692ee20227"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/fredoka-700.ttf",
+      "bytes": 38984,
+      "sha256": "76bd9820c176bd1a31e538d671e76141dce829313618c62cc5fa8f4d76387207"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/inter-700.ttf",
+      "bytes": 155296,
+      "sha256": "1894ee0c2bd845ea259cd3329070ec748b07b42718ecd5409a3d9d0f4b4e8b2f"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/inter-800.ttf",
+      "bytes": 155708,
+      "sha256": "72a4cfe0e045942efe2ef1f06fad195e111c709fb86e07ab50360d57ba43c92f"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/inter-tight-800.ttf",
+      "bytes": 150432,
+      "sha256": "1234f132f3b0007f1996a491d2d03e776a297f692ac0abd87c9914aa64e59cc6"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/kalam-700.ttf",
+      "bytes": 244292,
+      "sha256": "3734f4c8f16480aca5635487237417781e718fa6564ea41d2a9e302b7e029f6b"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/ttf/noto-sans-devanagari-700.ttf",
+      "bytes": 224820,
+      "sha256": "c91a94d4ce90c0492df1043087bca4454dca8f30c57041d22636af2267df654b"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/web/noto-sans-devanagari-devanagari-400-normal.woff2",
+      "bytes": 50416,
+      "sha256": "f86f14cbd1004f5795689ee9cc70d5d87d915f5135b30283525c1c7b8f0eb192"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/web/noto-sans-devanagari-devanagari-500-normal.woff2",
+      "bytes": 53620,
+      "sha256": "c9e45ff29dddc46bdb85b0cb97922fde980ae2fcafadee4498ff25bd0448292f"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/web/noto-sans-devanagari-devanagari-600-normal.woff2",
+      "bytes": 53716,
+      "sha256": "fcfcaacda204a9fc447b54adfef68815558c34ddf2975dd82662870a20df07dc"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/web/noto-sans-devanagari-devanagari-700-normal.woff2",
+      "bytes": 53984,
+      "sha256": "6a68069c959d7f3c02f4062dd9be85327448b5d753e95455b1c0320f37f68fc1"
+    },
+    {
+      "path": "tools/nafay-video-editor/assets/fonts/web/noto-sans-devanagari-devanagari-800-normal.woff2",
+      "bytes": 53768,
+      "sha256": "1a67829144036622724cf81a5cd023b90699b7c3a696f27f33c39e45fc34df52"
+    },
+    {
+      "path": "tools/nafay-video-editor/engine/hidpi.js",
+      "bytes": 5847,
+      "sha256": "a0f8d56b59d56f31895b6423e5bd2bd89a5d73c6af8fc5d74a55402bfccdde85"
+    },
+    {
+      "path": "tools/nafay-video-editor/engine/page.html",
+      "bytes": 2663,
+      "sha256": "de573f7c40c35a42732d47004e1c6bce6c499b9b9459f3ad281a14afef380cc6"
+    },
+    {
+      "path": "tools/nafay-video-editor/engine/player.js",
+      "bytes": 8921,
+      "sha256": "12df9f8b7c7370305e3a7893c520515f40007d59c7dd8ce405eaf2e806711ed7"
+    },
+    {
+      "path": "tools/nafay-video-editor/references/example-story-warm-canvas.js",
+      "bytes": 5941,
+      "sha256": "709cf0742ec6230d977bc60dd46888f96d044279345aa2075d3af1a584dfe5c0"
+    },
+    {
+      "path": "tools/nafay-video-editor/references/story-guide.md",
+      "bytes": 6658,
+      "sha256": "ff9007da99f4d03d13427b2f36cf5773e0e5fec4df11ce7051e8a22520021de0"
+    },
+    {
+      "path": "tools/nafay-video-editor/requirements.txt",
+      "bytes": 50,
+      "sha256": "139cabc6fd16f042ff6f3bb26229e954b24fa85cd0fc9c6ac7c911f2a5737be8"
+    },
+    {
+      "path": "tools/nafay-video-editor/scripts/captions.py",
+      "bytes": 5027,
+      "sha256": "4d84354ed344e3e636b1b48e93628a2d88685d80b24f37ca5d694b7604a3aefd"
+    },
+    {
+      "path": "tools/nafay-video-editor/scripts/common.py",
+      "bytes": 9171,
+      "sha256": "fb5c60b17c78945ccaf0c8ef257a259a6dee6c981c4af9b2b0c4828aece79c61"
+    },
+    {
+      "path": "tools/nafay-video-editor/scripts/cut.py",
+      "bytes": 12098,
+      "sha256": "a2e01f4ea9f13328163ab07c0470574822eda3519e3b5b1bbe50ef8c2b1a1e23"
+    },
+    {
+      "path": "tools/nafay-video-editor/scripts/preview.py",
+      "bytes": 1281,
+      "sha256": "6d7a34f04172b0e64fc36b44d19497e28c22014f588ff61f9a0d9de6032bffed"
+    },
+    {
+      "path": "tools/nafay-video-editor/scripts/render.py",
+      "bytes": 14892,
+      "sha256": "903ff81f06359973f3256c6a30e66592adc2f76ad8f8e19e17954b8c2d6be58b"
+    },
+    {
+      "path": "tools/nafay-video-editor/scripts/setup.py",
+      "bytes": 3384,
+      "sha256": "414128447480f4e2dc7115ffff214fc47d2fb621dfaeff3e69aade7250dd08dc"
+    },
+    {
+      "path": "tools/nafay-video-editor/scripts/transcribe.py",
+      "bytes": 6938,
+      "sha256": "524cc2782ff14497a7ee9724b99ea680e060d0601373ff105cfc061b24e02b39"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/chalk-talk/base.js",
+      "bytes": 41757,
+      "sha256": "a59228a336f94548f72c8c29e40d4f9ff124ec351ddda0c67bd2d317d920bc30"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/chalk-talk/style.json",
+      "bytes": 256,
+      "sha256": "0ce4d61ed9640cbd3851ce0036a4bbb42b557c06587a9fd190a5e65b6273516f"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/chalk-talk/style.md",
+      "bytes": 4770,
+      "sha256": "9a1fa7d9714f48f6664ccd4197777267588a68b1b9c17ba08d5871a8a9c66635"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/clean-tech/base.js",
+      "bytes": 40671,
+      "sha256": "7361e370cd9f45e4afd5905d1de319f2d6404b8a86f926b9d344420e94d23cae"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/clean-tech/style.json",
+      "bytes": 307,
+      "sha256": "5af875b55c3481da29b44767924687027d91627c529dd0eed4c6c3088a6afe9a"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/clean-tech/style.md",
+      "bytes": 4571,
+      "sha256": "39a40a03b945b169f1c58cc523ede7f5f4f07b66f75834ecb5cd85fe7b8bf8b5"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/creator-motion-graphics/base.js",
+      "bytes": 58610,
+      "sha256": "8c99b3f5a94da72391f65fea963c0097ea61c52be32d8e858c140eb2d16857c2"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/creator-motion-graphics/style.json",
+      "bytes": 335,
+      "sha256": "2119eb04e26003c3d00afbf50185f96af7135818ce5c38446519be96b9ff1b5f"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/creator-motion-graphics/style.md",
+      "bytes": 5068,
+      "sha256": "bb005cd095b515643c4f5f2fe7397cb163fe00b55157f5e5dfde39e0dc02ed27"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/data-story/base.js",
+      "bytes": 41472,
+      "sha256": "d08a77563914d4e6ff27f47fbf251821a051d29ac735edecad283ec7c0166806"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/data-story/style.json",
+      "bytes": 262,
+      "sha256": "72d04b23ae5ad93238061c3b623bbff4d23e56d39e84fb14bccfd3f46c5225da"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/data-story/style.md",
+      "bytes": 4825,
+      "sha256": "49c5d75d388b968238cc1433a7d8866da3d172fdd140879f6ad99ac0ef4deb43"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/index.json",
+      "bytes": 2068,
+      "sha256": "66094d6aaeb7ef3cd1f096e57e7bb6045fff3d57b87b82d05d73c04e3f2e90f1"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/pop-info/base.js",
+      "bytes": 42360,
+      "sha256": "524696ad01993f7dc6b67a479083c59af1b213918a16dc5d1a84ecade37bd16f"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/pop-info/style.json",
+      "bytes": 227,
+      "sha256": "90e94580c3f6129ea37260a913dfa6f0825e6a1bdfe738c72af8db7923223afd"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/pop-info/style.md",
+      "bytes": 5076,
+      "sha256": "c646c6dc79a104f397b56fb1cb1082c87cdab65a53583d19502e960dad4e37e4"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/software-walkthrough/base.js",
+      "bytes": 51300,
+      "sha256": "029708c5d6b96f243fa400a0e1e199d81ca428d7d46649da9397d3382c4c2f7e"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/software-walkthrough/style.json",
+      "bytes": 306,
+      "sha256": "8dc4012c715c8ebb33411cf67ab0801c42f4039e9f38dee146de806308169496"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/software-walkthrough/style.md",
+      "bytes": 5186,
+      "sha256": "3a4ce82275dee94a0535736dd07c5f2a4f56e207dbddffb189de272e3756ea78"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/warm-canvas/base.js",
+      "bytes": 56641,
+      "sha256": "3f3e9df6cedca04691b0314a1d3a9a8ca231e721a0ed572b6499c6db9be4bece"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/warm-canvas/style.json",
+      "bytes": 258,
+      "sha256": "ade988f353524c24f69b7269b88965db5646fcbfc88a43834976ee69131af9a9"
+    },
+    {
+      "path": "tools/nafay-video-editor/styles/warm-canvas/style.md",
+      "bytes": 5137,
+      "sha256": "1f1a97afcf08ce908d9e50f0157a0afd8d829ac27dc799e8db4a5c994b59b284"
     },
     {
       "path": "tools/techno-reel/.claude/skills/brand-logos/SKILL.md",

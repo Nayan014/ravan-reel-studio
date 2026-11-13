@@ -28,16 +28,17 @@ Keep the space based forms `/wf video-edit`, `/wf gallery`, `/wf effects <detail
 
 Map 1 to video-edit, 2 to gallery, 3 to effects, 4 to resume, 5 to reel-plan and 6 to video-plan. An explicit `/wf 1` through `/wf 6` uses that mapping. Accept a bare numeric or action-name reply only while this workflow menu is the pending question. Never intercept numbers belonging to a video picker, effect gallery choice, preview approval or another active workflow stage. Forward any remaining user details to the chosen route. `/wf reel-plan` and `/wf video-plan` alias the two planning skills. `/wf-reel` and `/wf reel` have been removed as public commands; explain the replacement entry point if invoked.
 
-Mention that every effect name and bonus look from `../effects/SKILL.md` remains usable through the effects route. Do not flood the menu with all 51 names. The old plain language command `Start video edit` also remains an alias.
+Mention that every effect name and bonus look from `../effects/SKILL.md` remains usable through the effects route. Do not flood the menu with all 51 names. The direct shortcut `/wf-nafay` also opens the Nafay editor. Menu choice 1 offers Vibha or Nafay for a new run. The old plain language command `Start video edit` also remains an alias.
 
 ## Routes
 
 - `reel-plan`: Read `../wf-reel-plan/SKILL.md`. Use the idea, suggestions, footage or resume entry and continue through final portrait export in the same workflow.
 - `video-plan`: Read `../wf-video-plan/SKILL.md`. Use the idea, suggestions, footage or resume entry and continue through final landscape YouTube export in the same workflow.
+- `nafay`: Read `../wf-nafay/SKILL.md`. `/wf-nafay` and `/wf nafay` start or resume the standalone Nafay editor with cut, graphics-plan, actual-frame and audio approvals.
 - `video-edit`: Read `../video-edit/SKILL.md` and follow it, preserving any user notes after the subcommand. Begin at its video selection stage. Wait for each choice and for explicit approval of actual preview frames before rendering. Do not ask the user to invoke another command to continue.
 - `effects`: Read `../effects/SKILL.md` and handle the trailing effect request as a direct effects request. For example, `/wf effects orbit from 3 to 6 seconds` forwards `orbit from 3 to 6 seconds`. If the clip or effect is missing, ask for it using that skill's workflow. Do not replace or rename the existing effects.
 - `gallery`: Display `docs/effect-gallery/effects-1.jpg` through `effects-6.jpg` using the host's image display capability. These are dummy reference samples, not the user's actual frames. Label them with their catalogue numbers and offer the illustrated PDF. Do not create a session or start rendering.
-- `resume`: Read `../video-edit/SKILL.md`. Run its helper's `status --session ID`, then continue the pending stage using the saved session rather than starting again. If the session needs sample selection, show its samples. If it needs preview approval, show its actual saved frames and plan and ask for approval. An approved plan may render only if the helper still accepts its recorded approval. If already rendered, return the saved video path. If no session identifier was provided, ask for one.
+- `resume`: If a supplied saved project has renderer nafay under outputs/videos/, resume it with `../wf-nafay/SKILL.md`. Otherwise read `../video-edit/SKILL.md`. Run its helper's `status --session ID`, then continue the pending stage using the saved session rather than starting again. If the session needs sample selection, show its samples. If it needs preview approval, show its actual saved frames and plan and ask for approval. An approved plan may render only if the helper still accepts its recorded approval. If already rendered, return the saved video path. If no session identifier was provided, ask for one.
 
 ## Discovery
 

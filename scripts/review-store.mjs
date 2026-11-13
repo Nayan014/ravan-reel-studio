@@ -1,10 +1,16 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
+import { existsSync, openSync, readSync, closeSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import {fileURLToPath} from 'node:url';
 import { mediaPath, mediaUrl, listProjects, validId } from './dashboard-library.mjs';
 
 const hash = value => createHash('sha256').update(value).digest('hex');
+function hashFile(path) {
+  const value=createHash('sha256'),buffer=Buffer.alloc(1024*1024),fd=openSync(path,'r');
+  try { let length; while((length=readSync(fd,buffer,0,buffer.length,null))>0) value.update(buffer.subarray(0,length)); }
+  finally { closeSync(fd); }
+  return value.digest('hex');
+}
 const parse = path => JSON.parse(readFileSync(path, 'utf8'));
 const inside = (base, path) => path.startsWith(base + sep);
 const slash = path => path.split(sep).join('/');
@@ -51,10 +57,38 @@ function context(root, kind, id, stage, document) {
     try { const path = mediaPath(root, name); files.push([name, hash(readFileSync(path))]); return parse(path); }
     catch { return null; }
   };
-  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[], referenceStyle=null;
+  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[], referenceStyle=null, audioReview=null, renderer=null;
   if (kind !== 'plans') {
     const base = `outputs/${kind}/${id}`;
     const plan = add(`${base}/plan.json`), session = add(`${base}/session.json`);
+    renderer=plan?.renderer||null;
+    if(renderer==='nafay') {
+      const trackFile=path=>{
+        if(!existsSync(path))return;
+        if(lstatSync(path).isSymbolicLink())throw new ReviewError('Nafay inputs cannot use symlinks.');
+        const name=slash(relative(root,path));
+        if(name===`${base}/working/nafay/edit.json`){
+          const data=parse(path);delete data.rendered;
+          files.push([name,hash(JSON.stringify(data))]);
+        }else files.push([name,hashFile(path)]);
+      };
+      const trackTree=path=>{
+        if(!existsSync(path))return;
+        if(lstatSync(path).isSymbolicLink())throw new ReviewError('Nafay inputs cannot use symlinks.');
+        for(const entry of readdirSync(path,{withFileTypes:true})){
+          if(entry.name==='__pycache__'||entry.name.endsWith('.pyc'))continue;
+          const file=join(path,entry.name);
+          if(entry.isSymbolicLink())throw new ReviewError('Nafay inputs cannot use symlinks.');
+          if(entry.isDirectory())trackTree(file);else if(entry.isFile())trackFile(file);
+        }
+      };
+      trackTree(join(root,base,'raw'));trackTree(join(root,base,'assets'));trackTree(join(root,base,'working/nafay/assets'));
+      for(const name of ['transcript.json','transcript_edited.json','edits.json','cut_plan.json','beats.json','story.js','cut.mp4','cut.wav','edit.json']) trackFile(join(root,base,'working/nafay',name));
+      const selected=plan.nafay?.style;
+      if(!/^[a-z-]+$/.test(selected||''))throw new ReviewError('Invalid Nafay style.');
+      for(const name of ['engine','scripts','assets/fonts',`styles/${selected}`])trackTree(join(bundled,'tools/nafay-video-editor',name));
+      for(const name of ['scripts/nafay_workflow.py','scripts/media_profile.py','assets/styles/nafay.json','skills/effects/requirements-nafay.txt','skills/effects/requirements-reel.txt'])trackFile(join(bundled,name));
+    }
     if(plan?.renderer==='hyperframes'){
       const track=path=>{
         if(!existsSync(path)||lstatSync(path).isSymbolicLink())return;
@@ -102,7 +136,7 @@ function context(root, kind, id, stage, document) {
         : '';
       return { id: String(s.id), text: String(s.say || s.expected_say || ''),timeline:[start,cursor],
       source:s.source||'Awaiting numbered recording',shootingNote:s.shooting_note||'',referenceNote:String(s.reference_note||''),clip:s.clip||null,
-      captions:s.caption_pages||[],effects:s.vibha||{},finish:s.hyperframes_note||'Hyperframes assembly, captions and audio',
+      captions:renderer==='nafay'&&!plan.nafay?.captions?[]:s.caption_pages||[],effects:s.vibha||{},finish:s.hyperframes_note||(renderer==='nafay'?'Nafay 3D graphics and audio':'Hyperframes assembly, captions and audio'),
       sourceFrame:s.source_frame?mediaUrl(`${base}/${s.source_frame}`):null,focus:s.focus||[.5,.4],framing };});
     if(stage==='frames')for(const file of preview?.audio_files||[]){
       const name=isAbsolute(file)?slash(relative(root,file)):file;
@@ -116,6 +150,12 @@ function context(root, kind, id, stage, document) {
       scenes = (Array.isArray(effects?.effects) ? effects.effects : []).map((e, i) => ({ id: String(i + 1).padStart(2, '0'), text: `${e.fx || 'Effect'} · ${e.start ?? 0}–${e.end ?? '?'} seconds` }));
     }
     if (stage === 'frames') {
+      if(renderer==='nafay'&&typeof preview?.mix_sample==='string'){
+        const name=isAbsolute(preview.mix_sample)?slash(relative(root,preview.mix_sample)):preview.mix_sample;
+        if(!name.startsWith(base+'/'))throw new ReviewError('Audio sample is outside this project.');
+        const path=mediaPath(root,name);files.push([name,hashFile(path)]);
+        audioReview={url:mediaUrl(name),start:preview.mix_start||0,label:'Nafay source voice and effects'};
+      }
       if (!preview?.id) throw new ReviewError('Generate actual preview frames before opening a frame approval.');
       previewId = preview.id;
       const source = Array.isArray(preview.frames) ? preview.frames : Array.isArray(preview.files) ? preview.files : [];
@@ -147,7 +187,7 @@ function context(root, kind, id, stage, document) {
     files.push(['draft-text-layers',hash(JSON.stringify(design))]);
     if (!scenes.length) scenes=[{id:'01',text:'Draft text design'}];
   }
-  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio,referenceStyle, fingerprint: hash(JSON.stringify([stage, files])) };
+  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio,referenceStyle,audioReview,renderer, fingerprint: hash(JSON.stringify([stage, files])) };
 }
 
 export function prepareReview(root, { kind, id, stage = 'plan', document = null }) {
@@ -196,7 +236,7 @@ export function submitReview(root, kind, id, value) {
   if (value.action === 'approve' && text) throw new ReviewError('Submit your requested changes before approving.');
   const submission = {
     id: value.id, requestId: r.id, action: value.action, scene,scope,frame,
-    text: value.action === 'approve' ? `Approve the current ${r.stage === 'frames' ? (r.audio?'actual frames, audio, output profile and crop':'actual frames') : r.stage==='script'?'script':'plan and visual choices'} shown in review ${r.id}.` : text,
+    text: value.action === 'approve' ? `Approve the current ${r.stage === 'frames' ? ((r.audio||r.audioReview)?'actual frames, audio, output profile and crop':'actual frames') : r.stage==='script'?'script':'plan and visual choices'} shown in review ${r.id}.` : text,
     stage: r.stage, previewId: r.previewId, fingerprint: r.fingerprint,
     at: new Date().toISOString(), status: 'pending',
   };

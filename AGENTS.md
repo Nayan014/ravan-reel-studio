@@ -13,6 +13,7 @@ Read `docs/WORKFLOW_REVIEW.md` for all workflow questions, choices and approvals
 | Skill | When to use it | Instructions |
 | --- | --- | --- |
 | wf | `/wf` menu and routes for video-edit, effects, gallery and saved sessions | `skills/wf/SKILL.md` |
+| wf-nafay | Standalone Nafay 3D video editing with seven landscape graphics styles and studio approvals | `skills/wf-nafay/SKILL.md` |
 | wf-video | Standalone shortcut for the guided edit | `skills/wf-video/SKILL.md` |
 | wf-reel-plan | Create a portrait reel from an idea, footage or saved project through final export | `skills/wf-reel-plan/SKILL.md` |
 | wf-video-plan | Create a landscape YouTube video from an idea, footage or saved project through final export | `skills/wf-video-plan/SKILL.md` |
@@ -41,3 +42,7 @@ For new skills, add their complete package under `skills/` and update the index 
 ## Reference styles
 
 Both planning commands use `skills/wf-reel-plan/references/reference-style.md` once footage is imported/attached. Offer reference filenames from root `references/` only when videos exist and no project choice is saved. Skip idea/script preparation for supplied footage. Reuse content-hashed analysis and pinned project style notes. The reference library is private and stays out of Git/public packaging.
+
+## Nafay standalone editor
+
+`/wf-nafay` and `/wf nafay` use `skills/wf-nafay/SKILL.md`. New `/wf-video` runs offer Vibha effects or Nafay motion graphics; existing sessions resume their editor. Nafay projects use outputs/videos/ and renderer nafay. Its seven creator-labelled styles are in assets/styles/nafay.json for YouTube planning. The original package lives under tools/nafay-video-editor/. Use the studio wrapper and local setup, preserving cut, plan and actual-frame/audio approvals. Mixed rendering is deferred.

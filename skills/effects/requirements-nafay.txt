@@ -1,0 +1,3 @@
+-r requirements-reel.txt
+# Nafay's standalone graphics renderer; browser weights are cached locally.
+playwright>=1.40,<2

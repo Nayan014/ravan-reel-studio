@@ -1,0 +1,308 @@
+{
+  "creator": "Nafay 3D",
+  "website": "https://nafay3d.com/",
+  "youtube": "https://www.youtube.com/@nafay3d",
+  "archive": "ai-video-editor.zip",
+  "archive_sha256": "aa77943a4b563383f8e5b437fb1702f768011d288d1149a2986ec90aca33c518",
+  "licence_status": "No explicit licence file was supplied in the archive. These third-party files are outside the project MIT grant.",
+  "imported_files": [
+    {
+      "path": "references/story-guide.md",
+      "bytes": 6658,
+      "sha256": "ff9007da99f4d03d13427b2f36cf5773e0e5fec4df11ce7051e8a22520021de0"
+    },
+    {
+      "path": "references/example-story-warm-canvas.js",
+      "bytes": 5941,
+      "sha256": "709cf0742ec6230d977bc60dd46888f96d044279345aa2075d3af1a584dfe5c0"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 50,
+      "sha256": "139cabc6fd16f042ff6f3bb26229e954b24fa85cd0fc9c6ac7c911f2a5737be8"
+    },
+    {
+      "path": "assets/fonts/ttf/dm-sans-700.ttf",
+      "bytes": 49596,
+      "sha256": "40009e80b316eebe58569f2033f290368bb18f2a66ddd032407a0d4c9b4019d3"
+    },
+    {
+      "path": "assets/fonts/ttf/archivo-800.ttf",
+      "bytes": 85256,
+      "sha256": "3cbcf418337199a719ca084f3ebc50748ea62db84443a60b44f1c297acf289de"
+    },
+    {
+      "path": "assets/fonts/ttf/inter-800.ttf",
+      "bytes": 155708,
+      "sha256": "72a4cfe0e045942efe2ef1f06fad195e111c709fb86e07ab50360d57ba43c92f"
+    },
+    {
+      "path": "assets/fonts/ttf/noto-sans-devanagari-700.ttf",
+      "bytes": 224820,
+      "sha256": "c91a94d4ce90c0492df1043087bca4454dca8f30c57041d22636af2267df654b"
+    },
+    {
+      "path": "assets/fonts/ttf/fraunces-700.ttf",
+      "bytes": 76352,
+      "sha256": "e98e43996766eca787ed1f4011348270f593c33b29cb0ce1d07c8b692ee20227"
+    },
+    {
+      "path": "assets/fonts/ttf/inter-tight-800.ttf",
+      "bytes": 150432,
+      "sha256": "1234f132f3b0007f1996a491d2d03e776a297f692ac0abd87c9914aa64e59cc6"
+    },
+    {
+      "path": "assets/fonts/ttf/fraunces-600.ttf",
+      "bytes": 76324,
+      "sha256": "31ee921c4a13994fa504eec65a33bb7b6fcbc84e87be86af78bf20b6a04304aa"
+    },
+    {
+      "path": "assets/fonts/ttf/inter-700.ttf",
+      "bytes": 155296,
+      "sha256": "1894ee0c2bd845ea259cd3329070ec748b07b42718ecd5409a3d9d0f4b4e8b2f"
+    },
+    {
+      "path": "assets/fonts/ttf/fredoka-700.ttf",
+      "bytes": 38984,
+      "sha256": "76bd9820c176bd1a31e538d671e76141dce829313618c62cc5fa8f4d76387207"
+    },
+    {
+      "path": "assets/fonts/ttf/cabin-sketch-700.ttf",
+      "bytes": 257876,
+      "sha256": "da9c861ce1769539ee96fff42468f8d390253082f7e8ab31f49e132c66b58fb8"
+    },
+    {
+      "path": "assets/fonts/ttf/kalam-700.ttf",
+      "bytes": 244292,
+      "sha256": "3734f4c8f16480aca5635487237417781e718fa6564ea41d2a9e302b7e029f6b"
+    },
+    {
+      "path": "assets/fonts/ttf/anton-400.ttf",
+      "bytes": 95072,
+      "sha256": "e63d543966ff24a3b7770c3e195ed098ac035cc6acdbbe655c7eea684fab255d"
+    },
+    {
+      "path": "assets/fonts/web/noto-sans-devanagari-devanagari-700-normal.woff2",
+      "bytes": 53984,
+      "sha256": "6a68069c959d7f3c02f4062dd9be85327448b5d753e95455b1c0320f37f68fc1"
+    },
+    {
+      "path": "assets/fonts/web/noto-sans-devanagari-devanagari-600-normal.woff2",
+      "bytes": 53716,
+      "sha256": "fcfcaacda204a9fc447b54adfef68815558c34ddf2975dd82662870a20df07dc"
+    },
+    {
+      "path": "assets/fonts/web/noto-sans-devanagari-devanagari-800-normal.woff2",
+      "bytes": 53768,
+      "sha256": "1a67829144036622724cf81a5cd023b90699b7c3a696f27f33c39e45fc34df52"
+    },
+    {
+      "path": "assets/fonts/web/noto-sans-devanagari-devanagari-400-normal.woff2",
+      "bytes": 50416,
+      "sha256": "f86f14cbd1004f5795689ee9cc70d5d87d915f5135b30283525c1c7b8f0eb192"
+    },
+    {
+      "path": "assets/fonts/web/noto-sans-devanagari-devanagari-500-normal.woff2",
+      "bytes": 53620,
+      "sha256": "c9e45ff29dddc46bdb85b0cb97922fde980ae2fcafadee4498ff25bd0448292f"
+    },
+    {
+      "path": "assets/fonts/fonts.css",
+      "bytes": 4849676,
+      "sha256": "15a036a78d2fe847858cb631d313f20f76113f8e3382eab3d904898d123c3abf"
+    },
+    {
+      "path": "SKILL.md",
+      "bytes": 8775,
+      "sha256": "cf4472975aa299feeb008511f0dcd7132f3d02e5bb8f5b5e1b94f2a17bbff0b7"
+    },
+    {
+      "path": "engine/hidpi.js",
+      "bytes": 5847,
+      "sha256": "a0f8d56b59d56f31895b6423e5bd2bd89a5d73c6af8fc5d74a55402bfccdde85"
+    },
+    {
+      "path": "engine/page.html",
+      "bytes": 2663,
+      "sha256": "de573f7c40c35a42732d47004e1c6bce6c499b9b9459f3ad281a14afef380cc6"
+    },
+    {
+      "path": "engine/player.js",
+      "bytes": 8921,
+      "sha256": "12df9f8b7c7370305e3a7893c520515f40007d59c7dd8ce405eaf2e806711ed7"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1569,
+      "sha256": "84481a145261a7adcc15f44582a8dfd82bcc2bc6a9a503fd07e8936dbbd2aeb3"
+    },
+    {
+      "path": "scripts/common.py",
+      "bytes": 7370,
+      "sha256": "6f6872c24e4db9be0c50fd12aa6ed1510e2ef9d8322dd3bc06469768f84a33a5"
+    },
+    {
+      "path": "scripts/preview.py",
+      "bytes": 1281,
+      "sha256": "6d7a34f04172b0e64fc36b44d19497e28c22014f588ff61f9a0d9de6032bffed"
+    },
+    {
+      "path": "scripts/render.py",
+      "bytes": 12982,
+      "sha256": "4ff1b0002b9f241686091c49b6ec3bd42686129fcaad701b29a924ed48576dac"
+    },
+    {
+      "path": "scripts/cut.py",
+      "bytes": 12048,
+      "sha256": "9197308cf1447695de4ac0334cd0dedaf3843f1fa7b1ac6600f9637c75e73e80"
+    },
+    {
+      "path": "scripts/captions.py",
+      "bytes": 5027,
+      "sha256": "4d84354ed344e3e636b1b48e93628a2d88685d80b24f37ca5d694b7604a3aefd"
+    },
+    {
+      "path": "scripts/transcribe.py",
+      "bytes": 6709,
+      "sha256": "092aa6ddbdfca87a9f956919d104eb43b398944ac953c981533c8061ddbd016c"
+    },
+    {
+      "path": "scripts/setup.py",
+      "bytes": 3384,
+      "sha256": "414128447480f4e2dc7115ffff214fc47d2fb621dfaeff3e69aade7250dd08dc"
+    },
+    {
+      "path": "styles/software-walkthrough/base.js",
+      "bytes": 51300,
+      "sha256": "029708c5d6b96f243fa400a0e1e199d81ca428d7d46649da9397d3382c4c2f7e"
+    },
+    {
+      "path": "styles/software-walkthrough/style.md",
+      "bytes": 5186,
+      "sha256": "3a4ce82275dee94a0535736dd07c5f2a4f56e207dbddffb189de272e3756ea78"
+    },
+    {
+      "path": "styles/software-walkthrough/style.json",
+      "bytes": 306,
+      "sha256": "8dc4012c715c8ebb33411cf67ab0801c42f4039e9f38dee146de806308169496"
+    },
+    {
+      "path": "styles/chalk-talk/base.js",
+      "bytes": 41757,
+      "sha256": "a59228a336f94548f72c8c29e40d4f9ff124ec351ddda0c67bd2d317d920bc30"
+    },
+    {
+      "path": "styles/chalk-talk/style.md",
+      "bytes": 4770,
+      "sha256": "9a1fa7d9714f48f6664ccd4197777267588a68b1b9c17ba08d5871a8a9c66635"
+    },
+    {
+      "path": "styles/chalk-talk/style.json",
+      "bytes": 256,
+      "sha256": "0ce4d61ed9640cbd3851ce0036a4bbb42b557c06587a9fd190a5e65b6273516f"
+    },
+    {
+      "path": "styles/clean-tech/base.js",
+      "bytes": 40671,
+      "sha256": "7361e370cd9f45e4afd5905d1de319f2d6404b8a86f926b9d344420e94d23cae"
+    },
+    {
+      "path": "styles/clean-tech/style.md",
+      "bytes": 4571,
+      "sha256": "39a40a03b945b169f1c58cc523ede7f5f4f07b66f75834ecb5cd85fe7b8bf8b5"
+    },
+    {
+      "path": "styles/clean-tech/style.json",
+      "bytes": 307,
+      "sha256": "5af875b55c3481da29b44767924687027d91627c529dd0eed4c6c3088a6afe9a"
+    },
+    {
+      "path": "styles/warm-canvas/base.js",
+      "bytes": 56641,
+      "sha256": "3f3e9df6cedca04691b0314a1d3a9a8ca231e721a0ed572b6499c6db9be4bece"
+    },
+    {
+      "path": "styles/warm-canvas/style.md",
+      "bytes": 5137,
+      "sha256": "1f1a97afcf08ce908d9e50f0157a0afd8d829ac27dc799e8db4a5c994b59b284"
+    },
+    {
+      "path": "styles/warm-canvas/style.json",
+      "bytes": 258,
+      "sha256": "ade988f353524c24f69b7269b88965db5646fcbfc88a43834976ee69131af9a9"
+    },
+    {
+      "path": "styles/creator-motion-graphics/base.js",
+      "bytes": 58610,
+      "sha256": "8c99b3f5a94da72391f65fea963c0097ea61c52be32d8e858c140eb2d16857c2"
+    },
+    {
+      "path": "styles/creator-motion-graphics/style.md",
+      "bytes": 5068,
+      "sha256": "bb005cd095b515643c4f5f2fe7397cb163fe00b55157f5e5dfde39e0dc02ed27"
+    },
+    {
+      "path": "styles/creator-motion-graphics/style.json",
+      "bytes": 335,
+      "sha256": "2119eb04e26003c3d00afbf50185f96af7135818ce5c38446519be96b9ff1b5f"
+    },
+    {
+      "path": "styles/index.json",
+      "bytes": 2068,
+      "sha256": "66094d6aaeb7ef3cd1f096e57e7bb6045fff3d57b87b82d05d73c04e3f2e90f1"
+    },
+    {
+      "path": "styles/pop-info/base.js",
+      "bytes": 42360,
+      "sha256": "524696ad01993f7dc6b67a479083c59af1b213918a16dc5d1a84ecade37bd16f"
+    },
+    {
+      "path": "styles/pop-info/style.md",
+      "bytes": 5076,
+      "sha256": "c646c6dc79a104f397b56fb1cb1082c87cdab65a53583d19502e960dad4e37e4"
+    },
+    {
+      "path": "styles/pop-info/style.json",
+      "bytes": 227,
+      "sha256": "90e94580c3f6129ea37260a913dfa6f0825e6a1bdfe738c72af8db7923223afd"
+    },
+    {
+      "path": "styles/data-story/base.js",
+      "bytes": 41472,
+      "sha256": "d08a77563914d4e6ff27f47fbf251821a051d29ac735edecad283ec7c0166806"
+    },
+    {
+      "path": "styles/data-story/style.md",
+      "bytes": 4825,
+      "sha256": "49c5d75d388b968238cc1433a7d8866da3d172fdd140879f6ad99ac0ef4deb43"
+    },
+    {
+      "path": "styles/data-story/style.json",
+      "bytes": 262,
+      "sha256": "72d04b23ae5ad93238061c3b623bbff4d23e56d39e84fb14bccfd3f46c5225da"
+    }
+  ],
+  "local_adaptations": [
+    {
+      "path": "scripts/common.py",
+      "sha256": "fb5c60b17c78945ccaf0c8ef257a259a6dee6c981c4af9b2b0c4828aece79c61",
+      "reason": "Studio output profile, exact rational frame rates and local media boundary."
+    },
+    {
+      "path": "scripts/cut.py",
+      "sha256": "a2e01f4ea9f13328163ab07c0470574822eda3519e3b5b1bbe50ef8c2b1a1e23",
+      "reason": "Approved output width."
+    },
+    {
+      "path": "scripts/render.py",
+      "sha256": "903ff81f06359973f3256c6a30e66592adc2f76ad8f8e19e17954b8c2d6be58b",
+      "reason": "Approved dimensions/rate/frame count, local browser resources and caption/audio previews."
+    },
+    {
+      "path": "scripts/transcribe.py",
+      "sha256": "524cc2782ff14497a7ee9724b99ea680e060d0601373ff105cfc061b24e02b39",
+      "reason": "Decode WAV through numpy; portable numeric transcript serialization."
+    }
+  ],
+  "verification": "Setup, transcription, browser execution, previews, renders and tests deferred by creator request."
+}

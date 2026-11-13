@@ -145,3 +145,7 @@ Keep originals. Do not delete active project caches blindly: they support reuse 
 ## YouTube planning and production
 
 `/wf-video-plan` uses the same installed production tools as `/wf-reel-plan`. New YouTube projects use `outputs/videos/` and landscape output; no additional renderer installation is required. The implementation of the two planning entry points and landscape pipeline awaits the deferred workflow testing session.
+
+## Optional Nafay editor
+
+Selecting Nafay in /wf-video or invoking /wf-nafay triggers its project-local setup on first use. scripts/nafay_setup.py prepares the shared effects virtual environment plus Playwright and its cached Chromium. The default npm start setup does not install this optional browser. See NAFAY_VIDEO_EDITOR.md for the standalone editing flow, model-download guidance and deferred verification status.

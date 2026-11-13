@@ -19,6 +19,12 @@ skills/effects/.venv/bin/python scripts/video_workflow.py COMMAND
 
 On Windows, use `skills/effects/.venv/Scripts/python.exe`. Use absolute paths if the current directory differs. Each helper command returns JSON. Keep its `session` identifier for subsequent commands; `status --session ID` restores progress after a new chat.
 
+## Choose the editor for a new run
+
+For a new run, offer **Vibha effects** or **Nafay motion graphics** through native choices, unless the user already specified an editor. Existing sessions resume their saved editor. A Nafay project has renderer nafay under outputs/videos/; read `../wf-nafay/SKILL.md` and continue it without creating a Vibha session. A supplied path/selection carries into the chosen editor so the same question is not asked twice.
+
+Choosing Nafay uses its standalone one-recording, landscape workflow. Choosing Vibha continues below. Keep the six menu numbers unchanged. Direct /effects requests retain their effect workflow. Mixed rendering is not offered in this version.
+
 ## 1 Choose the video
 
 Run `start`. Show only its returned videos, numbered 1 to 3, newest first. Ask which one the user wants and wait. Never choose automatically, even if only one exists. If the list is empty, ask the user to put a video in `inputs/` and stop this stage. An attachment should be placed there with the user's supplied filename before listing.

@@ -33,3 +33,9 @@ Keep feedback linked to script, scene or actual frame and to its review revision
 A supplied folder enters the footage path directly. Existing footage skips idea generation, script drafting and recording instructions. Supplied topic, language, duration, chosen reference or saved project details skip those corresponding questions. Ask only for genuinely missing information in the current stage. If footage has not been attached, wait until it exists before offering reference styles.
 
 Use `skills/wf-reel-plan/references/reference-style.md` after footage analysis and scene mapping, before production-plan approval. This applies to both reel and YouTube projects. Reuse `reference_selection: selected` or `none` on resume. A request to change the reference reopens that choice. If no reference videos exist, continue without asking a reference question. Keep an existing selected snapshot when the library file is later renamed, removed or changed, unless the user requests a different style.
+
+## Nafay styles during YouTube planning
+
+Read `assets/styles/nafay.json` alongside the Vibha catalogue and any pinned reference notes when suggesting landscape motion graphics. Label the creator and canonical nafay: style ID. These styles render through the standalone Nafay editor in this version. Do not write a Nafay-only suggestion into a Hyperframes project as if it were already integrated.
+
+For ready footage, offer “Open a separate Nafay edit” when the creator wants one of those styles. Ask which recording if there are several. Read `skills/wf-nafay/SKILL.md`, pass the selected source path and create a distinct project slug. Preserve the existing planning project, script and approvals; do not migrate its renderer. Explain that this standalone path uses Nafay cutting, captions and audio. Saved Nafay projects selected on resume route to wf-nafay rather than the reel/Hyperframes helper.

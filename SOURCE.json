@@ -21,7 +21,8 @@
     "Explicit Git/publication exclusions for private media outside input/output folders; pre-rendered synthetic colour-card demo and safe Node-only demo installer",
     "Single npm start launcher: isolated compatible Node when needed, missing system prerequisites through supported package managers, cached effects/speech/Hyperframes setup, safe demo installation, workspace-aware local dashboard reuse and browser opening",
     "Unified reel-plan and YouTube video-plan entry points, landscape source-matched production, continuous-source scene mapping and Videos dashboard/review support; public wf-reel command retired. Verification deferred by creator request.",
-    "Optional private reference library in both planning commands, local bounded frame/cut sampling, reusable content-hashed agent style profiles and pinned per-project style notes. Reference media excluded from publication; testing deferred by creator."
+    "Optional private reference library in both planning commands, local bounded frame/cut sampling, reusable content-hashed agent style profiles and pinned per-project style notes. Reference media excluded from publication; testing deferred by creator.",
+    "Nafay 3D AI Video Editor imported from creator-supplied ZIP with original file hashes and explicit unresolved package-licence notice; standalone wf-nafay wrapper, editor choice, seven-style planning catalogue, exact source-quality output and cut/plan/frame/audio approvals. Setup, transcription, renders and tests deferred."
   ],
   "upstream_file_sha256": {
     "scripts/setup.sh": "b84c0e6b55e0428b37778fa9a72d3744b37c8e4062fbd375bd9754fd6702f10b",
