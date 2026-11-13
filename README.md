@@ -6,6 +6,18 @@ Built by **Techno Ravan**, using **[Vibha Ramprakash’s open-source video effec
 
 Turn a folder of recorded takes into a reel, or develop an idea into a script before recording. Review the script, comment on individual scenes and frames, choose music, then approve the finished direction before rendering.
 
+## Start with your AI assistant
+
+Open a coding assistant that can access files and run commands on your computer, such as Codex or Gemini CLI. Paste this message:
+
+```text
+Install Ravan Reel Studio from https://github.com/Nayan014/ravan-reel-studio and open the demo dashboard on my computer.
+```
+
+The first launch downloads the tools it needs and loads the bundled demo. Your computer may ask you to approve an installation. When the dashboard opens, press **Play** to watch the six-second demo.
+
+If you already have the repository open in a terminal, run `npm start`. For manual installation or dashboard-only use, see the [setup guide](docs/SETUP.md).
+
 ## What you can do
 
 - Apply **51 talking-head effects and 3 bonus looks** from the bundled catalogue.
@@ -52,50 +64,9 @@ Rendering space is **additional to original recordings**. Copied sources, interm
 
 The reference machine is **Apple M4 Pro with 48 GB memory**. This is the tested configuration, not a requirement. macOS is validated; Windows and Linux have setup guidance but have not been validated end to end. The default transcription backend runs on CPU; a dedicated NVIDIA GPU is not required for that path. See the [upstream CPU implementation](https://github.com/SYSTRAN/faster-whisper#small-model-on-cpu) and [setup details](docs/SETUP.md).
 
-## Quick start — one command
-
-Install **Node.js with npm** first (Node 22.18+ recommended). Then clone the repository and run:
-
-```bash
-git clone https://github.com/Nayan014/ravan-reel-studio.git
-cd ravan-reel-studio
-npm start
-```
-
-`npm start` prepares the local reel tools, caches the default English speech model, installs the safe demo and **opens its dashboard page in your browser**. Press Play to watch the pre-rendered example. No separate `npm install` or frontend build is needed. If your Node version is older than 22.18, the launcher selects an isolated Node 22 runtime without changing global Node.
-
-Missing Python and ffmpeg are installed through **Homebrew on macOS**, **winget on Windows**, or **apt on Debian/Ubuntu** when available. Normal administrator or package-agreement prompts may appear. If no supported package manager is available, setup prints the missing prerequisites and how to continue. macOS is validated; Windows/Linux automation is provided but remains unverified end to end. [Detailed setup →](docs/SETUP.md)
-
-The first run needs internet and can download substantial packages/model weights. Later starts reuse the environment, renderer and model cache. Existing projects and demo changes are preserved. New dashboards run in this terminal; Ctrl+C stops them. A running dashboard for the same workspace is reused, and an occupied port belonging to another app/workspace is left alone.
-
-The browser opens the synthetic demo's overview on the printed `127.0.0.1` address, usually port 4173. On a headless machine use `npm start -- --no-open` and access the printed URL through your own port forwarding. The server remains bound to this device.
-
-### Dashboard or demo only
-
-To browse without installing the production tools, use `npm run dashboard`. A fresh clone's library is empty until a project or demo is added. `npm run demo` installs only the bundled example; no Python, ffmpeg or AI service is required for that command.
-
-The six-second **synthetic demo** contains generated colour cards and quiet test tones, with **no personal footage, faces or recorded speech**. It demonstrates playback, covers, posting copy and downloads. [Demo details and reproducible generator →](examples/demo/README.md)
-
-Your recordings and generated projects remain ignored by Git, including the installed demo under `outputs/`. The one public video exception is the bundled `examples/demo/export/demo.mp4`; credited library audio retains its own explicit exceptions.
-
 ## Create your first reel
 
-### 1. Prepare the production tools
-
-If `npm start` completed, continue to step 2. For manual setup, you need **Python 3.10+**, **ffmpeg and ffprobe**, **Node.js 22.18+**, and **Chrome/Chromium**. Use a compatible Python 3.12 or 3.13 installation. Initial dependency and model downloads require internet access.
-
-From the repository root on macOS/Linux:
-
-```bash
-bash skills/effects/scripts/setup.sh --reel
-npm --prefix tools/hyperframes ci
-node tools/hyperframes/hyperframes.mjs browser ensure
-skills/effects/.venv/bin/python scripts/reel_workflow.py doctor
-```
-
-`--reel` installs the effects dependencies and the tested CPU speech-transcription backend. These commands do not install the optional legacy Remotion renderer. See [Windows instructions, offline use and troubleshooting](docs/SETUP.md).
-
-### 2. Add your recordings
+### 1. Add your recordings
 
 Create a folder such as:
 
@@ -108,7 +79,7 @@ inputs/my-first-reel/
 
 Use unique numbered filenames. Keep your original recordings; the workflow imports copies. Videos and generated output are ignored by Git.
 
-### 3. Open the folder in your coding agent
+### 2. Start the reel workflow
 
 Use an agent with local file and terminal access. Ask it to **read `AGENTS.md`**, then send:
 
