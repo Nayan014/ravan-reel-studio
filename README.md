@@ -95,16 +95,16 @@ Finished reels, previews and posting copy live in `outputs/reels/`. Single-video
 
 ## Commands
 
-Send `/wf` to open the menu. Numbers apply only while that menu is awaiting your choice.
+Use a shortcut directly, or send `/wf` to open the numbered menu.
 
-| Pick | Command | Purpose |
+| Command | Purpose | Menu choice |
 | --- | --- | --- |
-| 1 | `/wf-video` | Guided edit of a single video |
-| 2 | `/wf-gallery` | Browse the effect reference pictures |
-| 3 | `/wf-effects` | Apply a named effect |
-| 4 | `/wf-resume` | Resume a saved single-video edit |
-| 5 | `/wf-reel` | Combine numbered recorded takes |
-| 6 | `/wf-reel-plan` | Develop and approve a script before recording |
+| `/wf-video` | Guided edit of a single video | 1 |
+| `/wf-reel-plan` | Develop and approve a script before recording | 6 |
+| `/wf-reel` | Combine numbered recorded takes | 5 |
+| `/wf-gallery` | Browse the effect reference pictures | 2 |
+| `/wf-effects` | Apply a named effect | 3 |
+| `/wf-resume` | Resume a saved single-video edit | 4 |
 
 `/wf reel`, `/wf reel-plan`, `/video-edit` and `/effects` remain available. Command discovery varies by agent; reading the shared instructions is the portable fallback.
 
