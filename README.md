@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1><img src="docs/images/wordmark.svg" width="900" alt="Ravan Reel Studio"></h1>
+<h1><img src="docs/images/wordmark-ivory.svg" width="900" alt="Ravan Reel Studio"></h1>
 
 **Create → Review → Finish**  
 Make reels locally with your coding agent.
@@ -26,8 +26,8 @@ On the first launch, the studio downloads its tools and opens the bundled demo i
 Start with an idea or bring recordings. Both paths lead through a scene plan, frame and audio review, your approval, and a finished reel.
 
 <picture>
-  <source media="(max-width: 640px)" srcset="docs/images/workflow-mobile.svg">
-  <img src="docs/images/workflow.svg" width="1260" alt="Idea → Script → Record, or existing recordings → Scene plan → Frame and audio review → Your approval → Render and download">
+  <source media="(max-width: 640px)" srcset="docs/images/workflow-mobile-ivory.svg">
+  <img src="docs/images/workflow-ivory.svg" width="1260" alt="Idea → Script → Record, or existing recordings → Scene plan → Frame and audio review → Your approval → Render and download">
 </picture>
 
 ## Create your first reel
@@ -130,9 +130,9 @@ Original project contributions use the [MIT licence](LICENSE). Third-party code,
 I build Ravan Reel Studio and share tutorials on the Techno Ravan channel.<br>
 Explore the project with me on YouTube, or connect through my website and socials.
 
-<a href="https://www.youtube.com/@techno_ravan"><img src="docs/images/social-youtube.svg" width="168" height="48" alt="Watch Techno Ravan on YouTube"></a>
-<a href="https://www.linkedin.com/in/nayan-vekariya/"><img src="docs/images/social-linkedin.svg" width="168" height="48" alt="Connect with Nayan on LinkedIn"></a>
-<a href="https://www.instagram.com/techno_ravan/"><img src="docs/images/social-instagram.svg" width="168" height="48" alt="Follow Techno Ravan on Instagram"></a>
-<a href="https://vekariya.ai.studio/"><img src="docs/images/social-website.svg" width="168" height="48" alt="Visit Nayan’s website"></a>
+<a href="https://www.youtube.com/@techno_ravan"><img src="docs/images/social-youtube-ivory.svg" width="168" height="48" alt="Watch Techno Ravan on YouTube"></a>
+<a href="https://www.linkedin.com/in/nayan-vekariya/"><img src="docs/images/social-linkedin-ivory.svg" width="168" height="48" alt="Connect with Nayan on LinkedIn"></a>
+<a href="https://www.instagram.com/techno_ravan/"><img src="docs/images/social-instagram-ivory.svg" width="168" height="48" alt="Follow Techno Ravan on Instagram"></a>
+<a href="https://vekariya.ai.studio/"><img src="docs/images/social-website-ivory.svg" width="168" height="48" alt="Visit Nayan’s website"></a>
 
 </div>

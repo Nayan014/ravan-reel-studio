@@ -1,7 +1,7 @@
 {
   "project": "Ravan Reel Studio",
   "repository_name": "ravan-reel-studio",
-  "source_bytes": 24604973,
+  "source_bytes": 24622566,
   "files": [
     {
       "path": ".agents/skills/effects",
@@ -148,8 +148,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 7492,
-      "sha256": "5848259b8c4eba883edffad231e20e10b02598b039a50304e6f5a5e33d51c324"
+      "bytes": 7534,
+      "sha256": "04e19d64bb5fed59b905b26784cf1d0b0fa6c6e15585a94a0dba80f60f3ef350"
     },
     {
       "path": "SOURCE.json",
@@ -292,9 +292,19 @@
       "sha256": "8a373ebfcb4a2eaa57a19f35095d1a0f6bfc016c042adfe1dabbd34ef5abde1d"
     },
     {
+      "path": "docs/images/social-instagram-ivory.svg",
+      "bytes": 1017,
+      "sha256": "8af0bd5e83dde89d1bccfae9c6106c06cf670cb0e44d233eff6e0d57f766849d"
+    },
+    {
       "path": "docs/images/social-instagram.svg",
       "bytes": 1017,
       "sha256": "0a7d79ceb61d1441bc0e6a5a5eaa88677e8db583e4fc1e5d6a7bbdc74bc8b66d"
+    },
+    {
+      "path": "docs/images/social-linkedin-ivory.svg",
+      "bytes": 766,
+      "sha256": "2e87572d5f855eca3a2dfde7c0ada50086e8159fa503e96bb2f6fc82895034ff"
     },
     {
       "path": "docs/images/social-linkedin.svg",
@@ -302,14 +312,29 @@
       "sha256": "14ff173f1e2a7568b84e2c37d0ec55efae6a76e4affc44fc543c2781f1eac80a"
     },
     {
+      "path": "docs/images/social-website-ivory.svg",
+      "bytes": 735,
+      "sha256": "46552501abc362677478c4a65dc62c8fed5376f59843f88fc8f5099d1078136c"
+    },
+    {
       "path": "docs/images/social-website.svg",
       "bytes": 735,
       "sha256": "bd452553d5465f72a2f0dd85364cfb273a6f52214f6c579c5cba49f1f47a640e"
     },
     {
+      "path": "docs/images/social-youtube-ivory.svg",
+      "bytes": 679,
+      "sha256": "f2fcabbe555c8216cd8550bef2db6e9021b224c4982194373402dc1f299179c9"
+    },
+    {
       "path": "docs/images/social-youtube.svg",
       "bytes": 679,
       "sha256": "3cf7692bcdbf1b53d709610daffa06c17ef0f7bb64f317f77efb8489328e9062"
+    },
+    {
+      "path": "docs/images/wordmark-ivory.svg",
+      "bytes": 6860,
+      "sha256": "645b9937001240722f6859a17bbe82ac99cf05a9c88505a324eec81221c04d17"
     },
     {
       "path": "docs/images/wordmark.png",
@@ -320,6 +345,16 @@
       "path": "docs/images/wordmark.svg",
       "bytes": 6805,
       "sha256": "7cfb427b2464e4ab9662727b1471b79e93e86152c35839c3703ce1abb07e5fb5"
+    },
+    {
+      "path": "docs/images/workflow-ivory.svg",
+      "bytes": 3780,
+      "sha256": "8a5563932fba36bb7ab94e631fa95bfc24465387c48f0e53fc1e2f4381dd7a35"
+    },
+    {
+      "path": "docs/images/workflow-mobile-ivory.svg",
+      "bytes": 3714,
+      "sha256": "6365c814d811551d5047cf5e77a5b427ee363976a79f8ad078af9c6f6f78aa0a"
     },
     {
       "path": "docs/images/workflow-mobile.svg",
