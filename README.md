@@ -32,12 +32,10 @@ Start with an idea or bring recordings. Both paths lead through a scene plan, fr
 
 ## Create your first reel
 
-| Step | What you do | What happens next |
-| --- | --- | --- |
-| **1. Start the studio** | Paste the installation prompt above into your coding agent. | The studio opens the demo dashboard. |
-| **2. Bring your recordings** | Save numbered clips in `inputs/my-first-reel/`, then send `/wf-reel` in your agent and choose that folder. | The agent transcribes your takes and prepares the scene plan. |
-| **3. Review the direction** | Comment on the plan and approve it to see actual preview frames. Give frame feedback and choose music. | The agent revises the affected scenes and refreshes the review. |
-| **4. Finish your reel** | Approve the current frames and audio. | The studio renders effects, captions and sound, then adds your export to the dashboard. |
+1. **Start the studio.** Paste the installation prompt above into your coding agent. The demo dashboard opens when setup finishes.
+2. **Bring your recordings.** Save numbered clips in `inputs/my-first-reel/`. Send `/wf-reel` in your agent and choose that folder to prepare the scene plan.
+3. **Review the direction.** Comment on the plan and approve it to see actual preview frames. Give feedback on any frame and choose music. Your agent revises the scenes you flag.
+4. **Finish your reel.** Approve the current frames and audio. The studio renders effects, captions and sound, then adds your export to the dashboard.
 
 > **Starting with an idea?** Send `/wf-reel-plan` first. Develop the script and shooting plan with your agent, approve it, then record your numbered takes and continue with `/wf-reel`.
 
