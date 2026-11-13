@@ -6,11 +6,11 @@ import {ReviewError} from './review-store.mjs';
 import {validId,mediaPath} from './dashboard-library.mjs';
 
 export function studioProject(root,kind,id){
- if(kind!=='reels'||!validId(id||''))return null;
- const project=join(realpathSync(root),'outputs/reels',id);
+ if(!['reels','videos'].includes(kind)||!validId(id||''))return null;
+ const project=join(realpathSync(root),`outputs/${kind}`,id);
  try{
   if(realpathSync(project)!==project)return null;
-  if(JSON.parse(readFileSync(mediaPath(root,`outputs/reels/${id}/plan.json`),'utf8')).renderer!=='hyperframes')return null;
+  if(JSON.parse(readFileSync(mediaPath(root,`outputs/${kind}/${id}/plan.json`),'utf8')).renderer!=='hyperframes')return null;
   const candidates=['hyperframes-4k','hyperframes'].map(n=>join(project,n)).filter(p=>existsSync(join(p,'index.html')));
   const safe=candidates.filter(p=>{
    let at=project;
@@ -18,7 +18,7 @@ export function studioProject(root,kind,id){
    return true;
   });
   let preferred=null;
-  try{const value=JSON.parse(readFileSync(mediaPath(root,`outputs/reels/${id}/export.json`),'utf8')).project;preferred=typeof value==='string'?(value.startsWith(project+sep)?value:join(project,value)):null;}catch{}
+  try{const value=JSON.parse(readFileSync(mediaPath(root,`outputs/${kind}/${id}/export.json`),'utf8')).project;preferred=typeof value==='string'?(value.startsWith(project+sep)?value:join(project,value)):null;}catch{}
   return safe.includes(preferred)?preferred:safe.sort((a,b)=>statSync(join(b,'index.html')).mtimeMs-statSync(join(a,'index.html')).mtimeMs)[0]||null;
  }catch{return null;}
 }

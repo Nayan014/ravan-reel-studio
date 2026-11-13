@@ -22,14 +22,16 @@ STUDIO = Path(__file__).resolve().parents[1]
 ENGINE = STUDIO / 'tools/techno-reel'
 VIDEO_TYPES = {'.mov', '.mp4', '.m4v', '.mkv', '.webm', '.avi'}
 SCENES = {'Hook', 'Statement', 'Stamp', 'ChatPrompt', 'BigNumber', 'List', 'Compare', 'Meter', 'Swarm', 'Screenshot', 'CTA'}
+PROJECT_KIND = 'reels'
+
 CAMERAS = {'lean-in', 'locked-on', 'slow-push', 'over-the-shoulder-zoom'}
 
 
 def project(slug):
     if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', slug):
         raise ValueError('Use a lowercase project slug with letters, numbers and hyphens.')
-    path=STUDIO/'outputs/reels'/slug
-    if any(p.is_symlink() for p in [STUDIO/'outputs',STUDIO/'outputs/reels',path]):raise ValueError('Project storage cannot use symlinks.')
+    path=STUDIO/'outputs'/PROJECT_KIND/slug
+    if any(p.is_symlink() for p in [STUDIO/'outputs',STUDIO/'outputs'/PROJECT_KIND,path]):raise ValueError('Project storage cannot use symlinks.')
     return path
 
 
@@ -64,8 +66,20 @@ class ScriptLines(HTMLParser):
             self.lines.append(self.text.strip()); self.capture=False
 
 
+def input_folder(folder):
+    path=Path(folder).expanduser()
+    if not path.is_absolute():
+        path=STUDIO/path if path.parts and path.parts[0]=='inputs' else STUDIO/'inputs'/path
+    source=path.resolve()
+    if not source.is_relative_to((STUDIO/'inputs').resolve()) or not source.is_dir():
+        raise ValueError('Choose a recordings folder inside inputs.')
+    if any(parent.is_symlink() for parent in [path,*path.parents] if parent.is_relative_to(STUDIO)):
+        raise ValueError('Recordings folders cannot use symlinks.')
+    return source
+
+
 def init(slug, folder, title, script_html=None):
-    source=Path(folder).resolve()
+    source=input_folder(folder)
     if not source.is_relative_to((STUDIO/'inputs').resolve()) or not source.is_dir():
         raise ValueError('Choose a reel folder inside this studio inputs folder.')
     dest=project(slug)
@@ -79,8 +93,8 @@ def init(slug, folder, title, script_html=None):
     ids=[]
     for f in files:
         match=re.search(r'(\d+)$',f.stem)
-        if not match: raise ValueError('Use numbered take filenames, such as 1.MOV or take-01.mp4.')
-        ids.append(f'{int(match[1]):02d}')
+        if not match and len(files)!=1: raise ValueError('Use numbered take filenames, such as 1.MOV or take-01.mp4.')
+        ids.append(f'{int(match[1]):02d}' if match else '01')
     if len(set(ids))!=len(ids): raise ValueError('Two recordings have the same take number; clarify the preferred take first.')
     infos=[probe(f) for f in files]
     if not all(i['has_audio'] for i in infos): raise ValueError('Every recorded take needs its source audio.')
@@ -92,7 +106,7 @@ def init(slug, folder, title, script_html=None):
                       'expected_say':expected[idx] if expected else '', 'say':'','words':[],
                       'text_confirmed':False,'caption_pages':[], 'layout':'full','focus':[0.5,0.4],
                       'vibha':{'status':'pending','effects':[]},'remotion':{'status':'pending'}})
-    plan={'version':1,'slug':slug,'title':title,'channel':'Techno Ravan','language':'en','style':'flat','palette':'clay',
+    plan={'version':1,'project_type':'video' if PROJECT_KIND=='videos' else 'reel','slug':slug,'title':title,'channel':'Techno Ravan','language':'en','style':'flat','palette':'clay',
           'handle':'@techno_ravan','visual_selection':None,'shots':shots}
     from reel_commands import upgrade
     upgrade(dest,plan)
@@ -203,6 +217,8 @@ def validate(folder,plan):
             if not all(isinstance(v,(float,int)) and math.isfinite(v) for v in [a,b]) or not 0<=a<=b<=duration+0.04 or a<previous:
                 raise ValueError('Invalid or unordered word timings.')
             previous=a
+        if shot.get('framing','crop') not in ['crop','fit']:
+            raise ValueError('Choose crop or fit framing for each scene.')
         focus=shot.get('focus',[0.5,0.4])
         if len(focus)!=2 or not all(isinstance(x,(float,int)) and math.isfinite(x) and 0<=x<=1 for x in focus): raise ValueError('Focus must be two numbers from zero to one.')
         for key in ['vibha','remotion']:
@@ -369,7 +385,7 @@ def approval_check(folder):
 
 
 def pending_feedback(slug):
-    saved=STUDIO/'outputs/.workflow/reviews/reels'/f'{slug}.json'
+    saved=STUDIO/'outputs/.workflow/reviews'/PROJECT_KIND/f'{slug}.json'
     if saved.is_file() and any(s.get('action')=='feedback' and s.get('status')=='pending' for s in read_json(saved).get('submissions',[])):
         raise ValueError('Resolve and acknowledge submitted feedback before approval or rendering.')
 
@@ -419,6 +435,9 @@ def make_html(folder,plan,output=None,images=None):
     output=output or folder/'review.html'; images=images or {}; esc=html.escape
     def link(path): return esc(os.path.relpath(path,output.parent))
     takes=[]; rows=[]; cursor=0; human=0; previous=None
+    if plan.get('sections'):
+        headings=[section if isinstance(section,str) else section.get('title','') for section in plan['sections']]
+        takes.append('<aside><h3>Video sections</h3><ol>'+''.join(f'<li>{esc(str(title))}</li>' for title in headings if title)+'</ol></aside>')
     for shot in plan['shots']:
         ident=shot['id']; duration=(shot['clip'][1]-shot['clip'][0]) if shot.get('clip') else shot.get('estimated_duration',4); start=cursor; cursor+=duration
         say=shot['say'] or shot.get('expected_say','') or '[Speech has not been transcribed yet]'
@@ -430,6 +449,7 @@ def make_html(folder,plan,output=None,images=None):
                'full':'Your recording · full frame'}[shot['layout']]
         if shot['layout']!='graphic': human+=duration
         source=f'<b>{esc(frame)}</b><p>Take {esc(ident)}</p>'
+        source+=f'<p>Framing: {esc(shot.get("framing","crop"))}</p>'
         if shot.get('source'): source+=f'<a href="{link(folder/"raw"/shot["source"])}">{esc(shot["source"])}</a>'
         else: source+=f'<p>Record after script approval. {esc(shot.get("shooting_note",""))}</p>'
         if not images and shot.get('source_frame') and (folder/shot['source_frame']).is_file():
@@ -468,7 +488,7 @@ def make_html(folder,plan,output=None,images=None):
         labels=['Scene / timing','What I say','Picture / source','CC on screen','Vibha effect','Remotion graphic']
         rows.append('<tr>'+''.join(f'<td data-label="{label}">{value}</td>' for label,value in zip(labels,cells))+'</tr>')
         previous=shot
-    template=(STUDIO/'skills/wf-reel/assets/review-template.html').read_text()
+    template=(STUDIO/'skills/wf-reel-plan/assets/review-template.html').read_text()
     if plan.get('renderer')=='hyperframes':
         template=template.replace('Remotion graphic','Hyperframes finish').replace('<b>Remotion:</b> graphics made with code','<b>Hyperframes:</b> captions and final assembly')
     result=template.replace('{{TITLE}}',esc(plan['title'])).replace('{{CHANNEL}}',esc(plan.get('channel','Techno Ravan')))
@@ -494,7 +514,7 @@ def make_html(folder,plan,output=None,images=None):
     result=result.replace('{{GALLERY}}',gallery)
     port=os.environ.get('DASHBOARD_PORT','4173')
     if not port.isdigit(): port='4173'
-    review_url=f'http://127.0.0.1:{port}/review/reels/{folder.name}'
+    review_url=f'http://127.0.0.1:{port}/review/{folder.parent.name}/{folder.name}'
     result=result.replace('</main>',f'<p><a href="{html.escape(review_url)}">Open interactive review · script, scene and frame feedback and approval</a></p></main>')
     output.write_text(result)
     return output
@@ -517,7 +537,7 @@ def main():
     for name in ['draft','attach','quality','profile','audio','approve-script']:
         p=sub.add_parser(name);p.add_argument('--project',required=True)
         if name=='draft': p.add_argument('--file',required=True)
-        if name=='attach': p.add_argument('--folder',required=True)
+        if name=='attach': p.add_argument('--folder',required=True);p.add_argument('--mapping')
         if name=='audio': p.add_argument('--track',required=True)
         if name=='profile':
             p.add_argument('--width',type=int,required=True);p.add_argument('--height',type=int,required=True);p.add_argument('--fps',required=True)
@@ -525,7 +545,12 @@ def main():
     for name in ['analyze','plan','status','preview','approve','render']:
         p=sub.add_parser(name);p.add_argument('--project',required=True)
         if name=='approve': p.add_argument('--preview-id',required=True);p.add_argument('--message',required=True)
+    p=sub.add_parser('scenes');p.add_argument('--project',required=True);p.add_argument('--file',required=True)
+    for command in sub.choices.values():
+        command.add_argument('--kind',choices=['reels','videos'],default='reels')
     args=parser.parse_args()
+    global PROJECT_KIND
+    PROJECT_KIND=args.kind
     if args.cmd=='list': result={'folders':inputs()}
     elif args.cmd=='doctor': result=doctor()
     elif args.cmd=='init': result=init(args.project,args.folder,args.title,args.script_html)
@@ -538,7 +563,10 @@ def main():
         result=reel_commands.draft(sys.modules[__name__],args.project,args.file)
     elif args.cmd=='attach':
         import reel_commands
-        result=reel_commands.attach(sys.modules[__name__],args.project,args.folder)
+        result=reel_commands.attach(sys.modules[__name__],args.project,args.folder,args.mapping)
+    elif args.cmd=='scenes':
+        import reel_commands
+        result=reel_commands.scenes(sys.modules[__name__],args.project,args.file)
     elif args.cmd=='audio':
         from reel_pipeline import choose_music
         result=choose_music(args.project,None if args.track=='none' else args.track)
@@ -552,7 +580,7 @@ def main():
             write_json(folder/'script-approval.json',{'script':[s['expected_say'] for s in plan['shots']],'message':args.message})
             result={'stage':'script_approved','project':args.project}
         else:
-            if args.cmd=='profile': plan['output_profile']=profile(args.width,args.height,args.fps);plan['profile_choice']='explicit'
+            if args.cmd=='profile': plan['output_profile']=profile(args.width,args.height,args.fps,plan.get('project_type','reel'));plan['profile_choice']='explicit'
             result=reel_commands.quality(folder,plan);write_json(folder/'plan.json',plan);make_html(folder,plan)
             result['selected']=plan.get('output_profile')
     else:
@@ -569,6 +597,7 @@ def main():
 
 
 if __name__=='__main__':
+    sys.modules['reel_workflow']=sys.modules[__name__]
     try: main()
     except (ValueError,KeyError,FileNotFoundError,TypeError) as e:
         print(json.dumps({'error':str(e)}),file=sys.stderr);sys.exit(1)

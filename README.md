@@ -23,25 +23,25 @@ On the first launch, the studio downloads its tools and opens the bundled demo i
 
 ## How the studio works
 
-Start with an idea or bring recordings. Both paths lead through a scene plan, frame and audio review, your approval, and a finished reel.
+Start with an idea or bring recordings. Choose Reel Plan for a portrait reel or Video Plan for YouTube. Each starts from an idea, existing footage or a saved project, then guides you through planning, review and export.
 
 <picture>
-  <source media="(max-width: 640px)" srcset="docs/images/workflow-mobile-ivory.svg">
-  <img src="docs/images/workflow-ivory.svg" width="1260" alt="Idea → Script → Record, or existing recordings → Scene plan → Frame and audio review → Your approval → Render and download">
+  <source media="(max-width: 640px)" srcset="docs/images/workflow-mobile-ivory-planning.svg">
+  <img src="docs/images/workflow-ivory-planning.svg" width="1260" alt="Idea → Script → Record, or existing recordings → Scene plan → Frame and audio review → Your approval → Render and download">
 </picture>
 
-## Create your first reel
+## Create your first reel or YouTube video
 
 1. **Start the studio.** Paste the installation prompt above into your coding agent. The demo dashboard opens when setup finishes.
-2. **Bring your recordings.** Save numbered clips in `inputs/my-first-reel/`. Send `/wf-reel` in your agent and choose that folder to prepare the scene plan.
+2. **Bring your recordings.** Save numbered clips in `inputs/my-first-reel/`. Send `/wf-reel-plan` for a reel or `/wf-video-plan` for YouTube. Choose **I have footage** and enter that folder name.
 3. **Review the direction.** Comment on the plan and approve it to see actual preview frames. Give feedback on any frame and choose music. Your agent revises the scenes you flag.
 4. **Finish your reel.** Approve the current frames and audio. The studio renders effects, captions and sound, then adds your export to the dashboard.
 
-> **Starting with an idea?** Send `/wf-reel-plan` first. Develop the script and shooting plan with your agent, approve it, then record your numbered takes and continue with `/wf-reel`.
+> **Starting with an idea?** Send `/wf-reel-plan` or `/wf-video-plan` and choose **I have an idea** or **Suggest ideas**. Approve the script, record your takes and provide their folder to continue in the same workflow. Choose **Resume a project** to pick up saved work.
 
 Name the clips `1.mp4`, `2.mp4`, `3.mp4` and so on. If your assistant does not recognise slash commands, ask it to read `AGENTS.md` and use the corresponding skill.
 
-The workflow matches recording quality up to portrait **4K/60**, including fractional frame rates. When takes differ, you choose the output profile.
+Output follows the recordings up to **4K/60**: portrait 2160×3840 for reels or landscape 3840×2160 for YouTube, including fractional frame rates. When takes differ, you choose the output profile.
 
 <details>
 <summary><strong>See a frame review and three sample effects</strong></summary>
@@ -62,9 +62,9 @@ Send these shortcuts directly to your coding assistant.
 
 | Command | Purpose |
 | --- | --- |
-| `/wf-video` | Guided edit of a single video |
-| `/wf-reel-plan` | Develop and approve a script before recording |
-| `/wf-reel` | Combine numbered recorded takes |
+| `/wf-reel-plan` | Create a portrait reel from an idea, recordings or a saved project |
+| `/wf-video-plan` | Create a landscape YouTube video from an idea, footage or a saved project |
+| `/wf-video` | Quick guided edit of a single video |
 | `/wf-gallery` | Browse the effect reference pictures |
 | `/wf-effects` | Apply a named effect |
 | `/wf-resume` | Resume a saved single-video edit |
@@ -72,7 +72,7 @@ Send these shortcuts directly to your coding assistant.
 <details>
 <summary>Prefer the numbered workflow menu?</summary>
 
-Send `/wf`, then reply with a menu number. For example, `/wf` followed by **5** starts the same workflow as `/wf-reel`.
+Send `/wf`, then reply with a menu number. For example, `/wf` followed by **5** opens Reel Plan. Reply **6** for YouTube Video Plan.
 
 | Reply | Workflow |
 | --- | --- |
@@ -80,12 +80,12 @@ Send `/wf`, then reply with a menu number. For example, `/wf` followed by **5** 
 | 2 | Effect gallery |
 | 3 | Named effect |
 | 4 | Resume an edit |
-| 5 | Recorded reel |
-| 6 | Script and shooting plan |
+| 5 | Reel Plan |
+| 6 | YouTube Video Plan |
 
 </details>
 
-`/wf reel`, `/wf reel-plan`, `/video-edit` and `/effects` remain available. Command discovery varies by agent; reading the shared instructions is the portable fallback.
+`/wf reel-plan`, `/wf video-plan`, `/video-edit` and `/effects` remain available. Command discovery varies by agent; reading the shared instructions is the portable fallback.
 
 ## System requirements
 
@@ -95,11 +95,13 @@ Send `/wf`, then reply with a menu number. For example, `/wf` followed by **5** 
 | Short 1080p reels | Apple Silicon or a modern multicore Intel/AMD CPU | 16 GB | 20 GB+ |
 | 4K/60 reels | Apple Silicon Pro-class or a strong modern multicore CPU | 32 GB+ | 50 GB+ |
 
-These figures are practical starting points. Allow the suggested free space in addition to your original footage. Long takes and complex effects need more time and memory.
+These figures are practical starting points. Allow the suggested free space in addition to your original footage. Long takes and complex effects need more time and memory. YouTube projects appear under Videos in the dashboard and are saved in `outputs/videos/`; reels use `outputs/reels/`.
 
 Tested on macOS with an **Apple M4 Pro and 48 GB of memory**. Windows and Linux setup instructions are available, with end-to-end validation pending. Default speech recognition runs on the CPU. [Setup and troubleshooting](docs/SETUP.md) · [Upstream CPU documentation](https://github.com/SYSTRAN/faster-whisper#small-model-on-cpu)
 
 Speech recognition, trimming and rendering run locally. Your coding assistant may use an external service and incur charges. Git ignores your recordings and generated exports.
+
+> The two planning entry points and landscape YouTube pipeline are implemented. Workflow testing is pending.
 
 ## Guides and contributions
 

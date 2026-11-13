@@ -1,7 +1,7 @@
 {
   "project": "Ravan Reel Studio",
   "repository_name": "ravan-reel-studio",
-  "source_bytes": 24622566,
+  "source_bytes": 24650883,
   "files": [
     {
       "path": ".agents/skills/effects",
@@ -24,10 +24,6 @@
       "symlink": "../../skills/wf-gallery"
     },
     {
-      "path": ".agents/skills/wf-reel",
-      "symlink": "../../skills/wf-reel"
-    },
-    {
       "path": ".agents/skills/wf-reel-plan",
       "symlink": "../../skills/wf-reel-plan"
     },
@@ -38,6 +34,10 @@
     {
       "path": ".agents/skills/wf-video",
       "symlink": "../../skills/wf-video"
+    },
+    {
+      "path": ".agents/skills/wf-video-plan",
+      "symlink": "../../skills/wf-video-plan"
     },
     {
       "path": ".claude/skills/effects",
@@ -60,10 +60,6 @@
       "symlink": "../../skills/wf-gallery"
     },
     {
-      "path": ".claude/skills/wf-reel",
-      "symlink": "../../skills/wf-reel"
-    },
-    {
       "path": ".claude/skills/wf-reel-plan",
       "symlink": "../../skills/wf-reel-plan"
     },
@@ -74,6 +70,10 @@
     {
       "path": ".claude/skills/wf-video",
       "symlink": "../../skills/wf-video"
+    },
+    {
+      "path": ".claude/skills/wf-video-plan",
+      "symlink": "../../skills/wf-video-plan"
     },
     {
       "path": ".gemini/commands/effects.toml",
@@ -96,12 +96,13 @@
       "symlink": "../../skills/wf-reel-plan/adapters/gemini.toml"
     },
     {
-      "path": ".gemini/commands/wf-reel.toml",
-      "symlink": "../../skills/wf-reel/adapters/gemini.toml"
-    },
-    {
       "path": ".gemini/commands/wf-resume.toml",
       "symlink": "../../skills/wf-resume/adapters/gemini.toml"
+    },
+    {
+      "path": ".gemini/commands/wf-video-plan.toml",
+      "bytes": 431,
+      "sha256": "8b957c5db6f647ae59bf6f0b6da48f267a87d6eb62eda2332d240b070b470f70"
     },
     {
       "path": ".gemini/commands/wf-video.toml",
@@ -123,13 +124,13 @@
     },
     {
       "path": "AGENTS.md",
-      "bytes": 4740,
-      "sha256": "25da164e6b45872dfde2f0044eec93954fbb9b52922277554a01e4f15ededfd0"
+      "bytes": 4914,
+      "sha256": "3eab541898d170f435161454b64dda23201c24c166384b63d7a79e44e9a3f50f"
     },
     {
       "path": "CLAUDE.md",
-      "bytes": 519,
-      "sha256": "6f4a07b097afb84d43a8df2dbf0b30e5e9334d7ad00a6631e851c85c5ba20251"
+      "bytes": 754,
+      "sha256": "d2daab3dff77d05e687c7f56f6b86d9842902f00bc02ac10fd857f388083a7f1"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -138,8 +139,8 @@
     },
     {
       "path": "GEMINI.md",
-      "bytes": 544,
-      "sha256": "730600e9a4849371c28d6f76c810f8c1b95eefc060ac7d68e2533c2997072154"
+      "bytes": 779,
+      "sha256": "1a1dd60340d320395a9b25714c90971939dd2dc419696586e82d006ace41d7c1"
     },
     {
       "path": "LICENSE",
@@ -148,13 +149,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 7534,
-      "sha256": "04e19d64bb5fed59b905b26784cf1d0b0fa6c6e15585a94a0dba80f60f3ef350"
+      "bytes": 8136,
+      "sha256": "f517fefbe3bdffaf7e24ae8b7c958efdcb8fd647578b4e0f88448bbad2197301"
     },
     {
       "path": "SOURCE.json",
-      "bytes": 7176,
-      "sha256": "67521bfae971b49ce92d3f6c726622346df9171c849b9d797ac9796733c65ec8"
+      "bytes": 7418,
+      "sha256": "dd5164dc0a70fb380dca1f8e783b5d63a2ada429f568e885245c406f0c82362c"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -173,8 +174,8 @@
     },
     {
       "path": "dashboard/app.js",
-      "bytes": 14996,
-      "sha256": "1a9b93993cb178f5f74774ea63b5ec575448b07d16a7c0f25ded8b60f0cf501f"
+      "bytes": 15164,
+      "sha256": "233d751c3aeb9aedd2fb9476c5b321642a85d0a315ea5de31a9f50f6e78bb60f"
     },
     {
       "path": "dashboard/captions.mjs",
@@ -208,13 +209,13 @@
     },
     {
       "path": "docs/COMBINED_REEL_WORKFLOW.md",
-      "bytes": 6254,
-      "sha256": "c7db0497c379bd2ace9fe552163a57d5823c3ef3b3b9fd02a9978fef4ebf41e6"
+      "bytes": 9775,
+      "sha256": "bc31da4457f9980bef7b547f903edae1f6243c3d806fb3c3cdeb36b55d4ee4f7"
     },
     {
       "path": "docs/DASHBOARD.md",
-      "bytes": 4894,
-      "sha256": "dd83ae1fd3efa87c6398e61a687c24dfbe92d81378d6f29e119a21dbfc6c9e43"
+      "bytes": 5253,
+      "sha256": "81309d624e8b5b72ae31a4459bbc8390413f6eb987bb458b42612d4bf88ae529"
     },
     {
       "path": "docs/REEL_EFFECT_EXTENSIONS.md",
@@ -223,13 +224,13 @@
     },
     {
       "path": "docs/REEL_PLAN_FORMAT.md",
-      "bytes": 6930,
-      "sha256": "f79c14723d09e06729b0cb40896bd5490f95dd7b22fd0b3a1d08441a874bc175"
+      "bytes": 7857,
+      "sha256": "23c98a81df832480334a1fbbdab102a40507908c6135ec0acf9e1233a0161bc4"
     },
     {
       "path": "docs/SETUP.md",
-      "bytes": 10759,
-      "sha256": "dd47911644066d9fa3f5e8f4e5b23a289362ad77ec77cf12b363d9925f480349"
+      "bytes": 11191,
+      "sha256": "3ed800b401720cebf360fc7a8ff4e70cdff9b1b6f43b8f2f15cf2ef89482f61c"
     },
     {
       "path": "docs/VIDEO_EDIT_WORKFLOW.md",
@@ -347,9 +348,19 @@
       "sha256": "7cfb427b2464e4ab9662727b1471b79e93e86152c35839c3703ce1abb07e5fb5"
     },
     {
+      "path": "docs/images/workflow-ivory-planning.svg",
+      "bytes": 4095,
+      "sha256": "0c4281c711fabf6490247e7da6a8810f50e683bea4f12c0766b885497ebd74bd"
+    },
+    {
       "path": "docs/images/workflow-ivory.svg",
       "bytes": 3780,
       "sha256": "8a5563932fba36bb7ab94e631fa95bfc24465387c48f0e53fc1e2f4381dd7a35"
+    },
+    {
+      "path": "docs/images/workflow-mobile-ivory-planning.svg",
+      "bytes": 4029,
+      "sha256": "6c8613636818e46dfcc58498250e00c6c0c4baea5e0a7d96def02d85737ab836"
     },
     {
       "path": "docs/images/workflow-mobile-ivory.svg",
@@ -423,8 +434,8 @@
     },
     {
       "path": "scripts/audio-library.mjs",
-      "bytes": 2497,
-      "sha256": "1c4356ea8f266f132a8ef7e8045686481cb4549a569cc6afdab6541c5a0aaf5e"
+      "bytes": 2536,
+      "sha256": "6f3da8a1e9a82e140563c153bcb0876911b0cd3224e96d124d51573714c642ef"
     },
     {
       "path": "scripts/audio_library.py",
@@ -433,13 +444,13 @@
     },
     {
       "path": "scripts/dashboard-library.mjs",
-      "bytes": 9905,
-      "sha256": "21bb09253272780cfe1ebbf8a7b3f20316d8d8a4bc8b7cd80bc2170bda0716ed"
+      "bytes": 10028,
+      "sha256": "1328adbb701257462ed4757831c74f3adbfcec1f8b12d583d3c179870c69a4a7"
     },
     {
       "path": "scripts/dashboard.mjs",
-      "bytes": 8863,
-      "sha256": "f3da925a390166cde554ae7db2f45180712f1e148f345d1128a849d21be60fdc"
+      "bytes": 8884,
+      "sha256": "9cfe77ecd853644b18f2f1504c99f30264fab25a7ae88081345cf78b3b031159"
     },
     {
       "path": "scripts/install-demo.mjs",
@@ -448,13 +459,13 @@
     },
     {
       "path": "scripts/media_profile.py",
-      "bytes": 4013,
-      "sha256": "6d71eb1c8ed7ef749d4970a2052926577097b853560a94a08f133f76189f0197"
+      "bytes": 4598,
+      "sha256": "7ebc6e589c22f7c543378afbe790f1e621dfe3312ca87c75e8d39c7fbf91d632"
     },
     {
       "path": "scripts/native-studio.mjs",
-      "bytes": 2296,
-      "sha256": "a7ace973d24fae9839d04cb6dddbc2f52ff31fc78836a0c27821186571d96cd7"
+      "bytes": 2322,
+      "sha256": "b2896d2589aa8fe1be0ff50ce62e7ecf91e905ee23b37fb6b25f71272160b9e8"
     },
     {
       "path": "scripts/package_release.py",
@@ -468,23 +479,23 @@
     },
     {
       "path": "scripts/reel_commands.py",
-      "bytes": 6967,
-      "sha256": "fb97c747bae254b8eaa4076a301a2ee814c0f9644dddcc71549d5b753c7ae99c"
+      "bytes": 12395,
+      "sha256": "a1aa8114b00733fbcd472f84caa3530286295247019571d85c60ca5e7e1f1a44"
     },
     {
       "path": "scripts/reel_pipeline.py",
-      "bytes": 20920,
-      "sha256": "f8660b8acccb55de174a492e67b2a528c50173f82469365b084afed90a23a07d"
+      "bytes": 21411,
+      "sha256": "9ec6f7bc023797c8b788b2a91a39c0fd3fc1ffb1c218aee153f9f6a8b4160ad2"
     },
     {
       "path": "scripts/reel_workflow.py",
-      "bytes": 35894,
-      "sha256": "8ddbb1835514d7ee474c49afa0d64c1601f8b91718c19480c1790afa655128d4"
+      "bytes": 37659,
+      "sha256": "0ffb516edfe06175f89f93225dea27e4201888192a508d84c6f83e66ab21d511"
     },
     {
       "path": "scripts/review-store.mjs",
-      "bytes": 15468,
-      "sha256": "42182bce865432ae8e3405f80d538425c9f678e5006b989ca3747058b3dfef8e"
+      "bytes": 15851,
+      "sha256": "cc0cb420da069c3f1a2a0d49c74ac5f9df04183b0c44512c38237d2c2431e055"
     },
     {
       "path": "scripts/review.mjs",
@@ -998,28 +1009,28 @@
     },
     {
       "path": "skills/wf-reel-plan/SKILL.md",
-      "bytes": 2409,
-      "sha256": "82b34cbc5764e28aa1f3552e3fd70b53cc0e69169156c04f9c6dccb67575b12f"
+      "bytes": 611,
+      "sha256": "6a22a8f3ad5908f032edac804c423176ea1373425cf70a1eedec9b712c944ca8"
     },
     {
       "path": "skills/wf-reel-plan/adapters/gemini.toml",
-      "bytes": 385,
-      "sha256": "142f3032ae1a4932ca4997af99869053ea4cd06e5ef9c3dfe27fe76fe810e473"
+      "bytes": 420,
+      "sha256": "5e37789b3d9ef7afcf8cbeb77a6861fc3394fa7b599b77427e194b44d013fa1f"
     },
     {
-      "path": "skills/wf-reel/SKILL.md",
-      "bytes": 6391,
-      "sha256": "d622a90b0ace00ee258a57e8ac06b42a8cd5e3bae5eb64fca972495a9a6dbd4e"
-    },
-    {
-      "path": "skills/wf-reel/adapters/gemini.toml",
-      "bytes": 407,
-      "sha256": "59fe71966b14f92491b3f0e88e85d1a9c4eca746dc773cee3d53cac5159c7509"
-    },
-    {
-      "path": "skills/wf-reel/assets/review-template.html",
+      "path": "skills/wf-reel-plan/assets/review-template.html",
       "bytes": 6987,
       "sha256": "ea54bc68925c0be93c32bebd5d0b1fad1218da64e53d57f03257ce19df7582ad"
+    },
+    {
+      "path": "skills/wf-reel-plan/references/planning.md",
+      "bytes": 5197,
+      "sha256": "b4dee2273a9b96a9aeb35e9b2f4d4cc08b040265ad785ce1ec16f7b72a2d2adc"
+    },
+    {
+      "path": "skills/wf-reel-plan/references/production.md",
+      "bytes": 6210,
+      "sha256": "fe353d9b5b49682cdc89be30b47a8eaf3cb8ed44ecb9246b4d76f9e4b4c55f8c"
     },
     {
       "path": "skills/wf-resume/SKILL.md",
@@ -1030,6 +1041,16 @@
       "path": "skills/wf-resume/adapters/gemini.toml",
       "bytes": 291,
       "sha256": "497954a30ce5ab7453b1620d9a69b64d8945ffad321c86ce975014242f88591a"
+    },
+    {
+      "path": "skills/wf-video-plan/SKILL.md",
+      "bytes": 647,
+      "sha256": "decd975a2a4b5372b8292dde6205db7a798add2b614ed88f60aba90bf7a4750d"
+    },
+    {
+      "path": "skills/wf-video-plan/adapters/gemini.toml",
+      "bytes": 431,
+      "sha256": "8b957c5db6f647ae59bf6f0b6da48f267a87d6eb62eda2332d240b070b470f70"
     },
     {
       "path": "skills/wf-video/SKILL.md",
@@ -1043,13 +1064,13 @@
     },
     {
       "path": "skills/wf/SKILL.md",
-      "bytes": 5433,
-      "sha256": "0274092abd2814db9262c029dac08375bc4c3ccc2ae7023a3af8e40e6e629b5e"
+      "bytes": 5498,
+      "sha256": "8f4613524e7177d5d2370358c64a127d4e25636b93086f3903ab2a3f548b9300"
     },
     {
       "path": "skills/wf/adapters/gemini.toml",
-      "bytes": 421,
-      "sha256": "d00dcf353752d7dfe0db986d58b35caf6e0789bdf3e5af8ba71ca78c69818954"
+      "bytes": 438,
+      "sha256": "17e5bad459a68bcb667f3c803ee3ff0cfd6a899556b624e6a32a5a7fc916f63f"
     },
     {
       "path": "tests/dashboard.test.mjs",

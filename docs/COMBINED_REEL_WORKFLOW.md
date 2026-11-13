@@ -1,6 +1,6 @@
 # Reel workflow
 
-`/wf-reel` (or `/wf reel`, menu 5) starts with numbered recordings. `/wf-reel-plan` (or `/wf reel-plan`, menu 6) starts with an idea, an approved script and shooting plan; recordings attach later. Menu choices1–5 retain their meanings.
+`/wf-reel-plan` (or `/wf reel-plan`, menu 5) creates a portrait reel. `/wf-video-plan` (or `/wf video-plan`, menu 6) creates a landscape YouTube video. Both begin with an idea, suggestions, footage or a saved project, and continue through final export. Menu choices 1–4 retain their roles.
 
 New reels use **Vibha → Hyperframes**. Vibha renders selected effects and approved labels without spoken subtitles. Hyperframes assembles those clips, adds the single spoken-caption layer and mixes the authoritative source voice with chosen music/SFX. Existing Remotion and manually authored Hyperframes projects retain their prior workflow and exports.
 
@@ -8,7 +8,7 @@ New reels use **Vibha → Hyperframes**. Vibha renders selected effects and appr
 
 1. Choose an idea or existing takes using native choice/input forms.
 2. Review the full script first and one scene table second. Submit feedback under the script and independently in each scene row.
-3. Inspect source dimensions, rotation and exact rate locally. Matching recordings select portrait output automatically. Mixed/variable/unsupported profiles prompt an explicit choice.
+3. Inspect source dimensions, rotation and exact rate locally. Matching recordings select portrait output for reels or landscape output for YouTube. Mixed/variable/unsupported profiles prompt an explicit choice.
 4. Analyze speech locally once per uncached batch, confirm actual words, trim pauses and choose numbered Vibha effects. Original expected wording never substitutes for uncertain speech.
 5. Approve the production plan/visual choices, then review actual combined stills with proposed captions. Each actual frame has a targeted feedback box.
 6. Audition recommended music (preselected), alternatives, No music, suggested SFX and a voice/music sample. Selecting music creates a fresh review revision; playing alone is not approval.
@@ -25,7 +25,7 @@ Use Hyperframes Studio for direct visual edits. The review page has no custom te
 |1080p/60|1080×1920 at 60 FPS|
 |59.94FPS|Exact60000/1001 when supported|
 
-Rotation metadata determines displayed dimensions. Portrait cropping can discard landscape pixels and require scaling; actual frames show the crop. Supported new-run profiles are even portrait9:16, up to2160×3840 and 60 FPS. Smaller source resolutions remain smaller. Unsupported sizes/rates require an explicit supported profile. This matches dimensions/rate, not a promise of lossless encoding, HDR or original bitrate. Preview thumbnails never become production video sources.
+Rotation metadata determines displayed dimensions. Portrait cropping can discard landscape pixels and require scaling; actual frames show the crop. Supported profiles are even portrait 9:16 up to 2160×3840 or landscape 16:9 up to 3840×2160, at 1–60 FPS. Smaller source resolutions remain smaller. Unsupported sizes/rates require an explicit supported profile. This matches dimensions/rate, not a promise of lossless encoding, HDR or original bitrate. Preview thumbnails never become production video sources.
 
 ## Files and helpers
 
@@ -59,3 +59,33 @@ REEL_INTEGRATION=1 skills/effects/.venv/bin/python -m unittest discover -s tests
 ```
 
 The opt-in integration suite uses short synthetic footage and a local browser for real4K/60/4K/30/1080p/60/fractional/rotated exports, audio/caption wiring, stale approvals and music/cache reuse. It never renders user reels. Manual review remains necessary for spoken wording, aesthetic choices and perceived lip synchronization.
+
+## Two planning workflows
+
+`/wf-reel-plan` creates a portrait reel; `/wf-video-plan` creates a landscape YouTube video. Both offer **I have an idea**, **Suggest ideas**, **I have footage**, and **Resume a project**. Supplied arguments skip answered questions. The existing `/wf-video` remains a quick single-video edit. The public `/wf-reel` command is retired.
+
+New plans record `project_type: reel` or `video`. Older plans without the field retain reel behaviour. Helper commands accept `--kind reels` (default) or `--kind videos` **after the subcommand**. Pass the kind on every operation so projects with the same slug remain separate. Videos live under `outputs/videos/`, use `/review/videos/SLUG`, and appear in the dashboard Videos filter.
+
+For YouTube, use a hook, chapter/section outline, conclusion and manageable recording cues. The entire script precedes the scene table. A draft manifest may include `target_duration` in seconds and `sections`. Keep the approved wording through recording attachment and review actual speech independently.
+
+### Continuous footage
+
+A single recording may have any filename. Import it with `init --kind videos --project SLUG --folder FOLDER --title TITLE`, then analyze the audio. To split it into scenes, save a mapping file:
+
+```json
+{"scenes":[{"id":"01","source":"recording.mp4","clip":[0,12.4]},{"id":"02","source":"recording.mp4","clip":[12.4,30]}]}
+```
+
+Run `scenes --kind videos --project SLUG --file /absolute/mapping.json`, then `analyze --kind videos --project SLUG`. The source transcript is reused and filtered to each clip range. Originals stay intact. Scene remapping resets visual selection and SFX because scene IDs and timing may have changed. Retain approved script text separately.
+
+To attach continuous footage to an approved draft, use `attach --kind videos --project SLUG --folder FOLDER --mapping /absolute/mapping.json`; mapping IDs must match the approved draft scenes. Attach prepares copies before committing the recorded plan and refuses to overwrite existing originals. Numbered takes can omit the mapping when scene numbers match.
+
+### Orientation and finishing
+
+A matching landscape 4K/60 source selects 3840×2160 at 60 FPS. Mixed dimensions, unsupported rates and variable rate require an explicit profile. Set each scene's `framing` to `crop` (default) or `fit`. Fit retains the whole source using padding. Show the choice and any scaling during review. Landscape captions/headlines use the short side to size text, and selected effects receive landscape actual-frame review before approval.
+
+All rendering continues through the shared production reference in `skills/wf-reel-plan/references/production.md`. Caption-free Vibha clips feed Hyperframes assembly, captions, one source voice, music and SFX. Output-profile/scene changes require fresh artifact approval; speech caches remain reusable when original audio is unchanged.
+
+### Deferred validation
+
+The two planning workflows, continuous-scene mapping and landscape rendering were implemented without running tests, demo renders or end-to-end workflows, at the creator's request. The earlier validation record covers the prior reel implementation. Validate both entry paths, resume/feedback, mixed profiles, 4K/60 and exact rates, crop/fit, audio/caption wiring, cache reuse, dashboard Videos routes and old-project compatibility in the scheduled later testing session.

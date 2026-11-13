@@ -83,3 +83,7 @@ This dashboard does not change the licences of the renderers, media, fonts, or d
 
 The studio dashboard is separate from the bundled renderer dashboard. Existing workflow formats,
 render code, original footage, and approval files are not changed by browsing.
+
+## YouTube videos
+
+The Videos filter discovers planned and exported YouTube projects under `outputs/videos/`. Plans, feedback, actual preview frames, music auditions, native Hyperframes Studio and downloads follow the same review stages as reels. Start with `/wf-video-plan`; use `/wf-reel-plan` for reels. The quick single-video editor remains `/wf-video`.

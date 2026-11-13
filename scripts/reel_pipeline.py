@@ -28,12 +28,15 @@ def timeline(plan):
 
 
 def normalize(folder,shot,output):
-    key=digest_key([shot['source_sha256'],shot['clip'],shot.get('focus',[.5,.4]),output,'normalize-v2'])
+    key=digest_key([shot['source_sha256'],shot['clip'],shot.get('focus',[.5,.4]),shot.get('framing','crop'),folder.parent.name,output,'normalize-v3'])
     target=folder/'working/normalized'/f'{shot["id"]}-{key}.mp4';target.parent.mkdir(parents=True,exist_ok=True)
     if not target.exists():
         count=frames_for(shot['clip'][1]-shot['clip'][0],output);duration=count/float(rate(output['fps']))
         x,y=shot.get('focus',[.5,.4]);w,h=output['width'],output['height']
-        vf=f'scale={w}:{h}:force_original_aspect_ratio=increase:flags=lanczos,crop={w}:{h}:(iw-ow)*{x}:(ih-oh)*{y},setsar=1,fps={output["fps"]}'
+        if shot.get('framing','crop')=='fit':
+            vf=f'scale={w}:{h}:force_original_aspect_ratio=decrease:flags=lanczos,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={output["fps"]}'
+        else:
+            vf=f'scale={w}:{h}:force_original_aspect_ratio=increase:flags=lanczos,crop={w}:{h}:(iw-ow)*{x}:(ih-oh)*{y},setsar=1,fps={output["fps"]}'
         pending=target.with_name(target.stem+'.pending.mp4')
         run(['ffmpeg','-y','-v','error','-ss',str(shot['clip'][0]),'-i',folder/'raw'/shot['source'],
              '-vf',vf,'-frames:v',str(count),'-af',f'apad,atrim=duration={duration}',
@@ -86,7 +89,10 @@ def managed_write(folder,path,text,manifest):
 
 
 def caption_source(plan,placed,output):
-    scale=output['width']/1080;groups=[];cues=[]
+    scale=min(output['width'],output['height'])/1080
+    landscape=output['width']>output['height']
+    font_size=(48 if landscape else 64)*scale
+    groups=[];cues=[]
     for shot,row in zip(plan['shots'],placed):
         if not shot.get('captions_visible',True): continue
         cursor=0;pages=shot['caption_pages']
@@ -99,7 +105,7 @@ def caption_source(plan,placed,output):
             groups.append(f'<div id="{ident}" class="caption">{html.escape(page)}</div>')
             cues.append(f'tl.set("#{ident}",{{opacity:1}},{start:.12f}).set("#{ident}",{{opacity:0}},{end:.12f});')
     w,h=output['width'],output['height']
-    return f'<template><style>@font-face{{font-family:StudioInter;src:url(assets/fonts/Inter.ttf);font-weight:100 900}}#root{{position:absolute;inset:0;width:{w}px;height:{h}px;pointer-events:none}}.caption{{position:absolute;top:{h*.76}px;left:{w*.08}px;width:{w*.84}px;font-family:StudioInter,sans-serif;font-size:{64*scale}px;font-weight:800;line-height:1.15;color:white;text-align:center;text-wrap:balance;opacity:0;-webkit-text-stroke:{2*scale}px #101319;paint-order:stroke fill;text-shadow:0 {3*scale}px {6*scale}px #000}}</style><div id="root" data-composition-id="captions" data-width="{w}" data-height="{h}">{"".join(groups)}</div><script>const tl=gsap.timeline({{paused:true}});{"".join(cues)}window.__timelines=window.__timelines||{{}};window.__timelines.captions=tl;</script></template>'
+    return f'<template><style>@font-face{{font-family:StudioInter;src:url(assets/fonts/Inter.ttf);font-weight:100 900}}#root{{position:absolute;inset:0;width:{w}px;height:{h}px;pointer-events:none}}.caption{{position:absolute;top:{h*.76}px;left:{w*.08}px;width:{w*.84}px;font-family:StudioInter,sans-serif;font-size:{font_size}px;font-weight:800;line-height:1.15;color:white;text-align:center;text-wrap:balance;opacity:0;-webkit-text-stroke:{2*scale}px #101319;paint-order:stroke fill;text-shadow:0 {3*scale}px {6*scale}px #000}}</style><div id="root" data-composition-id="captions" data-width="{w}" data-height="{h}">{"".join(groups)}</div><script>const tl=gsap.timeline({{paused:true}});{"".join(cues)}window.__timelines=window.__timelines||{{}};window.__timelines.captions=tl;</script></template>'
 
 
 def build(folder,plan,final_media=None):
@@ -124,7 +130,7 @@ def build(folder,plan,final_media=None):
         headline=extra.get('headline','')
         # Initial scaffolds are deliberately small. Studio/agent-authored code stays editable.
         graphic=f'<div class="headline">{html.escape(str(headline))}</div>' if headline else ''
-        text=f'<template><style>#root{{position:absolute;inset:0;width:{w}px;height:{h}px;overflow:hidden;background:#111}}.visual{{position:absolute;inset:0}}video,img{{position:absolute;inset:0;width:{w}px;height:{h}px;object-fit:cover}}.headline{{position:absolute;top:10%;left:8%;width:84%;color:white;font:800 {88*w/1080}px/1.1 sans-serif;text-align:center}}</style><div id="root" data-composition-id="shot-{ident}" data-width="{w}" data-height="{h}"><div id="visual-{ident}" class="visual"><video id="media-{ident}" class="clip" data-start="0" data-duration="{row["duration"]:.12f}" data-track-index="0" src="assets/media/{ident}.mp4" muted playsinline></video>{graphic}</div></div><script>const tl=gsap.timeline({{paused:true}});window.__timelines=window.__timelines||{{}};window.__timelines["shot-{ident}"]=tl;</script></template>'
+        text=f'<template><style>#root{{position:absolute;inset:0;width:{w}px;height:{h}px;overflow:hidden;background:#111}}.visual{{position:absolute;inset:0}}video,img{{position:absolute;inset:0;width:{w}px;height:{h}px;object-fit:cover}}.headline{{position:absolute;top:10%;left:8%;width:84%;color:white;font:800 {88*min(w,h)/1080}px/1.1 sans-serif;text-align:center}}</style><div id="root" data-composition-id="shot-{ident}" data-width="{w}" data-height="{h}"><div id="visual-{ident}" class="visual"><video id="media-{ident}" class="clip" data-start="0" data-duration="{row["duration"]:.12f}" data-track-index="0" src="assets/media/{ident}.mp4" muted playsinline></video>{graphic}</div></div><script>const tl=gsap.timeline({{paused:true}});window.__timelines=window.__timelines||{{}};window.__timelines["shot-{ident}"]=tl;</script></template>'
         managed_write(hf,hf/f'compositions/shot-{ident}.html',text,manifest)
         refs.append(f'<div id="shot-{ident}" class="clip" data-composition-id="shot-{ident}" data-composition-src="compositions/shot-{ident}.html" data-start="{row["start"]:.12f}" data-duration="{row["duration"]:.12f}" data-track-index="1" data-width="{w}" data-height="{h}" style="position:absolute;inset:0"></div>')
     managed_write(hf,hf/'compositions/captions.html',caption_source(plan,placed,output),manifest)
@@ -154,14 +160,14 @@ def build(folder,plan,final_media=None):
 def clip_effects(folder,shot,output,final=False,times=None):
     effects=api().effects_for(folder,shot);source=normalize(folder,shot,output)
     engine=[(str(p.relative_to(effects_root())),digest(p)) for name in ['scripts','fonts','models'] for p in sorted((effects_root()/name).rglob('*')) if p.is_file() and '__pycache__' not in p.parts]
-    key=digest_key([digest(source),effects,output,engine])
+    key=digest_key([folder.parent.name,digest(source),effects,output,engine])
     target=folder/'working/vibha'/key;target.mkdir(parents=True,exist_ok=True)
     if final:
         file=target/'effected.mp4'
         if not file.exists():
             if effects:
                 config=target/'effects.json';write_json(config,{'effects':effects})
-                run([runtime(),effects_root()/'scripts/fx.py','--plan',config,source,file,'--width',str(output['width'])],target/'render.log')
+                run([runtime(),effects_root()/'scripts/fx.py','--plan',config,source,file,'--width',str(min(output['width'],output['height']))],target/'render.log')
             else: shutil.copyfile(source,file)
             validate_export(probe(file),output,frames_for(shot['clip'][1]-shot['clip'][0],output))
         return file
@@ -169,7 +175,7 @@ def clip_effects(folder,shot,output,final=False,times=None):
     missing=[t for t in times if not (target/f'at-{t:.6f}.png').exists()]
     if missing and effects:
         config=target/'effects.json';write_json(config,{'effects':effects})
-        run([runtime(),effects_root()/'scripts/fx.py','--plan',config,source,target/'frame.png','--still',','.join(str(t) for t in missing),'--warmup','--width',str(output['width'])],target/'preview.log')
+        run([runtime(),effects_root()/'scripts/fx.py','--plan',config,source,target/'frame.png','--still',','.join(str(t) for t in missing),'--warmup','--width',str(min(output['width'],output['height']))],target/'preview.log')
         for t in missing:
             found=target/'frame.png' if len(missing)==1 else target/f'frame_{t:.2f}.png'
             shutil.copyfile(found,target/f'at-{t:.6f}.png')
@@ -260,7 +266,7 @@ def render(slug):
     cover=final.parent/'cover.png';run(['ffmpeg','-y','-v','error','-i',final,'-frames:v','1',cover])
     caption=final.parent/'caption.txt'
     # Platform copy is authored by the agent before the export; never invent a ready-to-post caption.
-    write_json(folder/'export.json',{'file':str(final),'renderer':'hyperframes','project':str(built['project']),
+    write_json(folder/'export.json',{'project_type':plan.get('project_type','reel'),'file':str(final),'renderer':'hyperframes','project':str(built['project']),
                'preview_id':record['id'],'output_profile':output,'width':info['width'],'height':info['height'],
                'fps':info['fps'],'frames':info['frame_count'],'duration':info['duration'],'cover':{'png':'export/cover.png'},
                'caption_ready':caption.is_file(),'decode_check':'passed'})

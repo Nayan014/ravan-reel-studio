@@ -24,7 +24,7 @@ export function mediaPath(root, name) {
   const parts = name.split('/');
   if (parts.some(p => !p || p === '.' || p.startsWith('.') || ignored.has(p))) throw Error('Invalid path');
   const [top, group, id] = parts;
-  const projectMedia = top === 'outputs' && ['reels', 'edits'].includes(group) && validId(id || '') && parts.length >= 4;
+  const projectMedia = top === 'outputs' && ['reels', 'videos', 'edits'].includes(group) && validId(id || '') && parts.length >= 4;
   const inputMedia = top === 'inputs' && parts.length >= 2 && (video.test(name) || image.test(name) || /\.(wav|mp3|m4a)$/i.test(name));
   const reference = (name.startsWith('skills/effects/assets/reference-previews/') || name.startsWith('docs/effect-gallery/')) && image.test(name);
   if (!projectMedia && !inputMedia && !reference) throw Error('Outside media locations');
@@ -133,7 +133,7 @@ function projectData(root, kind, id) {
   ].filter(([, data]) => data).map(([label, data]) => ({ label, data }));
   const title = typeof plan?.title === 'string' ? plan.title : session?.source ? basename(String(session.source), extname(String(session.source))) : id.replace(/[-_]/g, ' ');
   return {
-    id, kind, title, path: local, updated: all[0]?.modified || statSync(folder).mtime.toISOString(),
+    id, kind, projectType: plan?.project_type || (kind === 'videos' ? 'video' : kind === 'reels' ? 'reel' : 'edit'), title, path: local, updated: all[0]?.modified || statSync(folder).mtime.toISOString(),
     status: session?.stage ? String(session.stage).replace(/_/g, ' ') : primary ? 'export available' : plan ? 'planning' : 'files available',
     renderer: typeof plan?.renderer === 'string' ? plan.renderer : kind === 'edits' ? 'Vibha effects' : plan ? 'remotion' : null,
     primary, cover, covers, exports, captions, plans, previews, source, files: all, records, warnings: [...new Set(warnings)],
@@ -142,7 +142,7 @@ function projectData(root, kind, id) {
 
 export function listProjects(root) {
   root = realpathSync(root);
-  return ['reels', 'edits'].flatMap(kind => {
+  return ['reels', 'videos', 'edits'].flatMap(kind => {
     const parent = join(root, 'outputs', kind);
     // Do not follow a symlink used in place of outputs/ or one of its libraries.
     try {

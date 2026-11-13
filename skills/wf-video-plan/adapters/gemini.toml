@@ -1,0 +1,8 @@
+description = "Create a landscape YouTube video from an idea, footage or saved project."
+prompt = """
+Read AGENTS.md in this workspace and locate video-effects-studio if needed.
+Read canonical skills/wf-video-plan/SKILL.md. Follow it from the supplied topic, folder or saved project through script, scene and actual-frame/audio review to export. Use native choices and preserve approval requirements.
+User arguments:
+
+{{args}}
+"""

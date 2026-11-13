@@ -18,16 +18,16 @@ export async function selectMusic(root,kind,id,value){
  const key=`${kind}/${id}`;
  if(selecting.has(key))throw new ReviewError('A music selection is already being prepared. Wait for the refreshed review.',409);
  const state=readReview(root,kind,id);
- if(kind!=='reels'||!state.request.audio)throw new ReviewError('Music selection requires a new Hyperframes reel.');
+ if(!['reels','videos'].includes(kind)||!state.request.audio)throw new ReviewError('Music selection requires a new Hyperframes project.');
  if(state.stale||state.request.id!==value.requestId)throw new ReviewError('Reload the latest review before selecting music.',409);
  if(value.track!==null&&!audioCatalogue().some(t=>t.id===value.track&&t.kind==='music'))throw new ReviewError('Choose a catalogued music track or no music.');
- mediaPath(root,`outputs/reels/${id}/plan.json`);
+ mediaPath(root,`outputs/${kind}/${id}/plan.json`);
  // CLI owns audio preparation and approval fingerprints; no command text comes from the client.
  if(realpathSync(root)!==realpathSync(bundled))throw new ReviewError('Audio preparation requires this studio workspace.');
  const python=join(bundled,'skills/effects/.venv',process.platform==='win32'?'Scripts/python.exe':'bin/python');
  selecting.add(key);
  try{
-  await promisify(execFile)(python,[join(bundled,'scripts/reel_workflow.py'),'audio','--project',id,'--track',value.track??'none'],{cwd:bundled,timeout:120000,maxBuffer:1024*1024});
+  await promisify(execFile)(python,[join(bundled,'scripts/reel_workflow.py'),'audio','--kind',kind,'--project',id,'--track',value.track??'none'],{cwd:bundled,timeout:120000,maxBuffer:1024*1024});
   return prepareReview(root,{kind,id,stage:state.request.stage,document:state.request.document});
  }finally{selecting.delete(key);}
 }

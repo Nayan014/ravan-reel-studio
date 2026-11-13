@@ -29,7 +29,7 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
     if (req.headers.origin && req.headers.origin !== `http://${host}`) return finish(403, 'Cross-origin request blocked');
     try {
       const url = new URL(req.url, `http://${host}`);
-      const reviewMatch = /^\/api\/reviews\/(reels|edits|plans)\/([A-Za-z0-9_-]+)(?:\/(submit|prepare|music|studio))?$/.exec(url.pathname);
+      const reviewMatch = /^\/api\/reviews\/(reels|videos|edits|plans)\/([A-Za-z0-9_-]+)(?:\/(submit|prepare|music|studio))?$/.exec(url.pathname);
       if (reviewMatch) {
         const [, kind, id, action] = reviewMatch;
         const sendJson = (status, data) => { res.setHeader('Content-Type', 'application/json'); finish(status, JSON.stringify(data)); };
@@ -53,7 +53,7 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
         return;
       }
       if (req.method === 'POST') {
-        const match = /^\/api\/projects\/(reels|edits)\/([A-Za-z0-9_-]+)\/open$/.exec(url.pathname);
+        const match = /^\/api\/projects\/(reels|videos|edits)\/([A-Za-z0-9_-]+)\/open$/.exec(url.pathname);
         if (!match) return finish(405, 'Review only');
         if (req.headers.origin !== `http://${host}` || req.headers['x-dashboard-action'] !== 'open-folder') return finish(403);
         const project = listProjects(root).find(p => p.kind === match[1] && p.id === match[2]);
@@ -84,7 +84,7 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
           res.setHeader('Content-Disposition', `attachment; filename="download${extname(path)}"; filename*=UTF-8''${encodeURIComponent(basename(path)).replace(/['()*]/g, c => '%' + c.charCodeAt(0).toString(16))}`);
         }
       } else {
-        const reviewPage = /^\/review\/(reels|edits|plans)\/[A-Za-z0-9_-]+$/.test(url.pathname);
+        const reviewPage = /^\/review\/(reels|videos|edits|plans)\/[A-Za-z0-9_-]+$/.test(url.pathname);
         const name = reviewPage ? 'review.html' : { '/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/captions.mjs': 'captions.mjs', '/review.js': 'review.js', '/review.css': 'review.css' }[url.pathname];
         if (!name) return finish(404, 'Not found');
         path = join(ui, name);

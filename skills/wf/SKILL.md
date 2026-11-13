@@ -21,20 +21,19 @@ For bare `/wf`, `/wf help`, `/wf commands`, or an unknown subcommand, show this 
 | 2 | `/wf-gallery` | Show all 51 effect samples and three bonus looks |
 | 3 | `/wf-effects` | Use a named effect directly |
 | 4 | `/wf-resume` | Continue a saved guided edit |
-| 5 | `/wf-reel` | Combine numbered takes with Vibha effects and Hyperframes finishing |
-| 6 | `/wf-reel-plan` | Choose an idea, approve the script, then record and attach takes |
+| 5 | `/wf-reel-plan` | Create a portrait reel from an idea, existing footage or a saved project |
+| 6 | `/wf-video-plan` | Create a landscape YouTube video from an idea, footage or a saved project |
 
 Keep the space based forms `/wf video-edit`, `/wf gallery`, `/wf effects <details>` and `/wf resume <session>` as aliases. The original `/video-edit` and `/effects <details>` also remain available. The standalone shortcut skills let a host suggest whole command names when the user filters the command menu with `/wf-`; do not claim autocomplete for arbitrary words after a space.
 
-Map 1 to video-edit, 2 to gallery, 3 to effects, 4 to resume, 5 to reel and 6 to reel-plan. An explicit `/wf 1` through `/wf 6` uses that mapping. Accept a bare numeric or action-name reply only while this workflow menu is the pending question. Never intercept numbers belonging to a video picker, effect gallery choice, preview approval or another active workflow stage. Forward any remaining user details to the chosen route. `/wf reel` aliases `/wf-reel`; preserve all earlier command forms.
+Map 1 to video-edit, 2 to gallery, 3 to effects, 4 to resume, 5 to reel-plan and 6 to video-plan. An explicit `/wf 1` through `/wf 6` uses that mapping. Accept a bare numeric or action-name reply only while this workflow menu is the pending question. Never intercept numbers belonging to a video picker, effect gallery choice, preview approval or another active workflow stage. Forward any remaining user details to the chosen route. `/wf reel-plan` and `/wf video-plan` alias the two planning skills. `/wf-reel` and `/wf reel` have been removed as public commands; explain the replacement entry point if invoked.
 
 Mention that every effect name and bonus look from `../effects/SKILL.md` remains usable through the effects route. Do not flood the menu with all 51 names. The old plain language command `Start video edit` also remains an alias.
 
 ## Routes
 
-- `reel-plan`: Read `../wf-reel-plan/SKILL.md`. `/wf reel-plan` aliases `/wf-reel-plan`; develop an idea into an approved saved shooting plan, then attach recordings and continue reel.
-
-- `reel`: Read `../wf-reel/SKILL.md`. Handle numbered-take folders, HTML plan review, visual selection and actual combined preview approval through its helper. An existing project slug resumes its status; do not start it over.
+- `reel-plan`: Read `../wf-reel-plan/SKILL.md`. Use the idea, suggestions, footage or resume entry and continue through final portrait export in the same workflow.
+- `video-plan`: Read `../wf-video-plan/SKILL.md`. Use the idea, suggestions, footage or resume entry and continue through final landscape YouTube export in the same workflow.
 - `video-edit`: Read `../video-edit/SKILL.md` and follow it, preserving any user notes after the subcommand. Begin at its video selection stage. Wait for each choice and for explicit approval of actual preview frames before rendering. Do not ask the user to invoke another command to continue.
 - `effects`: Read `../effects/SKILL.md` and handle the trailing effect request as a direct effects request. For example, `/wf effects orbit from 3 to 6 seconds` forwards `orbit from 3 to 6 seconds`. If the clip or effect is missing, ask for it using that skill's workflow. Do not replace or rename the existing effects.
 - `gallery`: Display `docs/effect-gallery/effects-1.jpg` through `effects-6.jpg` using the host's image display capability. These are dummy reference samples, not the user's actual frames. Label them with their catalogue numbers and offer the illustrated PDF. Do not create a session or start rendering.

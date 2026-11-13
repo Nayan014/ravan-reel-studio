@@ -107,7 +107,7 @@ Use `.venv/Scripts/python.exe` in place of `.venv/bin/python` in subsequent comm
 
 1. Put unique numbered recordings in `inputs/your-reel/`.
 2. Open the repository in your coding agent and ask it to read `AGENTS.md`.
-3. Invoke `/wf-reel`, or say “Use the wf-reel skill.” For a script before recording, use `/wf-reel-plan`.
+3. Invoke `/wf-reel-plan`, or say “Use the wf-reel skill.” Choose an idea, existing footage or a saved project within the same command. Use `/wf-video-plan` for a landscape YouTube video.
 4. Confirm actual speech and visual choices, review actual frames/audio, then approve the current revision.
 5. Find the resulting files in `outputs/reels/` and review them in the dashboard.
 
@@ -141,3 +141,7 @@ Do not run the upstream voice-engine setup for a recorded-voice reel. New reel r
 | Slow or memory-heavy 4K rendering | Keep takes short, close other heavy apps and retain ample SSD space. Choose lower output quality explicitly if appropriate, then review it again. |
 
 Keep originals. Do not delete active project caches blindly: they support reuse and approval checks. Commands and exact effect options are in [the workflow menu](../skills/wf/SKILL.md) and [effects skill](../skills/effects/SKILL.md).
+
+## YouTube planning and production
+
+`/wf-video-plan` uses the same installed production tools as `/wf-reel-plan`. New YouTube projects use `outputs/videos/` and landscape output; no additional renderer installation is required. The implementation of the two planning entry points and landscape pipeline awaits the deferred workflow testing session.

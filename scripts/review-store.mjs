@@ -14,7 +14,7 @@ export class ReviewError extends Error {
 }
 
 function location(root, kind, id) {
-  if (!['reels', 'edits', 'plans'].includes(kind) || !validId(id || '')) throw new ReviewError('Invalid review identifier.');
+  if (!['reels', 'videos', 'edits', 'plans'].includes(kind) || !validId(id || '')) throw new ReviewError('Invalid review identifier.');
   root = realpathSync(root);
   const path = join(root, 'outputs', '.workflow', 'reviews', kind, `${id}.json`);
   let current = root;
@@ -83,14 +83,18 @@ function context(root, kind, id, stage, document) {
     }
     const preview = kind === 'edits' ? session?.preview : add(`${base}/preview.json`);
     if (!plan && !session) throw new ReviewError('A saved workflow plan or session is required.', 404);
+    if(plan) files.push(['project-type',plan.project_type||'reel']);
     title = plan?.title || session?.source?.split('/').at(-1) || title;
     outputProfile=plan?.output_profile||null;sourceProfiles=plan?.source_profiles||[];
     audio=plan?.pipeline_version===2?{...plan.audio,mixSample:preview?.mix_sample?mediaUrl(slash(relative(root,preview.mix_sample))):null}:null;
     let cursor=0;const parts=String(outputProfile?.fps||30).split('/'),fps=Number(parts[0])/Number(parts[1]||1);
     scenes = (Array.isArray(plan?.shots) ? plan.shots : []).map((s,index) => {
       const start=cursor,duration=s.clip?Math.max(1,Math.round((s.clip[1]-s.clip[0])*fps))/fps:s.estimated_duration||0;cursor+=duration;
-      const source=sourceProfiles[index],scale=source&&outputProfile?Math.max(outputProfile.width/source.width,outputProfile.height/source.height):null;
-      const framing=scale?`Displayed source ${source.width}×${source.height} · crop ${Math.round(outputProfile.width/scale)}×${Math.round(outputProfile.height/scale)} · scale ${scale.toFixed(3)}×`:'';
+      const source=sourceProfiles[index],scale=source&&outputProfile?(s.framing==='fit'?Math.min:Math.max)(outputProfile.width/source.width,outputProfile.height/source.height):null;
+      const framing=scale ? s.framing==='fit'
+        ? `Displayed source ${source.width}×${source.height} · fit with padding · picture ${Math.round(source.width*scale)}×${Math.round(source.height*scale)} · scale ${scale.toFixed(3)}×`
+        : `Displayed source ${source.width}×${source.height} · crop ${Math.round(outputProfile.width/scale)}×${Math.round(outputProfile.height/scale)} · scale ${scale.toFixed(3)}×`
+        : '';
       return { id: String(s.id), text: String(s.say || s.expected_say || ''),timeline:[start,cursor],
       source:s.source||'Awaiting numbered recording',shootingNote:s.shooting_note||'',clip:s.clip||null,
       captions:s.caption_pages||[],effects:s.vibha||{},finish:s.hyperframes_note||'Hyperframes assembly, captions and audio',
@@ -227,12 +231,12 @@ export function saveDraftDesign(root,id,value,layers) {
 export function suggestedReview(root, kind, id, stage = 'plan') {
   const project = listProjects(root).find(p => p.kind === kind && p.id === id);
   if (!project) throw new ReviewError('Project not found.', 404);
-  if(kind==='reels'&&stage==='plan'){
-    const plan=parse(mediaPath(root,`outputs/reels/${id}/plan.json`));
+  if(['reels','videos'].includes(kind)&&stage==='plan'){
+    const plan=parse(mediaPath(root,`outputs/${kind}/${id}/plan.json`));
     if(plan.phase==='draft')stage='script';
   }
   let document=(stage==='frames'?project.plans.find(p=>p.path.includes('/previews/')):project.plans.find(p=>p.path===`${project.path}/review.html`))?.path||project.plans[0]?.path||null;
-  if(kind==='reels'&&stage==='frames'){
+  if(['reels','videos'].includes(kind)&&stage==='frames'){
     try{const record=parse(mediaPath(root,`${project.path}/preview.json`));if(typeof record.review==='string')document=isAbsolute(record.review)?slash(relative(root,record.review)):record.review.startsWith('outputs/')?record.review:`${project.path}/${record.review}`;}catch{}
   }
   return prepareReview(root, { kind, id, stage, document });

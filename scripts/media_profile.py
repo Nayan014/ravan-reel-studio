@@ -1,4 +1,4 @@
-"""Source-derived portrait output profiles shared by preparation and finishing."""
+"""Source-derived reel and YouTube profiles shared by preparation and finishing."""
 from fractions import Fraction
 import math
 
@@ -12,29 +12,37 @@ def rate(value):
     return result
 
 
-def profile(width,height,fps):
+def profile(width,height,fps,project_type='reel'):
     fps=rate(fps)
     if isinstance(width,bool) or isinstance(height,bool) or not isinstance(width,int) or not isinstance(height,int):
         raise ValueError('Output dimensions must be whole pixels.')
-    if width<144 or width>2160 or height>3840 or width%2 or height%2 or abs(height-width*16/9)>2:
-        raise ValueError('Choose an even-sized portrait 9:16 profile, up to 2160×3840.')
+    if project_type not in ('reel','video'):
+        raise ValueError('Choose a reel or video project type.')
+    short, long = (height,width) if project_type=='video' else (width,height)
+    if short<144 or short>2160 or long>3840 or width%2 or height%2 or abs(long-short*16/9)>2:
+        raise ValueError('Choose an even-sized 9:16 reel or 16:9 video profile, up to 4K.')
     if not 1<=fps<=60: raise ValueError('This pipeline supports 1–60 FPS; choose an explicit supported output profile.')
     return {'width':width,'height':height,'fps':str(fps),'fps_value':float(fps)}
 
 
-def from_source(info):
+def from_source(info,project_type='reel'):
     width=min(info['width'],info['height'])
-    return profile(width,round(width*16/9/2)*2,info.get('fps_fraction',info['fps']))
+    long=round(width*16/9/2)*2
+    w,h=(long,width) if project_type=='video' else (width,long)
+    return profile(w,h,info.get('fps_fraction',info['fps']),project_type)
 
 
-def detect(infos):
+def detect(infos,project_type='reel'):
     choices=[];flags=[]
     for info in infos:
         try:
-            item=from_source(info)
+            item=from_source(info,project_type)
             if item not in choices: choices.append(item)
         except ValueError as error: flags.append(str(error))
         if info.get('variable_frame_rate'): flags.append('Variable frame rate detected; choose the output rate explicitly.')
+    dimensions={(info['width'],info['height']) for info in infos}
+    if len(dimensions)>1:
+        flags.append('Source resolutions or orientations differ; choose the output profile and framing explicitly.')
     return {'output':choices[0] if len(choices)==1 and not flags else None,
             'choices':choices,'requires_choice':len(choices)!=1 or bool(flags),
             'reasons':list(dict.fromkeys(flags or (['Source resolutions or frame rates differ.'] if len(choices)>1 else [])))}
@@ -43,7 +51,7 @@ def detect(infos):
 def get_profile(plan):
     value=plan.get('output_profile')
     if not value: raise ValueError('Output quality is pending. Inspect quality and choose a profile before previewing.')
-    return profile(value['width'],value['height'],value['fps'])
+    return profile(value['width'],value['height'],value['fps'],plan.get('project_type','reel'))
 
 
 def frames_for(seconds,output):

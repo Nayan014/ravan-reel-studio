@@ -36,7 +36,7 @@ Each scene or meaningful visual beat needs these columns:
 - Recommend a coordinated sequence with varied placement and motion. Avoid repeating behind-the-head text for every idea. A simple cut or an effect-free moment is valid.
 - Always include catalogue numbers beside Vibha effect names. Clearly distinguish alternatives from effects intended to run together.
 - All suggested effects and graphics remain pending the creator's final selection. Script acceptance does not approve effects, graphics or a final render.
-- State real tool readiness accurately. The combined workflow bundles Techno Reel locally under `tools/techno-reel`, invoked through `skills/wf-reel/SKILL.md`. The original sibling project remains separate. Re-check the helper doctor and renderer test status before claiming readiness.
+- State real tool readiness accurately. The combined workflow bundles Techno Reel locally under `tools/techno-reel`, invoked through `skills/wf-reel-plan/references/production.md`. The original sibling project remains separate. Re-check the helper doctor and renderer test status before claiming readiness.
 - Follow the existing workflow for actual preview frames and explicit approval before rendering the full video.
 
 ## Project-specific choices
@@ -48,3 +48,9 @@ Keep a creator's approved script, channel, assets and effect decisions in that p
 Inspect recordings locally, including rotation and exact frame rate. Matching sources choose portrait output automatically; 4K/60 remains 2160×3840 at 60 FPS, and fractional rates stay exact. Mixed/variable/unsupported profiles require an explicit choice. Show output dimensions, FPS and crop/scaling before approval. Review thumbnails never become production footage.
 
 The final approval page includes recommended music preselected, playable alternatives, No music, the voice/music mix sample, and suggested playable sound cues. Use the existing 4 music/23 SFX catalogue with licence notices. Selection changes the review revision; playing does not approve. Final approval covers current frames, crop, output profile and audio together.
+
+## Planning entry points and YouTube videos
+
+Use `/wf-reel-plan` for portrait reels and `/wf-video-plan` for landscape YouTube videos. Both accept ideas, three suggested ideas, existing footage and saved projects. Ask for topic and intended length when starting from an idea; ask for a folder when footage already exists. Bare folder names resolve under inputs/. Continue in the selected command through final production.
+
+YouTube scripts include a hook, sections and a conclusion, with shooting cues and the full script before the integrated scene table. Keep approved script text when mapping continuous footage into several source ranges. The video profile is 16:9, up to 3840×2160 at 60 FPS; preserve fractional rates, confirm mixed profiles and show crop or fit. Adapt selected effects/captions for landscape actual-frame review. New videos use the same feedback, music and approval rules as reels.
