@@ -15,7 +15,7 @@ from audio_library import catalogue,defaults
 
 @unittest.skipUnless(os.environ.get('REEL_INTEGRATION')=='1','Set REEL_INTEGRATION=1 for real local-browser render tests')
 class PipelineIntegration(unittest.TestCase):
- def exercise(self,width,height,fps,rotate=False,effect=False):
+ def exercise(self,width,height,fps,rotate=False,effect=False,lighting=False):
   with tempfile.TemporaryDirectory(dir=rw.STUDIO/'outputs') as temp:
    f=Path(temp)
    for n in ['raw','assets','working']:(f/n).mkdir()
@@ -27,6 +27,7 @@ class PipelineIntegration(unittest.TestCase):
    out=profile(min(width,height),max(width,height),fps)
    shot={'id':'01','source':'1.mp4','source_sha256':rw.digest(source),'clip':[0,duration],'say':'Hello','words':[{'text':'Hello','start':0,'end':duration*.8}],'caption_pages':['Hello'],'text_confirmed':True,'layout':'full','focus':[.5,.4],'vibha':{'status':'selected' if effect else 'none','effects':[{'id':13,'start':0,'end':duration,'options':{'text':'LABEL'}}] if effect else []},'remotion':{'status':'none'}}
    plan={'pipeline_version':2,'renderer':'hyperframes','title':'Synthetic acceptance fixture','phase':'recorded','style':'flat','palette':'clay','output_profile':out,'audio':defaults(),'visual_selection':'Synthetic automated fixture only','shots':[shot]}
+   if lighting:plan['lighting']={'preset':'natural-studio'}
    rw.write_json(f/'plan.json',plan)
    with patch.object(rw,'project',return_value=f):
     result=rp.preview('test');record=rw.read_json(f/'preview.json');self.assertEqual(result['output_profile'],out)
@@ -45,6 +46,9 @@ class PipelineIntegration(unittest.TestCase):
      self.assertIn('background:#221',authored.read_text())
     rw.approve('test',record['id'],'Synthetic automated acceptance only')
     exported=rp.render('test');encoded=rw.probe(Path(exported['file']));validate_export(encoded,out,12)
+    if lighting:
+     configs=list((f/'working/vibha').glob('*/effects.json'));self.assertTrue(configs)
+     self.assertTrue(all(rw.read_json(path)['effects'][0]['fx']=='studio-light' for path in configs))
     self.assertEqual(encoded['frame_count'],12)
     html=(f/'hyperframes/index.html').read_text();self.assertEqual(html.count('id="source-voice"'),1);self.assertEqual(html.count('<div id="captions"'),1)
     self.assertNotIn('data-has-audio="true"',(f/'hyperframes/compositions/shot-01.html').read_text())
@@ -68,6 +72,7 @@ class PipelineIntegration(unittest.TestCase):
  def test_fractional_rate_rotated(self):self.exercise(320,180,'60000/1001',rotate=True)
  def test_landscape_crop(self):self.exercise(1920,1080,'60')
  def test_effects_music_and_cache(self):self.exercise(180,320,'60',effect=True)
+ def test_studio_lighting_clean_take(self):self.exercise(360,640,'30',lighting=True)
  def test_source_voice_synchronization(self):
   import numpy as np
   import subprocess

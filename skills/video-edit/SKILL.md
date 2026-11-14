@@ -9,6 +9,8 @@ For every question and approval, follow `../../docs/WORKFLOW_REVIEW.md`: use nat
 
 Use this workflow in the conversation with the user. The helper handles files and stages; you analyze the video, recommend suitable effects and show the images. It does not call a model service itself.
 
+When the user requests natural studio lighting, read `../../docs/STUDIO_LIGHTING.md`. It is opt-in, before graphics, and can accompany selected effects through the plan's `lighting` field. Show actual frames across the whole clip, not only the graphic windows. For lighting alone, use the direct effects route and its actual-frame review rather than choosing an unrelated numbered effect. Never reuse approval after changing the lighting or its calibrated screen regions.
+
 The preferred project shortcut is `/wf video-edit`, routed by `../wf/SKILL.md`. `/video-edit` and `Start video edit` still invoke this same workflow.
 
 Resolve the studio root as two directories above this canonical `skills/video-edit/` folder. Read `../effects/SKILL.md` for effect options and setup. Use the studio's local effects Python environment; if it is missing, perform its setup. Commands below run from the studio root:

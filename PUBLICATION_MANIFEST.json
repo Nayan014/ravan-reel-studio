@@ -1,7 +1,7 @@
 {
   "project": "Ravan Reel Studio",
   "repository_name": "ravan-reel-studio",
-  "source_bytes": 31948357,
+  "source_bytes": 31970543,
   "files": [
     {
       "path": ".agents/skills/effects",
@@ -137,8 +137,8 @@
     },
     {
       "path": "AGENTS.md",
-      "bytes": 5998,
-      "sha256": "7dfad8e59c26535639274f496fdada4c3f848bc431d9b0522a7d7b68bb176865"
+      "bytes": 6354,
+      "sha256": "0e6838afa73c75033419e40737016cf1f6fdc3d3c6a7259f3225eef1eb824f89"
     },
     {
       "path": "CLAUDE.md",
@@ -162,13 +162,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 9906,
-      "sha256": "aaf00719f4e033efba1694f95a9d7e5edf1bc2bbc3aadc70af59467399b6f9de"
+      "bytes": 10230,
+      "sha256": "85a04d22da168df8d0cec47c11aab5939e4aaca5edd12e1104da656429107b26"
     },
     {
       "path": "SOURCE.json",
-      "bytes": 8005,
-      "sha256": "0d5d0296717c0a09470d499725d0420950be82cf19f04da5c8001be9cf52cc20"
+      "bytes": 8932,
+      "sha256": "29660d9c677b24e355819ac92a2244a52fe1e035eb4238fe026d83070ee6a07a"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -259,6 +259,11 @@
       "path": "docs/SETUP.md",
       "bytes": 11613,
       "sha256": "9a0ef4b53432f13942d995cce6e941db2b43aac699c0bd6b9b74e506398de5e5"
+    },
+    {
+      "path": "docs/STUDIO_LIGHTING.md",
+      "bytes": 4329,
+      "sha256": "5d4ad4386e94739dad8fee95c47b9104c184ddc7481daab90116835ff600e77d"
     },
     {
       "path": "docs/VIDEO_EDIT_WORKFLOW.md",
@@ -532,8 +537,8 @@
     },
     {
       "path": "scripts/reel_workflow.py",
-      "bytes": 38295,
-      "sha256": "4fb0374931689ae9102b433bd2e58b5aeb40a2391d6f50e94b9c4475da048a79"
+      "bytes": 39094,
+      "sha256": "b4ce5e3158e36e0e67eeeb0ea6c86cbf228fa51cb8914189846a22713cbcd12b"
     },
     {
       "path": "scripts/reference_styles.py",
@@ -577,8 +582,8 @@
     },
     {
       "path": "scripts/video_workflow.py",
-      "bytes": 24904,
-      "sha256": "66756c73af2844809b6e9c58001b82b2c7bb29922ba65ac9c02c5791c2e37f45"
+      "bytes": 25395,
+      "sha256": "09f5f21aa96368c0f8470f9b6bed8e63eb5ac9526d2ea41ac6b3c55eeed91978"
     },
     {
       "path": "scripts/visual-editor.mjs",
@@ -597,8 +602,8 @@
     },
     {
       "path": "skills/effects/SKILL.md",
-      "bytes": 13262,
-      "sha256": "99e26ccb986cb4a027c03f3b7af6c2d5a14ccac62e8bf8c5646259378b644848"
+      "bytes": 13721,
+      "sha256": "4679e0ef29638eeddf428e21ed49de6d7e1ff996a3df0fabc5944154141be5cf"
     },
     {
       "path": "skills/effects/adapters/gemini.toml",
@@ -1012,13 +1017,18 @@
     },
     {
       "path": "skills/effects/scripts/fx.py",
-      "bytes": 160468,
-      "sha256": "6bb09866fe977170f7ee666c602372d3316a23ee91ef72b71177533c74594026"
+      "bytes": 161095,
+      "sha256": "39dfdbeb7d6cf5f637b006528c5835cb7c5bbddaf641695ab9a73a72ca1a8acd"
     },
     {
       "path": "skills/effects/scripts/setup.sh",
       "bytes": 2122,
       "sha256": "f1c4a675a37b80ca9044389222edbb5831b2a5bc7f2f27096f5fd4177f4e262e"
+    },
+    {
+      "path": "skills/effects/scripts/studio_lighting.py",
+      "bytes": 5316,
+      "sha256": "9240a8c927fe1897c61b410a1d2b7178a70d0b4c33fe48d7462991c10a33e0e6"
     },
     {
       "path": "skills/effects/scripts/text_layers.py",
@@ -1032,8 +1042,8 @@
     },
     {
       "path": "skills/video-edit/SKILL.md",
-      "bytes": 7823,
-      "sha256": "65ecac8e2812b9d29e8fb62307402974b7e61950bfbc1a9815a33529426bf5d7"
+      "bytes": 8296,
+      "sha256": "a24f2d04e34cc681b379a72a43536bc6139b77435d33750db2e68e6392ff4cd9"
     },
     {
       "path": "skills/video-edit/adapters/gemini.toml",
@@ -1092,8 +1102,8 @@
     },
     {
       "path": "skills/wf-reel-plan/references/production.md",
-      "bytes": 6584,
-      "sha256": "6c80149a99ad640f7cc8e19ee35bac9aa5fb00ae5b852eca95311af8fd94d579"
+      "bytes": 7200,
+      "sha256": "28fbbb2f580c6d127291d5707fc665e11b73b5368d8f36d6415f8c9371bbda64"
     },
     {
       "path": "skills/wf-reel-plan/references/reference-style.md",
@@ -1132,8 +1142,8 @@
     },
     {
       "path": "skills/wf/SKILL.md",
-      "bytes": 5900,
-      "sha256": "a079320052db5edcfa08f03529a8525ea274513e1a807da53793af95f9601bd8"
+      "bytes": 6230,
+      "sha256": "f4a313daf8f9c0dddd628606588a182a685bb76d25d057739b7e3ac925bebecd"
     },
     {
       "path": "skills/wf/adapters/gemini.toml",
@@ -1172,8 +1182,8 @@
     },
     {
       "path": "tests/test_reel_pipeline_integration.py",
-      "bytes": 8149,
-      "sha256": "2709779c91af6c77dff20f3aa314493a640133a72c1f5265920b8e1fbff2a2de"
+      "bytes": 8515,
+      "sha256": "a1cf376062e001c6f3d3387a574c195874b7e7fe7b86ada1cb4f4c02e8e91e49"
     },
     {
       "path": "tests/test_reel_v2.py",
@@ -1182,8 +1192,13 @@
     },
     {
       "path": "tests/test_reel_workflow.py",
-      "bytes": 8848,
-      "sha256": "efc4b7e99f272a49ec587dbbf9b5dc1011e326f35392c73ec0697ddb8411c251"
+      "bytes": 9747,
+      "sha256": "4b0be3cecebc49e0a58cce75fcc8acf05a17fb6a133d6a6c68a1edb78c05fc58"
+    },
+    {
+      "path": "tests/test_studio_lighting.py",
+      "bytes": 3975,
+      "sha256": "2d8507167cc573d99058cefef099ce2bebf29457db9cbf8dfd11eae3c21e7eec"
     },
     {
       "path": "tests/test_text_layers.py",
@@ -1192,8 +1207,8 @@
     },
     {
       "path": "tests/test_video_workflow.py",
-      "bytes": 12824,
-      "sha256": "edd8a183435d76e187d95b1275ddba8942eafad649dca7d0757eee37cb46162d"
+      "bytes": 14723,
+      "sha256": "c4ada3b8173ae18dcb89790aedbc417cf2a4d2eb5ac2219080fd8c3438378fc3"
     },
     {
       "path": "tools/hyperframes/README.md",

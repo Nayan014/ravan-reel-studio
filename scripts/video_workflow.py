@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 STUDIO = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(STUDIO/'skills/effects/scripts'))
 from text_layers import validate_layers
+from studio_lighting import validate_lighting, expand_lighting
 VIDEO_TYPES = {'.mp4', '.mov', '.m4v', '.webm', '.mkv', '.avi'}
 IMAGE_TYPES = {'.jpg', '.jpeg', '.png', '.webp'}
 
@@ -339,6 +340,8 @@ def validated_plan(session, data):
             effect['images'] = relative(assets) if assets.resolve().is_relative_to(STUDIO.resolve()) else str(assets.resolve())
         normalized.append(effect)
     result={'effects': normalized}
+    if 'lighting' in data:
+        result['lighting'] = validate_lighting(data['lighting'])
     if data.get('text_layers'):
         result['text_layers']=validate_layers(data['text_layers'])
     return result
@@ -347,6 +350,9 @@ def validated_plan(session, data):
 def preview_times(plan, info):
     fps = info['fps']
     times = set()
+    if plan.get('lighting'):
+        last = max(0, math.ceil(info['duration'] * fps) - 1)
+        times.update(round(round(last * fraction) / fps, 6) for fraction in (.1, .5, .9))
     for effect in plan['effects']:
         first = math.ceil(effect['start'] * fps)
         last = min(math.ceil(effect['end'] * fps) - 1, max(0, math.ceil(info['duration'] * fps) - 1))
@@ -356,7 +362,7 @@ def preview_times(plan, info):
 
 
 def engine_plan(plan):
-    data = json.loads(json.dumps(plan))
+    data = expand_lighting(json.loads(json.dumps(plan)))
     for effect in data['effects']:
         if 'images' in effect and not Path(effect['images']).is_absolute():
             effect['images'] = str((STUDIO / effect['images']).resolve())
@@ -372,11 +378,14 @@ def fingerprint(session):
             for path in sorted(Path(effect['images']).iterdir()):
                 if path.is_file() and path.suffix.lower() in IMAGE_TYPES | VIDEO_TYPES:
                     assets.append([path.name, digest(path)])
-    return {'source': digest(source), 'plan': plan, 'assets': assets,
+    result = {'source': digest(source), 'plan': plan, 'assets': assets,
             'engine': digest(effects_root() / 'scripts/fx.py'),
             'text_engine': digest(effects_root() / 'scripts/text_layers.py'),
             'text_font': digest(effects_root()/'fonts/Inter.ttf') if plan.get('text_layers') else None,
             'width': session['width']}
+    if plan.get('lighting'):
+        result['lighting_engine'] = digest(effects_root() / 'scripts/studio_lighting.py')
+    return result
 
 
 def preview_id(session):

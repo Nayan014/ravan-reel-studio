@@ -22,7 +22,8 @@
     "Single npm start launcher: isolated compatible Node when needed, missing system prerequisites through supported package managers, cached effects/speech/Hyperframes setup, safe demo installation, workspace-aware local dashboard reuse and browser opening",
     "Unified reel-plan and YouTube video-plan entry points, landscape source-matched production, continuous-source scene mapping and Videos dashboard/review support; public wf-reel command retired. Verification deferred by creator request.",
     "Optional private reference library in both planning commands, local bounded frame/cut sampling, reusable content-hashed agent style profiles and pinned per-project style notes. Reference media excluded from publication; testing deferred by creator.",
-    "Nafay 3D AI Video Editor imported from creator-supplied ZIP with original file hashes and explicit unresolved package-licence notice; standalone wf-nafay wrapper, editor choice, seven-style planning catalogue, exact source-quality output and cut/plan/frame/audio approvals. Setup, transcription, renders and tests deferred."
+    "Nafay 3D AI Video Editor imported from creator-supplied ZIP with original file hashes and explicit unresolved package-licence notice; standalone wf-nafay wrapper, editor choice, seven-style planning catalogue, exact source-quality output and cut/plan/frame/audio approvals. Setup, transcription, renders and tests deferred.",
+    "Optional local natural-studio lighting: portable face/person-aware renderer, muted blue/red room accents, neutral face lift, per-project/shot opt-in and calibrated display masks; applied before graphics with approval/cache invalidation. Existing 51 catalogue IDs and private-media exclusions preserved."
   ],
   "upstream_file_sha256": {
     "scripts/setup.sh": "b84c0e6b55e0428b37778fa9a72d3744b37c8e4062fbd375bd9754fd6702f10b",
@@ -91,6 +92,13 @@
       "result": "Transcript and word times successfully produced from the selected clip after a PyAV decoder incompatibility was corrected",
       "decoder": "ffmpeg float32 PCM passed to faster-whisper",
       "model_cache": "skills/effects/.cache/huggingface"
+    },
+    "studio_lighting": {
+      "result": "passed",
+      "approved_frame_parity": "Pixel-identical local comparison with the approved revision 5 still; private media excluded from publication.",
+      "workflow_checks": "Python unit suite and 24 dashboard tests passed; 50 focused tests also passed from the publication checkout.",
+      "end_to_end": "Synthetic 360x640 30fps lighting-only clean take passed preview, explicit test approval, Hyperframes render, exact 12-frame output and audio validation.",
+      "numbered_catalogue": "Existing 51 effect IDs unchanged; optional named treatment is separate."
     }
   }
 }

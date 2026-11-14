@@ -34,6 +34,7 @@ For `/wf` commands, read `skills/wf/SKILL.md` and route there. Bare `/wf` shows 
 - Run the local skill setup if its environment is missing. Use `skills/effects/.venv/bin/python` on macOS/Linux or `skills/effects/.venv/Scripts/python.exe` on Windows.
 - Save plans, check frames and renders in `outputs/` by default. Respect a different destination if the user gives one. Keep the original video intact.
 - Inspect check frames before a full render. Correct face overlaps, unreadable copy, edge clipping and demo values. Use the user's actual words, handles and metrics.
+- Natural studio lighting is optional. Read `docs/STUDIO_LIGHTING.md` when requested; use the portable `studio-light` treatment before graphics, preserve existing effect numbers and review actual frames. Keep room-specific screen polygons in project settings, not the shared preset. It is supported by the Vibha pipeline; preserve Nafay's separate editor.
 - The skill adds visuals and carries the source audio into the export. Silence removal, new sound design and captions are separate tasks. `wave-trim` only animates a waveform.
 - Report the output file path and ask the user to watch the result before posting.
 

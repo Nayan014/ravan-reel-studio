@@ -11,6 +11,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from text_layers import validate_layers, render_layers
+from studio_lighting import expand_lighting, validate_lighting, render_studio_light
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONT = {k: os.path.join(ROOT, 'fonts', v) for k, v in {
@@ -315,6 +316,11 @@ def grid(c):
     if (c.W, c.H) not in _grid:
         yy, xx = np.mgrid[0:c.H, 0:c.W].astype(np.float32); _grid[(c.W, c.H)] = (xx, yy)
     return _grid[(c.W, c.H)]
+
+
+@effect('studio-light', 'natural studio lighting: muted blue/red room and a soft face key')
+def fx_studio_light(c, e):
+    render_studio_light(c, e, grid, guided)
 
 
 @effect('spotlight', 'kill the lights, keep you lit')
@@ -2365,10 +2371,12 @@ def main():
     a = ap.parse_args()
     text_layers=[]
     if a.list:
-        for i, (k, (_, d)) in enumerate(EFFECTS.items()): print(f'{i + 1:2d}. {k:15s} {d}')
+        for i, (k, (_, d)) in enumerate((item for item in EFFECTS.items() if item[0] != 'studio-light')): print(f'{i + 1:2d}. {k:15s} {d}')
+        print('    studio-light    optional natural studio lighting (separate from the 51 effects)')
         return
     if a.plan:
         src, dst = a.args[0], a.args[1]; plan = json.load(open(a.plan))
+        if isinstance(plan, dict): plan = expand_lighting(plan)
         if isinstance(plan,dict): text_layers=validate_layers(plan.get('text_layers',[]))
         plan = plan.get('effects', plan) if isinstance(plan, dict) else plan
     else:
@@ -2382,6 +2390,8 @@ def main():
         d['fx'] = ALIASES.get(d['fx'].lower().lstrip('/'), d['fx'].lower().lstrip('/'))
         if d['fx'] in LOOK_NAMES: d['fx'], look = LOOK_NAMES[d['fx']]; d.setdefault('look', look)
         if d['fx'] not in EFFECTS: sys.exit(f"Unknown effect '{d['fx']}'. Run --list to see all {len(EFFECTS)}.")
+        if d['fx'] == 'studio-light':
+            validate_lighting({'preset': 'natural-studio', **{k: v for k, v in d.items() if k not in ('fx', 'start', 'end')}})
     fr, fps, dur, sw, sh = probe(src)
     for d in plan: d['end'] = min(float(d['end']), dur)
     if sw <= sh: W = a.width; H = int(round(a.width * sh / sw / 2)) * 2

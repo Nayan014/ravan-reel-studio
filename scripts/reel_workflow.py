@@ -17,6 +17,7 @@ import uuid
 
 from video_workflow import digest, probe, run, runtime, effects_root, read_json, write_json
 from text_layers import validate_layers, render_layers
+from studio_lighting import lighting_effect, validate_lighting
 
 STUDIO = Path(__file__).resolve().parents[1]
 ENGINE = STUDIO / 'tools/techno-reel'
@@ -160,7 +161,7 @@ def asset(folder, value):
     return path
 
 
-def effects_for(folder, shot):
+def effects_for(folder, shot, project_plan=None):
     selected=[]; entries=catalogue(); duration=shot['clip'][1]-shot['clip'][0]
     for effect in shot['vibha'].get('effects',[]):
         item=entries.get(str(effect.get('id')).lower())
@@ -180,10 +181,16 @@ def effects_for(folder, shot):
             row['images']=str(directory)
         selected.append(row)
     # Keep camera operations before graphic overlays.
-    return sorted(selected,key=lambda r: r['fx'] not in CAMERAS)
+    selected = sorted(selected,key=lambda r: r['fx'] not in CAMERAS)
+    if project_plan is None:
+        project_plan = read_json(folder/'plan.json') if (folder/'plan.json').is_file() else {}
+    config = shot['lighting'] if 'lighting' in shot else project_plan.get('lighting')
+    lighting = lighting_effect(config, duration)
+    return ([lighting] if lighting else []) + selected
 
 
 def validate(folder,plan):
+    validate_lighting(plan.get('lighting'))
     if plan.get('pipeline_version')==2:
         from media_profile import get_profile
         from audio_library import validate_audio
@@ -223,16 +230,17 @@ def validate(folder,plan):
         if len(focus)!=2 or not all(isinstance(x,(float,int)) and math.isfinite(x) and 0<=x<=1 for x in focus): raise ValueError('Focus must be two numbers from zero to one.')
         for key in ['vibha','remotion']:
             if shot[key]['status'] not in ['selected','none']: raise ValueError(f'{key} choices are pending in shot {ident}.')
-        fx=effects_for(folder,shot)
-        if shot['vibha']['status']=='none' and fx: raise ValueError('None cannot include Vibha effects.')
-        if shot['vibha']['status']=='selected' and not fx: raise ValueError('Selected Vibha effects are empty.')
+        fx=effects_for(folder,shot,plan)
+        graphics_fx=[effect for effect in fx if effect['fx']!='studio-light']
+        if shot['vibha']['status']=='none' and graphics_fx: raise ValueError('None cannot include Vibha effects.')
+        if shot['vibha']['status']=='selected' and not graphics_fx: raise ValueError('Selected Vibha effects are empty.')
         graphic=shot['remotion']; scene=graphic.get('scene')
         if not isinstance(shot.get('join_note',''),str): raise ValueError('Join notes must be text.')
         if graphic['status']=='selected' and scene not in SCENES: raise ValueError('Choose a bundled Remotion scene.')
         if graphic['status']=='none' and scene: raise ValueError('None cannot include a Remotion scene.')
         if shot['layout'] not in ['full','punch','split','graphic']: raise ValueError('Unsupported shot layout.')
         if shot['layout'] in ['graphic','split'] and graphic['status']!='selected': raise ValueError('Graphic and split layouts need a selected scene.')
-        if shot['layout']=='graphic' and fx: raise ValueError('Vibha effects would be hidden by a full-screen graphic.')
+        if shot['layout']=='graphic' and graphics_fx: raise ValueError('Vibha effects would be hidden by a full-screen graphic.')
         if shot['layout']=='punch' and any(x['fx'] in CAMERAS for x in fx): raise ValueError('Choose either a crop punch or a Vibha camera effect, avoiding double zoom.')
         for key in ['src','icon']:
             value=graphic.get('props',{}).get(key)
@@ -475,6 +483,9 @@ def make_html(folder,plan,output=None,images=None):
         if decision.get('effects'):
             fx='<br>'.join(f'<b>#{esc(str(e["id"]))} — {esc(catalogue()[str(e["id"]).lower()]["name"])}</b><p>{e["start"]:.2f}–{e["end"]:.2f}s within this shot</p>'
                           + ''.join(f'<p>{esc(line)}</p>' for line in option_text(e.get('options',{}))) for e in decision['effects'])
+        lighting=shot['lighting'] if 'lighting' in shot else plan.get('lighting')
+        if validate_lighting(lighting):
+            fx='<p><b>Natural studio lighting</b> · soft face key and muted blue/red background, before graphics.</p>'+fx
         if shot.get('reference_note'):
             fx+=f'<p><b>Reference treatment:</b> {esc(str(shot["reference_note"]))}</p>'
         graphic=shot['remotion']; mg='Pending your choice' if graphic['status']=='pending' else 'None'

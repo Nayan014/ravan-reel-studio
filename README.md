@@ -43,6 +43,8 @@ Name the clips `1.mp4`, `2.mp4`, `3.mp4` and so on. If your assistant does not r
 
 Output follows the recordings up to **4K/60**: portrait 2160×3840 for reels or landscape 3840×2160 for YouTube, including fractional frame rates. When takes differ, you choose the output profile.
 
+**Optional studio lighting:** ask for “natural studio lighting” to add a soft face light with muted blue/red accents in a darker room. Review it on your actual footage before export. It runs locally before graphics and captions, with no generated face or new cloud service. [Lighting workflow](docs/STUDIO_LIGHTING.md)
+
 <details>
 <summary><strong>See a frame review and three sample effects</strong></summary>
 

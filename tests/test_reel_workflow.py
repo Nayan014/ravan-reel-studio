@@ -32,6 +32,19 @@ class CombinedReelTests(unittest.TestCase):
     def tearDown(self): self.temp.cleanup()
     def validate(self): return rw.validate(self.folder,self.plan)
     def test_valid_clean_scene(self): self.validate()
+    def test_project_lighting_applies_before_graphics_and_can_be_disabled(self):
+        self.plan['lighting']={'preset':'natural-studio'}
+        self.validate()  # A clean Vibha scene may still have lighting.
+        shot=self.plan['shots'][0]
+        self.assertEqual(rw.effects_for(self.folder,shot,self.plan)[0]['fx'],'studio-light')
+        shot['vibha']={'status':'selected','effects':[{'id':5,'start':0,'end':2,'options':{}}]}
+        self.assertEqual([e['fx'] for e in rw.effects_for(self.folder,shot,self.plan)],['studio-light','lean-in'])
+        shot['lighting']=None
+        self.assertEqual([e['fx'] for e in rw.effects_for(self.folder,shot,self.plan)],['lean-in'])
+        self.validate()
+    def test_invalid_lighting_is_rejected_before_render(self):
+        self.plan['lighting']={'preset':'unknown'}
+        with self.assertRaisesRegex(ValueError,'natural-studio'):self.validate()
     def test_pending_visuals_block_preview(self):
         self.plan['shots'][0]['vibha']['status']='pending'
         with self.assertRaisesRegex(ValueError,'pending'): self.validate()

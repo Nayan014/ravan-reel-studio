@@ -150,6 +150,37 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'changed'):
             workflow.render(session['id'])
 
+    def test_lighting_is_before_graphics_and_part_of_approval(self):
+        for changed in ('config', 'engine'):
+            with self.subTest(changed=changed):
+                folder, session = self.reviewable()
+                module = self.root / 'skills/effects/scripts/studio_lighting.py'
+                module.write_text('lighting engine version 1')
+                path = self.root / session['plan']
+                plan = workflow.read_json(path)
+                plan['lighting'] = {'preset': 'natural-studio'}
+                normalized = workflow.validated_plan(session, plan)
+                self.assertEqual(normalized['lighting'], plan['lighting'])
+                compiled = workflow.engine_plan(normalized)
+                self.assertEqual([e['fx'] for e in compiled['effects']], ['studio-light', 'backdrop-word'])
+                self.assertNotIn('lighting', compiled)
+                times = workflow.preview_times(normalized, {'duration': 12, 'fps': 30})
+                self.assertTrue(any(t < 2 for t in times))
+                self.assertTrue(any(t > 10 for t in times))
+                workflow.write_json(path, normalized)
+                session['preview']['id'] = workflow.preview_id(session)
+                workflow.save_session(folder, session)
+                workflow.approve(session['id'], session['preview']['id'], 'Approve these lighting frames')
+                if changed == 'config':
+                    normalized['lighting']['screen_regions'] = [[[.1,.1],[.2,.1],[.2,.2]]]
+                    workflow.write_json(path, normalized)
+                else:
+                    module.write_text('lighting engine version 2')
+                with patch.object(workflow, 'run') as execute:
+                    with self.assertRaisesRegex(ValueError, 'changed'):
+                        workflow.render(session['id'])
+                    execute.assert_not_called()
+
     def test_plan_matches_the_users_selected_image_and_duration(self):
         _, session = self.reviewable()
         with self.assertRaisesRegex(ValueError, 'chosen image'):

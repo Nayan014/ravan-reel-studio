@@ -30,6 +30,8 @@ Map 1 to video-edit, 2 to gallery, 3 to effects, 4 to resume, 5 to reel-plan and
 
 Mention that every effect name and bonus look from `../effects/SKILL.md` remains usable through the effects route. Do not flood the menu with all 51 names. The direct shortcut `/wf-nafay` also opens the Nafay editor. Menu choice 1 offers Vibha or Nafay for a new run. The old plain language command `Start video edit` also remains an alias.
 
+Natural studio lighting is an optional Vibha treatment, separate from those 51 numbers. `/wf effects studio-light` uses the direct effects route; reel/video plans can enable it before graphics. Read `../../docs/STUDIO_LIGHTING.md` and preserve actual-frame approval. Do not change menu numbering or apply lighting automatically.
+
 ## Routes
 
 - `reel-plan`: Read `../wf-reel-plan/SKILL.md`. Use the idea, suggestions, footage or resume entry and continue through final portrait export in the same workflow.
