@@ -15,8 +15,12 @@ const badge = text => `<span class="badge">${escape(text)}</span>`;
 const empty = text => `<p class="empty-state">${escape(text)}</p>`;
 const fileLink = f => `<a href="${escape(f.url)}" target="_blank" rel="noreferrer">${escape(f.name)}</a>`;
 
-function fileList(files) {
-  return files.length ? `<ul class="files">${files.map(f => `<li><div>${fileLink(f)}<small>${bytes(f.size)} · ${date(f.modified)}</small></div><a class="button secondary" href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓ Download</a></li>`).join('')}</ul>` : empty('No files here yet.');
+function revealButton(file, label = 'Show in folder', { id = '', className = '' } = {}) {
+  return `<button class="button secondary ${escape(className)}"${id ? ` id="${escape(id)}"` : ''} data-reveal-file="${escape(file.path)}" title="Show ${escape(file.name)} in its folder">${escape(label)} ↗</button>`;
+}
+
+function fileList(files, reveal = false) {
+  return files.length ? `<ul class="files">${files.map(f => `<li><div>${fileLink(f)}<small>${bytes(f.size)} · ${date(f.modified)}</small></div>${reveal ? revealButton(f) : `<a class="button secondary" href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓ Download</a>`}</li>`).join('')}</ul>` : empty('No files here yet.');
 }
 
 function renderCards() {
@@ -49,7 +53,7 @@ function savedStatus(p) {
 function mediaPanel(p) {
   const key = `${p.kind}/${p.id}`, selected = selectedVideos.get(key);
   const current = p.exports.find(f => f.path === selected) || p.primary;
-  return `<section class="panel media-panel"><div class="panel-title"><div><div class="section-label">YOUR REEL</div><h2>Video</h2></div>${current ? `<a class="button secondary" id="video-download" href="${escape(download(current))}" download>↓ Download</a>` : ''}</div>${current ? `<div class="video-wrap"><video id="reel-video" controls playsinline preload="metadata"${p.cover ? ` poster="${escape(p.cover.url)}"` : ''} src="${escape(current.url)}"></video></div>${p.exports.length > 1 ? `<label class="export-label" for="video-select">Available exports</label><select id="video-select">${p.exports.map(f => `<option value="${escape(f.path)}"${f.path === current.path ? ' selected' : ''}>${escape(f.name)}</option>`).join('')}</select>` : `<p class="media-filename">${escape(current.name)}</p>`}` : empty('No exported video yet. Review your plan and previews below.')}</section>`;
+  return `<section class="panel media-panel"><div class="panel-title"><div><div class="section-label">YOUR REEL</div><h2>Video</h2></div>${current ? revealButton(current, 'Show video in folder', { id: 'video-reveal' }) : ''}</div>${current ? `<div class="video-wrap"><video id="reel-video" controls playsinline preload="metadata"${p.cover ? ` poster="${escape(p.cover.url)}"` : ''} src="${escape(current.url)}"></video></div>${p.exports.length > 1 ? `<label class="export-label" for="video-select">Available exports</label><select id="video-select">${p.exports.map(f => `<option value="${escape(f.path)}"${f.path === current.path ? ' selected' : ''}>${escape(f.name)}</option>`).join('')}</select>` : `<p class="media-filename">${escape(current.name)}</p>`}` : empty('No exported video yet. Review your plan and previews below.')}</section>`;
 }
 
 function captionsPanel(p) {
@@ -57,10 +61,10 @@ function captionsPanel(p) {
 }
 
 function content(p, tab) {
-  if (tab === 'overview') return `<div class="overview-layout">${mediaPanel(p)}<section class="panel cover-panel"><div class="panel-title"><div><div class="section-label">YOUR THUMBNAIL</div><h2>Cover image</h2></div></div>${p.cover ? `<a class="cover-link" href="${escape(p.cover.url)}" target="_blank" rel="noreferrer"><img class="cover overview-cover" src="${escape(p.cover.url)}" alt="${escape(p.title)} cover"></a><a class="button secondary cover-action" href="${escape(download(p.cover))}" download>↓ Download cover</a>` : empty('No cover yet. Existing cover images will appear here when added to the project.')}</section><aside class="project-sidebar">${savedStatus(p)}</aside>${captionsPanel(p)}</div>`;
+  if (tab === 'overview') return `<div class="overview-layout">${mediaPanel(p)}<section class="panel cover-panel"><div class="panel-title"><div><div class="section-label">YOUR THUMBNAIL</div><h2>Cover image</h2></div></div>${p.cover ? `<a class="cover-link" href="${escape(p.cover.url)}" target="_blank" rel="noreferrer"><img class="cover overview-cover" src="${escape(p.cover.url)}" alt="${escape(p.title)} cover"></a>${revealButton(p.cover, 'Show cover in folder', { className: 'cover-action' })}` : empty('No cover yet. Existing cover images will appear here when added to the project.')}</section><aside class="project-sidebar">${savedStatus(p)}</aside>${captionsPanel(p)}</div>`;
   if (tab === 'plan') return `<section class="panel"><div class="panel-title"><div><div class="section-label">THE CREATIVE DIRECTION</div><h2>Plans & frame reviews</h2></div><button data-review="plan">Review plan ↗</button></div><p class="muted">${p.renderer==='nafay'?'The interactive review includes script, scene and frame feedback, voice/effects previews and approval.':'The interactive review includes script, scene and frame feedback, music selection and approval.'} ${p.renderer==='nafay'?'Nafay graphics are edited in chat through the saved story.js.':'Use Hyperframes Studio for visual editing.'}</p>${p.plans.length ? p.plans.map(f => `<details class="plan-document"${f.path === p.plans[0].path ? ' open' : ''}><summary>${escape(f.name)}</summary><p>${fileLink(f)} · <a href="${escape(download(f))}" download>Download HTML</a></p><iframe class="preview-frame" title="${escape(f.name)}" sandbox="" loading="lazy" src="${escape(f.url)}"></iframe></details>`).join('') : empty('No HTML plan yet. Saved JSON plans are available below.')}${fileList(p.files.filter(f => /(?:^|\/)(?:plan|session)\.json$/.test(f.name)))}</section>`;
   if (tab === 'previews') return `<section class="panel"><div class="panel-title"><div><div class="section-label">ACTUAL REVIEW FRAMES</div><h2>Previews</h2></div><button data-review="frames">Review & approve frames ↗</button></div>${p.previews.length ? `<div class="frame-grid">${p.previews.map(f => `<figure><a href="${escape(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}"></a><figcaption>${escape(f.name)} <a href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓</a></figcaption></figure>`).join('')}</div>` : empty('No preview frames yet. Generate them in your AI chat before approving an export.')}</section>`;
-  if (tab === 'exports') return `<section class="panel"><div class="section-label">AVAILABLE TO DOWNLOAD</div><h2>Videos</h2>${fileList(p.exports)}</section><section class="panel"><h2>Covers</h2>${fileList(p.covers)}</section>${captionsPanel(p)}`;
+  if (tab === 'exports') return `<section class="panel"><div class="section-label">SAVED ON THIS DEVICE</div><h2>Videos</h2>${fileList(p.exports, true)}</section><section class="panel"><h2>Covers</h2>${fileList(p.covers, true)}</section>${captionsPanel(p)}`;
   const originals = p.files.filter(f => f.name.startsWith('raw/') || f.path === p.source?.path);
   const supporting = p.files.filter(f => !originals.includes(f));
   return `<section class="panel"><div class="section-label">YOUR ORIGINAL RECORDINGS</div><h2>Original footage</h2>${fileList(originals)}</section><section class="panel"><h2>Supporting files</h2><p class="muted">Plans, assets, saved checks, and exports. Runtime caches and composition source folders are omitted.</p>${fileList(supporting)}</section>`;
@@ -105,11 +109,24 @@ function renderProject(p, tab) {
       status.textContent = response.ok ? 'Opened on this device.' : 'Could not open the folder on this device.';
     } catch { status.textContent = 'Dashboard disconnected. Check the terminal.'; }
   });
+  document.querySelectorAll('[data-reveal-file]').forEach(button => button.addEventListener('click', async () => {
+    const status = document.querySelector('#folder-status');
+    button.disabled = true;
+    status.textContent = 'Opening file location…';
+    try {
+      const response = await fetch(`/api/projects/${p.kind}/${encodeURIComponent(p.id)}/reveal`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Dashboard-Action': 'reveal-file' },
+        body: JSON.stringify({ path: button.dataset.revealFile }),
+      });
+      status.textContent = response.ok ? 'File shown in its folder.' : 'Could not show the file in its folder on this device.';
+    } catch { status.textContent = 'Dashboard disconnected. Check the terminal.'; }
+    finally { button.disabled = false; }
+  }));
   document.querySelector('#video-select')?.addEventListener('change', e => {
     selectedVideos.set(`${p.kind}/${p.id}`, e.target.value);
     const f = p.exports.find(f => f.path === e.target.value);
     document.querySelector('#reel-video').src = f.url;
-    document.querySelector('#video-download').href = download(f);
+    document.querySelector('#video-reveal').dataset.revealFile = f.path;
   });
   document.querySelectorAll('[data-caption]').forEach(button => button.addEventListener('click', () => {
     const [file, section] = button.dataset.caption.split(':').map(Number);
