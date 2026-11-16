@@ -58,6 +58,10 @@ are excluded from automatic cover selection. Social copy is read from Markdown o
 whose name includes `caption` or `Social_Copy`, including files in `publishing/`. Platform and
 title/description headings become separate copyable fields; hashtags stay in the text.
 
+Social caption fields start collapsed in Overview and Exports. Instagram and TikTok share the first row, YouTube title and description share the next row, and LinkedIn spans the final row. These pairs stack on narrow screens. Click a label to expand its text and Copy button. An expanded field stays open during library refreshes on the same project tab. New posting copy defaults to Instagram, YouTube title/description, TikTok and LinkedIn; see [SOCIAL_COPY.md](SOCIAL_COPY.md) for the file format and writing preferences.
+
+YouTube descriptions and LinkedIn posts preview simple bold, italic and strikethrough markers from the saved source. Copy formatted offers rich and plain clipboard representations; a browser that cannot copy rich text falls back to normal text and labels the result. Verify formatting after pasting into YouTube Studio or the LinkedIn post composer. Titles, Instagram and TikTok captions copy normal text, preserving spacing, bullets, hashtags and mentions without exposing authoring markers. Raw source HTML is never rendered as active HTML.
+
 Files are read in place. Project media, raw footage, assets, working files, previews, exports,
 and publishing files are indexed; hidden folders, runtime dependencies, models, and composition
 source folders are omitted from the file browser. Missing files and malformed metadata produce
