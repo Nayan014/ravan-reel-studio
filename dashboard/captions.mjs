@@ -29,6 +29,16 @@ export function captionSections(text) {
 
 const escapeHtml = value => value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
+/** Presentation order is independent of source order and copy indices. */
+export function captionRows(sections) {
+  const entries = sections.map((section, index) => ({ section, index }));
+  const take = labels => labels.flatMap(label => entries.filter(item => item.section.label.trim().toLowerCase() === label));
+  const rows = [take(['instagram', 'tiktok']), take(['youtube title', 'youtube description'])].filter(row => row.length);
+  const linkedin = take(['linkedin']);
+  const placed = new Set([...rows.flat(), ...linkedin].map(item => item.index));
+  return [...rows, ...entries.filter(item => !placed.has(item.index)).map(item => [item]), ...(linkedin.length ? [linkedin] : [])];
+}
+
 /** Small, non-nested emphasis markers; never interpret source HTML as markup. */
 export function formatCaption({ label, text }) {
   let html = '', plain = '', end = 0, styled = false;
@@ -45,12 +55,15 @@ export function formatCaption({ label, text }) {
   }
   html += escapeHtml(text.slice(end));
   plain += text.slice(end);
-  const rich = label.trim().toLowerCase() === 'youtube description';
+  const linkedin = label.trim().toLowerCase() === 'linkedin';
+  const rich = linkedin || label.trim().toLowerCase() === 'youtube description';
   return {
     text: plain,
     html: rich ? html : escapeHtml(plain),
     clipboardHtml: rich && styled ? `<div>${html.replace(/\n/g, '<br>')}</div>` : '',
-    hint: rich
+    hint: linkedin
+      ? 'Copy formatted includes styled text. Check the result in your LinkedIn post composer after pasting; available styles can vary by account.'
+      : rich
       ? 'YouTube descriptions support bold, italic and strikethrough. Check the result in YouTube Studio after pasting; use its formatting toolbar if styles are removed.'
       : 'Copies as normal text. Paragraphs, bullet characters, hashtags and mentions are preserved.',
   };

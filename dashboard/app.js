@@ -1,5 +1,5 @@
 // Adapted from Techno Reel by Nayan V. See LICENSE in this directory.
-import { captionSections, formatCaption, writeCaptionClipboard } from './captions.mjs';
+import { captionSections, captionRows, formatCaption, writeCaptionClipboard } from './captions.mjs';
 
 const app = document.querySelector('#app');
 const connection = document.querySelector('#connection');
@@ -58,10 +58,10 @@ function mediaPanel(p) {
 
 function captionsPanel(p) {
   const sources = p.captions.map((f, fileIndex) => {
-    const sections = captionSections(f.text).map((section, sectionIndex) => {
+    const sections = captionRows(captionSections(f.text)).map(row => `<div class="caption-row">${row.map(({ section, index: sectionIndex }) => {
       const formatted = formatCaption(section);
       return `<details class="caption-item" data-caption-section="${escape(JSON.stringify([f.path, section.label]))}"><summary>${escape(section.label)}</summary><p class="caption-text">${formatted.html}</p><p class="caption-format-note">${escape(formatted.hint)}</p><button class="secondary copy-part" data-caption="${fileIndex}:${sectionIndex}" aria-label="Copy ${escape(section.label)}">${formatted.clipboardHtml ? 'Copy formatted' : 'Copy'}</button></details>`;
-    }).join('');
+    }).join('')}</div>`).join('');
     return `<div class="caption-source"><p class="muted">${fileLink(f)}</p>${sections}</div>`;
   }).join('');
   return `<section class="panel caption-panel"><div class="panel-title"><div><div class="section-label">READY TO SHARE</div><h2>Social captions</h2></div></div>${sources || empty('No social captions yet. Add caption.txt, captions.md, or Social_Copy.md to this project when your copy is ready.')}</section>`;
