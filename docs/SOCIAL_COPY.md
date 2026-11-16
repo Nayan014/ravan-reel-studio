@@ -31,6 +31,8 @@ Format generated posts for their destination. Use emphasis sparingly when it hel
 
 For LinkedIn posts and YouTube descriptions, build a readable hierarchy rather than formatting only the opening line. Where present and useful, bold the creator's name, channel/project name, short section labels and the platform labels beside social URLs. Use italic for a role such as "software developer" or a short supporting phrase. Separate ideas into short paragraphs; use concise bullets when they make the content easier to scan. Leave the main body and URLs in normal text, and avoid emphasizing every keyword or whole paragraphs. Check the rendered result so names, roles and link labels carry their intended styles.
 
+Keep social profile links compact: one labeled URL per line, without blank lines between platforms.
+
 | Destination | Authoring and copying |
 | --- | --- |
 | Instagram caption | Normal text with short paragraphs, blank lines and, when useful, simple bullet characters. Do not add bold/italic Markdown or decorative fonts. |
