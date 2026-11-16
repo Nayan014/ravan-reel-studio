@@ -1,5 +1,5 @@
 // Adapted from Techno Reel by Nayan V. See LICENSE in this directory.
-import { captionSections } from './captions.mjs';
+import { captionSections, formatCaption, writeCaptionClipboard } from './captions.mjs';
 
 const app = document.querySelector('#app');
 const connection = document.querySelector('#connection');
@@ -57,7 +57,14 @@ function mediaPanel(p) {
 }
 
 function captionsPanel(p) {
-  return `<section class="panel caption-panel"><div class="panel-title"><div><div class="section-label">READY TO SHARE</div><h2>Social captions</h2></div></div>${p.captions.length ? p.captions.map((f, fileIndex) => `<div class="caption-source"><p class="muted">${fileLink(f)}</p>${captionSections(f.text).map((section, sectionIndex) => `<details class="caption-item" data-caption-section="${escape(JSON.stringify([f.path, section.label]))}"><summary>${escape(section.label)}</summary><p>${escape(section.text)}</p><button class="secondary copy-part" data-caption="${fileIndex}:${sectionIndex}" aria-label="Copy ${escape(section.label)}">Copy</button></details>`).join('')}</div>`).join('') : empty('No social captions yet. Add caption.txt, captions.md, or Social_Copy.md to this project when your copy is ready.')}</section>`;
+  const sources = p.captions.map((f, fileIndex) => {
+    const sections = captionSections(f.text).map((section, sectionIndex) => {
+      const formatted = formatCaption(section);
+      return `<details class="caption-item" data-caption-section="${escape(JSON.stringify([f.path, section.label]))}"><summary>${escape(section.label)}</summary><p class="caption-text">${formatted.html}</p><p class="caption-format-note">${escape(formatted.hint)}</p><button class="secondary copy-part" data-caption="${fileIndex}:${sectionIndex}" aria-label="Copy ${escape(section.label)}">${formatted.clipboardHtml ? 'Copy formatted' : 'Copy'}</button></details>`;
+    }).join('');
+    return `<div class="caption-source"><p class="muted">${fileLink(f)}</p>${sections}</div>`;
+  }).join('');
+  return `<section class="panel caption-panel"><div class="panel-title"><div><div class="section-label">READY TO SHARE</div><h2>Social captions</h2></div></div>${sources || empty('No social captions yet. Add caption.txt, captions.md, or Social_Copy.md to this project when your copy is ready.')}</section>`;
 }
 
 function content(p, tab) {
@@ -70,10 +77,10 @@ function content(p, tab) {
   return `<section class="panel"><div class="section-label">YOUR ORIGINAL RECORDINGS</div><h2>Original footage</h2>${fileList(originals)}</section><section class="panel"><h2>Supporting files</h2><p class="muted">Plans, assets, saved checks, and exports. Runtime caches and composition source folders are omitted.</p>${fileList(supporting)}</section>`;
 }
 
-async function copy(button, text) {
+async function copy(button, text, html = '') {
   try {
-    await navigator.clipboard.writeText(text);
-    const old = button.textContent; button.textContent = 'Copied';
+    const richCopied = await writeCaptionClipboard({ text, clipboardHtml: html }) === 'formatted';
+    const old = button.textContent; button.textContent = richCopied ? 'Copied formatted' : html ? 'Copied plain text' : 'Copied';
     setTimeout(() => { if (button.isConnected) button.textContent = old; }, 1800);
   } catch { document.querySelector('#folder-status').textContent = 'Copy unavailable. Select and copy the text directly.'; }
 }
@@ -132,7 +139,8 @@ function renderProject(p, tab) {
   });
   document.querySelectorAll('[data-caption]').forEach(button => button.addEventListener('click', () => {
     const [file, section] = button.dataset.caption.split(':').map(Number);
-    copy(button, captionSections(p.captions[file].text)[section].text);
+    const formatted = formatCaption(captionSections(p.captions[file].text)[section]);
+    copy(button, formatted.text, formatted.clipboardHtml);
   }));
 }
 

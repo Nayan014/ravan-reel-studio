@@ -37,6 +37,7 @@ footer{max-width:1290px;padding:25px 48px;margin:auto;border-top:1px solid var(-
 .caption-item p { margin:10px 0 0; white-space:pre-wrap; }
 .caption-item summary { padding:4px 0; font-size:14px; font-weight:800; }
 .caption-item .copy-part { margin-top:12px; }
+.caption-item .caption-format-note { color:var(--muted); font-size:11px; line-height:1.5; }
 .copy-part { min-height:34px; padding:7px 12px; }
 @media(max-width:1000px) {
   .overview-layout { grid-template-columns:repeat(2,minmax(0,1fr)); }

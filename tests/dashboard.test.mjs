@@ -6,7 +6,7 @@ import { join, dirname } from 'node:path';
 import { request } from 'node:http';
 import { listProjects, mediaPath } from '../scripts/dashboard-library.mjs';
 import { createDashboard, fileLocationCommand } from '../scripts/dashboard.mjs';
-import { captionSections } from '../dashboard/captions.mjs';
+import { captionSections, formatCaption, writeCaptionClipboard } from '../dashboard/captions.mjs';
 
 function fixture(t) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'studio-dashboard-')));
@@ -251,4 +251,57 @@ test('LinkedIn is a separate copyable section in Markdown and plain-text platfor
       { label: heading.replace('## ', ''), text: 'A longer professional post.\n\nWhat have you tried?\n#SoftwareDevelopment' },
     ]);
   }
+});
+
+test('description emphasis has a safe preview and matching rich and plain clipboard text', () => {
+  const value = formatCaption({ label: 'YouTube description', text: '**Build with AI**\nTry *one idea* and ~~skip testing~~ test it.\n#AI @creator <img src=x onerror=alert(1)>' });
+  assert.equal(value.text, 'Build with AI\nTry one idea and skip testing test it.\n#AI @creator <img src=x onerror=alert(1)>');
+  assert.match(value.html, /<strong>Build with AI<\/strong>/);
+  assert.match(value.html, /<em>one idea<\/em>/);
+  assert.match(value.html, /<s>skip testing<\/s>/);
+  assert.doesNotMatch(value.html, /<img/);
+  assert.match(value.html, /&lt;img/);
+  assert.match(value.clipboardHtml, /<br>/);
+  assert.match(value.clipboardHtml, /<strong>Build with AI<\/strong>/);
+});
+
+test('feed posts and titles copy normal text, retaining paragraphs, bullets, hashtags and Unicode', () => {
+  for (const label of ['Instagram', 'TikTok', 'LinkedIn', 'YouTube title', 'Caption']) {
+    const value = formatCaption({ label, text: '**Hello Nayan**\n\n- Build café apps\n- Learn *something*\n#BuildInPublic @techno_ravan' });
+    assert.equal(value.text, 'Hello Nayan\n\n- Build café apps\n- Learn something\n#BuildInPublic @techno_ravan');
+    assert.equal(value.clipboardHtml, '');
+    assert.doesNotMatch(value.html, /<(strong|em|s)>/);
+  }
+  assert.equal(formatCaption({ label: 'Instagram', text: '2 * 3 = 6. Keep a *literal marker.' }).text, '2 * 3 = 6. Keep a *literal marker.');
+});
+
+test('formatted clipboard copies include both safe HTML and the same normal text', async () => {
+  const formatted = formatCaption({ label: 'YouTube description', text: '**Hello**\n#Shorts' });
+  let written;
+  class Item { constructor(parts) { this.parts = parts; } }
+  const result = await writeCaptionClipboard(formatted, {
+    write: async items => { written = items[0].parts; },
+    writeText: async () => assert.fail('rich copy should succeed'),
+  }, Item);
+  assert.equal(result, 'formatted');
+  assert.equal(await written['text/plain'].text(), 'Hello\n#Shorts');
+  assert.equal(await written['text/html'].text(), formatted.clipboardHtml);
+});
+
+test('unavailable or rejected rich clipboard falls back without leaking formatting markers', async () => {
+  const formatted = formatCaption({ label: 'YouTube description', text: '**Hello**\n#Shorts' });
+  for (const Item of [undefined, class Item {}]) {
+    let written;
+    assert.equal(await writeCaptionClipboard(formatted, {
+      write: async () => { throw Error('Rich clipboard is unavailable'); },
+      writeText: async text => { written = text; },
+    }, Item), 'plain');
+    assert.equal(written, 'Hello\n#Shorts');
+  }
+});
+
+test('clipboard failures propagate instead of reporting a successful copy', async () => {
+  await assert.rejects(writeCaptionClipboard({ text: 'Hello' }, {
+    writeText: async () => { throw Error('Clipboard denied'); },
+  }), /Clipboard denied/);
 });

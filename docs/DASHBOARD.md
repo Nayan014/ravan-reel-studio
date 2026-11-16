@@ -60,6 +60,8 @@ title/description headings become separate copyable fields; hashtags stay in the
 
 Social caption fields start collapsed in Overview and Exports. Click a label to expand its text and Copy button. An expanded field stays open during library refreshes on the same project tab. New posting copy defaults to Instagram, YouTube title/description, TikTok and LinkedIn; see [SOCIAL_COPY.md](SOCIAL_COPY.md) for the file format and writing preferences.
 
+YouTube descriptions preview simple bold, italic and strikethrough markers from the saved source. Copy formatted offers rich and plain clipboard representations; a browser that cannot copy rich text falls back to normal text and labels the result. Verify formatting after pasting into YouTube Studio. Titles and the other platform captions copy normal text, preserving spacing, bullets, hashtags and mentions without exposing authoring markers. Raw source HTML is never rendered as active HTML.
+
 Files are read in place. Project media, raw footage, assets, working files, previews, exports,
 and publishing files are indexed; hidden folders, runtime dependencies, models, and composition
 source folders are omitted from the file browser. Missing files and malformed metadata produce
