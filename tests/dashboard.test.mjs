@@ -243,3 +243,12 @@ test('caption sections support Markdown, either platform order, inline titles an
   assert.deepEqual(captionSections('Plain text\n#VideoEditing'), [{ label: 'Caption', text: 'Plain text\n#VideoEditing' }]);
   assert.deepEqual(captionSections(''), []);
 });
+
+test('LinkedIn is a separate copyable section in Markdown and plain-text platform files', () => {
+  for (const heading of ['## LinkedIn', 'LINKEDIN', 'LinkedIn']) {
+    assert.deepEqual(captionSections(`## Instagram\nA short caption.\n#BuildInPublic\n\n${heading}\nA longer professional post.\n\nWhat have you tried?\n#SoftwareDevelopment`), [
+      { label: 'Instagram', text: 'A short caption.\n#BuildInPublic' },
+      { label: heading.replace('## ', ''), text: 'A longer professional post.\n\nWhat have you tried?\n#SoftwareDevelopment' },
+    ]);
+  }
+});

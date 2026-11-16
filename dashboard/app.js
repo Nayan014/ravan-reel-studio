@@ -57,7 +57,7 @@ function mediaPanel(p) {
 }
 
 function captionsPanel(p) {
-  return `<section class="panel caption-panel"><div class="panel-title"><div><div class="section-label">READY TO SHARE</div><h2>Social captions</h2></div></div>${p.captions.length ? p.captions.map((f, fileIndex) => `<div class="caption-source"><p class="muted">${fileLink(f)}</p>${captionSections(f.text).map((section, sectionIndex) => `<section class="caption-item"><div class="caption-item-heading"><h3>${escape(section.label)}</h3><button class="secondary copy-part" data-caption="${fileIndex}:${sectionIndex}">Copy</button></div><p>${escape(section.text)}</p></section>`).join('')}</div>`).join('') : empty('No social captions yet. Add caption.txt, captions.md, or Social_Copy.md to this project when your copy is ready.')}</section>`;
+  return `<section class="panel caption-panel"><div class="panel-title"><div><div class="section-label">READY TO SHARE</div><h2>Social captions</h2></div></div>${p.captions.length ? p.captions.map((f, fileIndex) => `<div class="caption-source"><p class="muted">${fileLink(f)}</p>${captionSections(f.text).map((section, sectionIndex) => `<details class="caption-item" data-caption-section="${escape(JSON.stringify([f.path, section.label]))}"><summary>${escape(section.label)}</summary><p>${escape(section.text)}</p><button class="secondary copy-part" data-caption="${fileIndex}:${sectionIndex}" aria-label="Copy ${escape(section.label)}">Copy</button></details>`).join('')}</div>`).join('') : empty('No social captions yet. Add caption.txt, captions.md, or Social_Copy.md to this project when your copy is ready.')}</section>`;
 }
 
 function content(p, tab) {
@@ -85,6 +85,7 @@ function renderProject(p, tab) {
   const oldVideo = key === routeKey ? document.querySelector('#reel-video') : null;
   const wasPlaying = oldVideo && !oldVideo.paused;
   const oldTime = oldVideo?.currentTime;
+  const openCaptions = new Set(key === routeKey ? [...document.querySelectorAll('details[data-caption-section][open]')].map(item => item.dataset.captionSection) : []);
   app.innerHTML = `<a class="back" href="#">← ALL PROJECTS</a><div class="project-heading"><div><div class="eyebrow">${p.kind === 'reels' ? 'Combined reel' : p.kind === 'videos' ? 'YouTube video' : 'Single-video edit'}</div><h1>${escape(p.title)}</h1><div class="path">${escape(p.path)}/</div></div><div class="heading-actions"><button class="secondary" id="open-folder">Open project folder ↗</button><button class="secondary" id="copy-path">Copy folder path</button><span id="folder-status" role="status"></span></div></div><nav class="tabs" aria-label="Project sections">${tabs.map(t => `<a class="${tab === t ? 'active' : ''}"${tab === t ? ' aria-current="page"' : ''} href="${href(p, t)}">${t[0].toUpperCase() + t.slice(1)}</a>`).join('')}</nav><div id="content">${content(p, tab)}</div>`;
   const newVideo = document.querySelector('#reel-video');
   if (oldVideo && newVideo && oldVideo.getAttribute('src') === newVideo.getAttribute('src')) {
@@ -92,6 +93,7 @@ function renderProject(p, tab) {
     if (Number.isFinite(oldTime)) oldVideo.currentTime = oldTime;
     if (wasPlaying) oldVideo.play().catch(() => {});
   }
+  document.querySelectorAll('details[data-caption-section]').forEach(item => { item.open = openCaptions.has(item.dataset.captionSection); });
   routeKey = key; signature = nextSignature;
   document.querySelectorAll('[data-review]').forEach(button=>button.addEventListener('click',async()=>{
     button.disabled=true;

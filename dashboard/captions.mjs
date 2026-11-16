@@ -13,7 +13,7 @@ export function captionSections(text) {
     // A document title is context, not part of a caption. Hashtags remain untouched.
     if (/^#\s+/.test(line)) continue;
     const heading = /^#{2,6}\s+(.+?)\s*#*\s*$/.exec(line)
-      || /^\s*(INSTAGRAM|YOUTUBE(?: SHORTS)?|TIKTOK)\s*$/i.exec(line);
+      || /^\s*(INSTAGRAM|YOUTUBE(?: SHORTS)?|TIKTOK|LINKEDIN)\s*$/i.exec(line);
     if (heading) { flush(); label = heading[1]; continue; }
     const field = /^\s*(Title|Description):\s*(.*)$/i.exec(line);
     if (field && /youtube/i.test(label)) {

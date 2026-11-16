@@ -41,6 +41,8 @@ Each scene or meaningful visual beat needs these columns:
 
 ## Project-specific choices
 
+For social posting copy and cover-and-caption requests, follow [SOCIAL_COPY.md](SOCIAL_COPY.md). Default to Instagram, YouTube title/description, TikTok and LinkedIn, using the creator's natural voice with no em dashes in newly authored copy.
+
 Keep a creator's approved script, channel, assets and effect decisions in that project's plan. Personal examples and rejected choices from another project are not defaults for new reels. The channel label in this guide is an example; use the creator's own channel when supplied.
 
 ## Source quality and audio

@@ -6,6 +6,8 @@ For reel scripts, storyboards and production plans, first read `docs/REEL_PLAN_F
 
 ## Clickable questions and plan editing
 
+For social posting copy, including requests paired with a cover image, read `docs/SOCIAL_COPY.md`. Default to Instagram, YouTube title/description, TikTok and LinkedIn. Use natural creator-specific writing with no em dashes in authored posting copy.
+
 Read `docs/WORKFLOW_REVIEW.md` for all workflow questions, choices and approvals. Use native choice buttons when available. Open plans through the interactive review page so users can submit script, scene and frame feedback and approve the exact review revision. Preserve actual-frame approval gates.
 
 ## Available skills

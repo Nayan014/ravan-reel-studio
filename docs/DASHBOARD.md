@@ -58,6 +58,8 @@ are excluded from automatic cover selection. Social copy is read from Markdown o
 whose name includes `caption` or `Social_Copy`, including files in `publishing/`. Platform and
 title/description headings become separate copyable fields; hashtags stay in the text.
 
+Social caption fields start collapsed in Overview and Exports. Click a label to expand its text and Copy button. An expanded field stays open during library refreshes on the same project tab. New posting copy defaults to Instagram, YouTube title/description, TikTok and LinkedIn; see [SOCIAL_COPY.md](SOCIAL_COPY.md) for the file format and writing preferences.
+
 Files are read in place. Project media, raw footage, assets, working files, previews, exports,
 and publishing files are indexed; hidden folders, runtime dependencies, models, and composition
 source folders are omitted from the file browser. Missing files and malformed metadata produce
