@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { request } from 'node:http';
 import { listProjects, mediaPath } from '../scripts/dashboard-library.mjs';
-import { createDashboard } from '../scripts/dashboard.mjs';
+import { createDashboard, fileLocationCommand } from '../scripts/dashboard.mjs';
 import { captionSections } from '../dashboard/captions.mjs';
 
 function fixture(t) {
@@ -162,6 +162,71 @@ test('folder opening requires same origin, a custom header and an existing proje
     req.on('error', reject); req.end();
   });
   assert.equal(status, 403);
+});
+
+test('file location commands select the file on macOS and open the containing folder elsewhere', () => {
+  assert.deepEqual(fileLocationCommand('/work/export/My ü video.mp4', 'darwin'), ['open', ['-R', '/work/export/My ü video.mp4']]);
+  assert.deepEqual(fileLocationCommand('C:\\work\\export\\My ü video.mp4', 'win32'), ['explorer.exe', ['C:\\work\\export']]);
+  assert.deepEqual(fileLocationCommand('/work/export/My ü video.mp4', 'linux'), ['xdg-open', ['/work/export']]);
+});
+
+test('reveals the requested export or cover, including alternate exports and Unicode filenames', async t => {
+  const { root, put } = fixture(t);
+  const video = 'outputs/edits/example/export/Final ü video.mp4';
+  const alternate = 'outputs/edits/example/export/Alternate.mp4';
+  const cover = 'outputs/edits/example/publishing/cover ü.png';
+  for (const file of [video, alternate, cover]) put(file, 'media');
+  put('outputs/edits/example/export.json', { file: 'export/Final ü video.mp4', cover: 'publishing/cover ü.png' });
+  const opened = [];
+  const base = await serverFixture(t, root, { revealFile: (path, done) => { opened.push(path); done(null); } });
+  const endpoint = base + '/api/projects/edits/example/reveal';
+  const headers = { origin: base, 'x-dashboard-action': 'reveal-file', 'content-type': 'application/json' };
+  for (const path of [video, alternate, cover]) {
+    assert.equal((await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify({ path }) })).status, 204);
+  }
+  assert.deepEqual(opened, [video, alternate, cover].map(path => join(root, path)));
+});
+
+test('file reveal rejects cross-origin, invalid bodies and paths outside the project media', async t => {
+  const { root, put } = fixture(t);
+  const video = 'outputs/reels/a/export/final.mp4';
+  put(video, 'video');
+  put('outputs/reels/a/assets/notes.txt', 'not an export');
+  put('outputs/reels/b/export/other.mp4', 'other project');
+  const secret = put('private/secret.mp4', 'private');
+  symlinkSync(secret, join(root, 'outputs/reels/a/export/linked.mp4'));
+  const opened = [];
+  const base = await serverFixture(t, root, { revealFile: (path, done) => { opened.push(path); done(null); } });
+  const endpoint = base + '/api/projects/reels/a/reveal';
+  const headers = { origin: base, 'x-dashboard-action': 'reveal-file', 'content-type': 'application/json' };
+  const send = (body, overrides = {}) => fetch(endpoint, { method: 'POST', headers: { ...headers, ...overrides }, body });
+  const body = JSON.stringify({ path: video });
+  assert.equal((await fetch(endpoint, { method: 'POST', body })).status, 403);
+  assert.equal((await send(body, { origin: 'https://evil.example' })).status, 403);
+  assert.equal((await send(body, { 'x-dashboard-action': 'open-folder' })).status, 403);
+  assert.equal((await send(body, { 'content-type': 'text/plain' })).status, 403);
+  for (const value of ['{broken', 'null', '{}', '{"path":42}']) assert.equal((await send(value)).status, 400);
+  assert.equal((await send(' '.repeat(32769))).status, 413);
+  for (const path of ['/private/secret.mp4', '../private/secret.mp4', 'outputs/reels/b/export/other.mp4',
+                      'outputs/reels/a/assets/notes.txt', 'outputs/reels/a/export/linked.mp4',
+                      'outputs/reels/a/export/missing.mp4']) {
+    assert.equal((await send(JSON.stringify({ path }))).status, 404, path);
+  }
+  assert.equal((await fetch(base + '/api/projects/reels/missing/reveal', { method: 'POST', headers, body })).status, 404);
+  assert.deepEqual(opened, []);
+});
+
+test('file reveal reports a launcher failure without claiming that the folder opened', async t => {
+  const { root, put } = fixture(t);
+  const path = 'outputs/reels/a/export/final.mp4';
+  put(path, 'video');
+  const base = await serverFixture(t, root, { revealFile: (_path, done) => done(new Error('Launcher failed')) });
+  const response = await fetch(base + '/api/projects/reels/a/reveal', {
+    method: 'POST', headers: { origin: base, 'x-dashboard-action': 'reveal-file', 'content-type': 'application/json' },
+    body: JSON.stringify({ path }),
+  });
+  assert.equal(response.status, 500);
+  assert.equal(await response.text(), 'Could not show the file in its folder on this device.');
 });
 
 test('caption sections support Markdown, either platform order, inline titles and legacy plain text', () => {

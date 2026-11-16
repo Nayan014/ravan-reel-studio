@@ -34,11 +34,16 @@ Each project has five sections:
 - **Overview:** recorded or latest available export, cover, social copy, and saved workflow records.
 - **Plan:** sandboxed HTML plans and frame reviews, plus saved JSON plans where available.
 - **Previews:** actual recorded preview frames, or discovered preview images when no record exists.
-- **Exports:** video variants, covers, and social captions to copy or download.
+- **Exports:** video variants and covers to reveal in their folders, plus social captions to copy or download.
 - **Files:** original recordings and supporting plans, media, and review records.
 
-Use **Open project folder** to open the folder on the computer running the server. **Copy folder
-path** copies its portable, studio-relative path. Download controls retain the original filename.
+Use **Open project folder** to open the project folder on the computer running the server.
+**Show video in folder** and **Show cover in folder** open the selected media's own location,
+so you can copy the original file directly. On macOS, Finder selects the exact file; Windows
+and Linux open its containing folder. Choosing another video export updates its file-location
+button. The Exports tab offers the same action for every listed video and cover.
+**Copy folder path** copies the portable, studio-relative project path. Other file download
+controls retain the original filename.
 Browsers may not play every source codec; the original file is still available for download.
 
 ## How files are selected

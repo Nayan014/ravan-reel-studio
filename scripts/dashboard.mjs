@@ -3,7 +3,7 @@ import { createServer } from 'node:http';
 import {createHash} from 'node:crypto';
 import { createReadStream, realpathSync, statSync } from 'node:fs';
 import { execFile } from 'node:child_process';
-import { basename, extname, join, resolve } from 'node:path';
+import { basename, dirname, extname, join, resolve, win32 } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listProjects, mediaPath, mediaTypes } from './dashboard-library.mjs';
 import { readReview, submitReview, suggestedReview, reviewDocument } from './review-store.mjs';
@@ -14,9 +14,18 @@ export const studioRoot = fileURLToPath(new URL('../', import.meta.url));
 export const workspaceId = root => createHash('sha256').update(realpathSync(root)).digest('hex');
 const ui = fileURLToPath(new URL('../dashboard/', import.meta.url));
 const openFolder = (path, done) => execFile(process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'explorer.exe' : 'xdg-open', [path], done);
+export function fileLocationCommand(path, platform = process.platform) {
+  if (platform === 'darwin') return ['open', ['-R', path]];
+  if (platform === 'win32') return ['explorer.exe', [win32.dirname(path)]];
+  return ['xdg-open', [dirname(path)]];
+}
+const showFile = (path, done) => {
+  const [command, args] = fileLocationCommand(path);
+  return execFile(command, args, done);
+};
 const pagePolicy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self'; frame-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
-export function createDashboard({ root = studioRoot, revealFolder = openFolder, launchStudio = openNativeStudio } = {}) {
+export function createDashboard({ root = studioRoot, revealFolder = openFolder, revealFile = showFile, launchStudio = openNativeStudio } = {}) {
   root = realpathSync(root);
   return createServer((req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -53,11 +62,34 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
         return;
       }
       if (req.method === 'POST') {
-        const match = /^\/api\/projects\/(reels|videos|edits)\/([A-Za-z0-9_-]+)\/open$/.exec(url.pathname);
+        const match = /^\/api\/projects\/(reels|videos|edits)\/([A-Za-z0-9_-]+)\/(open|reveal)$/.exec(url.pathname);
         if (!match) return finish(405, 'Review only');
-        if (req.headers.origin !== `http://${host}` || req.headers['x-dashboard-action'] !== 'open-folder') return finish(403);
+        const action = match[3];
+        if (req.headers.origin !== `http://${host}` || req.headers['x-dashboard-action'] !== (action === 'reveal' ? 'reveal-file' : 'open-folder')) return finish(403);
+        if (action === 'reveal' && !/^application\/json(?:;|$)/i.test(req.headers['content-type'] || '')) return finish(403);
         const project = listProjects(root).find(p => p.kind === match[1] && p.id === match[2]);
         if (!project) return finish(404, 'Project not found');
+        if (action === 'reveal') {
+          let length = 0, chunks = [];
+          req.on('data', chunk => { length += chunk.length; if (length <= 32768) chunks.push(chunk); });
+          req.on('end', () => {
+            if (length > 32768) return finish(413, 'Request is too large.');
+            let value;
+            try { value = JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+            catch { return finish(400, 'Choose an exported video or cover.'); }
+            if (typeof value?.path !== 'string' || !value.path) return finish(400, 'Choose an exported video or cover.');
+            const file = [...project.exports, ...project.covers].find(f => f.path === value.path);
+            if (!file) return finish(404, 'File not found in this project.');
+            let path;
+            // Recheck the exact discovered media immediately before the OS action.
+            try { path = mediaPath(root, file.path); }
+            catch { return finish(404, 'File not found in this project.'); }
+            const failed = 'Could not show the file in its folder on this device.';
+            try { revealFile(path, error => finish(error ? 500 : 204, error ? failed : '')); }
+            catch { finish(500, failed); }
+          });
+          return;
+        }
         const path = join(root, project.path);
         // Recheck the project directory after discovery, before starting the platform opener.
         if (realpathSync(path) !== path || !statSync(path).isDirectory()) return finish(404);
