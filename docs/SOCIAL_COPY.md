@@ -11,6 +11,8 @@ Unless the creator asks for a different set, provide all four platforms in one p
 - **TikTok:** shorter, direct copy that fits the same video, with a relevant question or invitation and hashtags.
 - **LinkedIn:** a standalone professional post in the creator's voice. Explain the actual project, experience or lesson, and invite a relevant conversation. Use a few relevant hashtags when they fit.
 
+For LinkedIn, develop a specific story from the actual project or creator experience rather than expanding the reel caption with generic filler. A concrete opening, a relevant detail from the work, and a natural invitation to other professionals should make it useful on its own. For creator/channel introductions, include a concise where-to-follow block with the creator's known YouTube, Instagram and TikTok links. Use direct project/video URLs when supplied; otherwise clearly label profile links. Reuse saved project links or the creator's verified channel references, ask for missing destinations, and never infer a URL from a shared handle. Save supplied links with the local project for later reuse.
+
 Adapt each post to its audience. Do not paste the same paragraph into every section. Reuse the saved creator name and handle. Keep internal edit-version labels out of posting copy unless the video is about that edit.
 
 ## Writing preference
