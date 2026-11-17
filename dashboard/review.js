@@ -118,9 +118,23 @@ function controls() {
   const blocked = sending || !connected || !state || state.stale;
   const textareas = [...document.querySelectorAll('.target-feedback textarea')];
   const hasFeedbackText = textareas.some(t => t.value.trim().length > 0);
+  const isPlan = state?.request?.stage === 'plan';
 
   if ($('submit-all-feedback')) {
-    $('submit-all-feedback').disabled = Boolean(blocked || !hasFeedbackText);
+    if (isPlan) {
+      $('submit-all-feedback').style.display = 'none';
+    } else {
+      $('submit-all-feedback').style.display = '';
+      $('submit-all-feedback').disabled = Boolean(blocked || !hasFeedbackText);
+    }
+  }
+
+  if (isPlan) {
+    $('approve').textContent = hasFeedbackText ? 'Submit feedback and generate previews' : 'Approve plan and generate previews';
+  } else if (state?.request?.stage === 'frames') {
+    $('approve').textContent = 'Approve current frames and audio';
+  } else if (state?.request?.stage === 'script') {
+    $('approve').textContent = 'Approve script';
   }
   $('approve').disabled = Boolean(blocked);
 
@@ -430,8 +444,18 @@ $('approve').addEventListener('click', async () => {
   if (sending || !state) return;
   sending = true;
   controls();
-  $('review-status').textContent = 'Submitting approval…';
+  const isPlan = state?.request?.stage === 'plan';
+  $('review-status').textContent = isPlan ? 'Submitting plan & generating actual preview frames…' : 'Submitting approval…';
   try {
+    const textareas = [...document.querySelectorAll('.target-feedback textarea')];
+    const items = textareas.map(t => {
+      const form = t.closest('.target-feedback');
+      return { id: crypto.randomUUID(), scope: form.dataset.scope, scene: form.dataset.scene || '', frame: form.dataset.frame || '', text: t.value.trim() };
+    }).filter(i => i.text.length > 0);
+
+    for (const item of items) {
+      await post('submit', { ...item, requestId: state.request.id, action: 'feedback' });
+    }
     const value = await post('submit', {
       id: crypto.randomUUID(),
       requestId: state.request.id,
@@ -440,9 +464,14 @@ $('approve').addEventListener('click', async () => {
       text: ''
     });
     state.submissions.push(value);
+    textareas.forEach(t => {
+      const form = t.closest('.target-feedback');
+      try { localStorage.removeItem(key(form.dataset.scope, form.dataset.target)); } catch {}
+      t.value = '';
+    });
     displayed = '';
     render();
-    $('review-status').textContent = 'Plan and visual choices approved.';
+    $('review-status').textContent = isPlan ? 'Plan approved! Generating actual preview frames and audio mix...' : (state.request.stage === 'frames' ? 'Frames and audio approved.' : 'Script approved.');
   } catch (error) {
     $('review-status').textContent = error.message;
   } finally {

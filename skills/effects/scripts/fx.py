@@ -832,13 +832,15 @@ def glass_widgets_v1(c, e):
     d.text((bh * 0.2, bh * 0.36), e.o.get('name', 'Vibha'), font=font('uib', bh * 0.22), fill=(255, 255, 255, 255), anchor='lm')
     d.text((bh * 0.2, bh * 0.66), e.o.get('handle', '@vibha.in.progress'), font=font('uim', bh * 0.14), fill=(255, 255, 255, 215), anchor='lm')
     place(c, g, bx, cy2, 0.6 + 0.4 * pop(c, 0.24), 0, al * clamp((c.lt - 0.24) / 0.1), behind=True)
-    f1, f2 = font('uim', W * 0.045), font('uib', W * 0.045)
-    pre, hi = e.o.get('pill', 'Edited by |Claude').split('|') if '|' in e.o.get('pill', 'Edited by |Claude') else (e.o['pill'], '')
-    tw = f1.getlength(pre) + f2.getlength(hi); ph = W * 0.105; pw = tw + ph * 0.9; py = c.H * 0.865
-    q = glass(c, pw, ph, ph / 2, W / 2, py, amt=0.16, tint=(70, 70, 76)); d = ImageDraw.Draw(q)
-    d.text(((pw - tw) / 2, ph / 2), pre, font=f1, fill=(255, 255, 255, 255), anchor='lm')
-    d.text(((pw - tw) / 2 + f1.getlength(pre), ph / 2), hi, font=f2, fill=(255, 176, 146, 255), anchor='lm')
-    place(c, shadowed(q, 14, 6, 70), W / 2, py, 0.7 + 0.3 * pop(c, 0.4), 0, al * clamp((c.lt - 0.4) / 0.1), guard=True)
+    pill_text = e.o.get('pill')
+    if pill_text and pill_text not in ('none', 'false', 'False'):
+        f1, f2 = font('uim', W * 0.045), font('uib', W * 0.045)
+        pre, hi = pill_text.split('|') if '|' in pill_text else (pill_text, '')
+        tw = f1.getlength(pre) + f2.getlength(hi); ph = W * 0.105; pw = tw + ph * 0.9; py = c.H * 0.865
+        q = glass(c, pw, ph, ph / 2, W / 2, py, amt=0.16, tint=(70, 70, 76)); d = ImageDraw.Draw(q)
+        d.text(((pw - tw) / 2, ph / 2), pre, font=f1, fill=(255, 255, 255, 255), anchor='lm')
+        d.text(((pw - tw) / 2 + f1.getlength(pre), ph / 2), hi, font=f2, fill=(255, 176, 146, 255), anchor='lm')
+        place(c, shadowed(q, 14, 6, 70), W / 2, py, 0.7 + 0.3 * pop(c, 0.4), 0, al * clamp((c.lt - 0.4) / 0.1), guard=True)
 
 
 @effect('red-collage', 'black and white you, a giant red word behind, kinetic type stacked beside you')
@@ -1375,11 +1377,11 @@ def glass_widgets_v2(c, e):
     # 4 · views artifact (a mini page inside the glass)
     aw, ah = 330 * u, 330 * u; dx, dy = 50 * u + aw / 2, ay + S / 2 + 26 * u + ah / 2
     art = G(aw, ah, dx, dy, 44 * u); d = ImageDraw.Draw(art)
-    d.text((24 * u, 30 * u), 'artifact · views.html', font=font('mono', 15 * u), fill=white + (220,), anchor='lm')
+    d.text((24 * u, 30 * u), e.o.get('artifact_title', 'artifact · views.html'), font=font('mono', 15 * u), fill=white + (220,), anchor='lm')
     inn = rrect(aw - 36 * u, ah - 74 * u, 20 * u, (250, 248, 244, 255)); di = ImageDraw.Draw(inn); iw, ih = inn.size
     for j in range(3): di.ellipse([14 * u + j * 16 * u, 14 * u, 24 * u + j * 16 * u, 24 * u], fill=((255, 95, 87), (255, 189, 46), (40, 200, 64))[j] + (255,))
-    di.text((16 * u, 40 * u), 'Top reels', font=font('uib', 26 * u), fill=(24, 22, 26, 255))
-    di.text((16 * u, 72 * u), '197K', font=font('anton', 44 * u), fill=(200, 85, 61, 255))
+    di.text((16 * u, 40 * u), e.o.get('card_title', 'Top reels'), font=font('uib', 26 * u), fill=(24, 22, 26, 255))
+    di.text((16 * u, 72 * u), e.o.get('card_stat', '197K'), font=font('anton', 44 * u), fill=(200, 85, 61, 255))
     vals = [197, 140, 124, 83, 50, 40, 38]; gx0, gx1, gy1 = 16 * u, iw - 16 * u, ih - 18 * u; bwid = (gx1 - gx0) / 7 * 0.66
     for j, v in enumerate(vals):
         q = ease_out((c.lt - 0.35 - 0.05 * j) / 0.4); hh = (ih * 0.42) * v / 197 * q; x0 = gx0 + (gx1 - gx0) * j / 7
@@ -1396,7 +1398,7 @@ def glass_widgets_v2(c, e):
     for k_ in range(6):
         ang = k_ * math.pi / 3; ad.line([(A / 2 - 26 * u * math.cos(ang), A / 2 - 26 * u * math.sin(ang)), (A / 2 + 26 * u * math.cos(ang), A / 2 + 26 * u * math.sin(ang))], fill=(255, 255, 255, 255), width=int(7 * u))
     mu.alpha_composite(art2, (int(22 * u), int(22 * u)))
-    d.text((134 * u, 44 * u), 'NOW EDITING', font=font('mono', 15 * u), fill=white + (200,), anchor='lm')
+    d.text((134 * u, 44 * u), e.o.get('media_tag', 'NOW EDITING'), font=font('mono', 15 * u), fill=white + (200,), anchor='lm')
     d.text((134 * u, 78 * u), e.o.get('song', 'soft UI pops'), font=font('uib', 28 * u), fill=white + (255,), anchor='lm')
     d.text((134 * u, 108 * u), 'sfx · 25.7s', font=font('uim', 20 * u), fill=white + (200,), anchor='lm')
     pp = clamp(c.lt / max(0.5, e.d)); d.rounded_rectangle([22 * u, 140 * u, mw - 22 * u, 146 * u], 3 * u, fill=white + (70,))
@@ -1424,13 +1426,16 @@ def glass_widgets_v2(c, e):
     d.text((R / 2, R / 2 - 8 * u), '4K', font=font('uib', 52 * u), fill=white + (255,), anchor='mm')
     d.text((R / 2, R - 26 * u), 'render', font=font('uim', 20 * u), fill=white + (210,), anchor='mm')
     show(rg, rx, ry, 6)
-    # 8 · Edited by Claude pill (in front)
-    f1, f2 = font('uim', W * 0.045), font('uib', W * 0.045); pre, hi = 'Edited by ', 'Claude'
-    tw = f1.getlength(pre) + f2.getlength(hi); ph = W * 0.105; pw = tw + ph * 0.9; py = H * 0.875
-    q = glass(c, pw, ph, ph / 2, W / 2, py, amt=0.16, tint=(70, 70, 76)); d = ImageDraw.Draw(q)
-    d.text(((pw - tw) / 2, ph / 2), pre, font=f1, fill=white + (255,), anchor='lm')
-    d.text(((pw - tw) / 2 + f1.getlength(pre), ph / 2), hi, font=f2, fill=(255, 176, 146, 255), anchor='lm')
-    show(shadowed(q, 14, 6, 70), W / 2, py, 7, front=True)
+    # 8 · Bottom pill (only if explicitly enabled)
+    pill_text = e.o.get('pill')
+    if pill_text and pill_text not in ('none', 'false', 'False'):
+        f1, f2 = font('uim', W * 0.045), font('uib', W * 0.045)
+        pre, hi = pill_text.split('|') if '|' in pill_text else (pill_text, '')
+        tw = f1.getlength(pre) + f2.getlength(hi); ph = W * 0.105; pw = tw + ph * 0.9; py = H * 0.875
+        q = glass(c, pw, ph, ph / 2, W / 2, py, amt=0.16, tint=(70, 70, 76)); d = ImageDraw.Draw(q)
+        d.text(((pw - tw) / 2, ph / 2), pre, font=f1, fill=white + (255,), anchor='lm')
+        d.text(((pw - tw) / 2 + f1.getlength(pre), ph / 2), hi, font=f2, fill=(255, 176, 146, 255), anchor='lm')
+        show(shadowed(q, 14, 6, 70), W / 2, py, 7, front=True)
 
 
 @effect('glass-widgets', 'frosted glass phone widgets and mini artifacts float around your head, with an Edited by Claude pill')

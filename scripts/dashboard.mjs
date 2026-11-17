@@ -98,10 +98,35 @@ export async function selectEffect(root, kind, id, value) {
   const shot = plan.shots?.find(s => String(s.id) === String(value.scene));
   if (!shot) throw new Error('Scene not found');
   const catalogue = getEffectsCatalogue();
+  const venvPython = join(studioRoot, 'skills/effects/.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
+  const python = existsSync(venvPython) ? venvPython : (process.env.PYTHON || 'python3');
+
   if (value.effectId && value.effectId !== 'none') {
     const item = catalogue.find(e => String(e.id) === String(value.effectId));
     if (!item) throw new Error('Unknown effect');
     const duration = shot.clip ? (shot.clip[1] - shot.clip[0]) : (shot.estimated_duration || 3);
+
+    let tailoredOptions = {};
+    try {
+      const { stdout } = await promisify(execFile)(python, ['-c', `
+import sys, json
+sys.path.insert(0, 'scripts')
+from effect_tailor import tailor_effect_options
+opts = tailor_effect_options(
+    effect_id_or_name=${JSON.stringify(value.effectId)},
+    speech=${JSON.stringify(shot.say || shot.expected_say || '')},
+    topic=${JSON.stringify(plan.title || '')},
+    creator=${JSON.stringify(plan.creator || 'Nayan')},
+    handle=${JSON.stringify(plan.handle || '@TechnoRavan')},
+    channel=${JSON.stringify(plan.channel || 'Techno Ravan')}
+)
+print(json.dumps(opts))
+`], { cwd: studioRoot });
+      tailoredOptions = JSON.parse(stdout.trim());
+    } catch (e) {
+      console.error('Error tailoring effect options:', e);
+    }
+
     shot.vibha = {
       status: 'selected',
       category: item.category,
@@ -112,11 +137,15 @@ export async function selectEffect(root, kind, id, value) {
         category: item.category,
         start: 0,
         end: Math.round(duration * 100) / 100,
-        options: {}
+        options: tailoredOptions
       }]
     };
   } else {
     shot.vibha = { status: 'none', effects: [] };
+  }
+  const pending = plan.shots?.some(s => s.vibha?.status === 'pending');
+  if (!pending) {
+    plan.visual_selection = plan.shots.map(s => `Scene ${s.id}: ${s.vibha?.effects?.[0]?.name || 'none'}`).join('; ');
   }
   writeFileSync(planPath, JSON.stringify(plan, null, 2) + '\n');
   const projectDir = join(root, 'outputs', kind, id);
@@ -163,7 +192,49 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
           try {
             if (length > 32768) return sendJson(413, { error: 'Review submission is too large.' });
             const value = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-            const result = action === 'studio' ? await launchStudio(root, kind, id) : action === 'prepare' ? suggestedReview(root, kind, id, value.stage || 'plan') : action === 'music' ? await selectMusic(root, kind, id, value) : action === 'effect' ? await selectEffect(root, kind, id, value) : submitReview(root, kind, id, value);
+            let result;
+            if (action === 'studio') {
+              result = await launchStudio(root, kind, id);
+            } else if (action === 'prepare') {
+              result = suggestedReview(root, kind, id, value.stage || 'plan');
+            } else if (action === 'music') {
+              result = await selectMusic(root, kind, id, value);
+            } else if (action === 'effect') {
+              result = await selectEffect(root, kind, id, value);
+            } else {
+              result = submitReview(root, kind, id, value);
+              if (value.action === 'approve') {
+                const currentReview = readReview(root, kind, id);
+                if (currentReview?.request?.stage === 'plan') {
+                  const planPath = join(root, 'outputs', kind, id, 'plan.json');
+                  if (existsSync(planPath)) {
+                    try {
+                      const plan = JSON.parse(readFileSync(planPath, 'utf8'));
+                      if (!plan.visual_selection) {
+                        plan.visual_selection = plan.shots?.map(s => `Scene ${s.id}: ${s.vibha?.effects?.[0]?.name || 'none'}`).join('; ') || 'Approved plan and visual choices';
+                        writeFileSync(planPath, JSON.stringify(plan, null, 2) + '\n');
+                      }
+                      const venvPython = join(studioRoot, 'skills/effects/.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
+                      const python = existsSync(venvPython) ? venvPython : (process.env.PYTHON || 'python3');
+                      execFile(python, ['scripts/reel_workflow.py', 'preview', '--kind', kind, '--project', id], { cwd: studioRoot }, (err, stdout) => {
+                        if (err) {
+                          console.error('Auto-preview error:', err);
+                        } else {
+                          try {
+                            const out = JSON.parse(stdout.trim());
+                            prepareReview(root, { kind, id, stage: 'frames', document: out.review });
+                          } catch (e) {
+                            console.error('Auto-preview parse error:', e);
+                          }
+                        }
+                      });
+                    } catch (e) {
+                      console.error('Auto-preview setup error:', e);
+                    }
+                  }
+                }
+              }
+            }
             sendJson(200, result);
           } catch (error) { sendJson(error.status || 400, { error: error.message }); }
         });
