@@ -222,7 +222,19 @@ export function submitReview(root, kind, id, value) {
   const duplicate = state.submissions.find(s => s.id === value.id);
   if (duplicate) return duplicate;
   if (state.stale || value.requestId !== r.id) throw new ReviewError('This review changed. Reload the latest revision before submitting.', 409);
-  if (value.action==='approve'&&state.submissions.some(s=>s.status==='pending')) throw new ReviewError('Resolve submitted feedback before approving.',409);
+  if (value.action === 'approve' && state.submissions.some(s => s.status === 'pending')) {
+    if (value.resolvePending) {
+      for (const s of state.submissions) {
+        if (s.status === 'pending') {
+          s.status = 'handled';
+          s.result = 'Resolved by plan approval';
+          s.handledAt = new Date().toISOString();
+        }
+      }
+    } else {
+      throw new ReviewError('Resolve submitted feedback before approving.', 409);
+    }
+  }
   const text = typeof value.text === 'string' ? value.text.trim() : '';
   let scene = typeof value.scene === 'string' ? value.scene : '';
   const scope=value.scope|| (scene?'scene':'script'),frame=typeof value.frame==='string'?value.frame:'';

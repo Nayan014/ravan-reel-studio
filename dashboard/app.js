@@ -1,5 +1,9 @@
 // Adapted from Techno Reel by Nayan V. See LICENSE in this directory.
 import { captionSections, captionRows, formatCaption, writeCaptionClipboard } from './captions.mjs';
+import { initTheme, initSettingsModal } from './settings.mjs';
+
+initTheme();
+initSettingsModal();
 
 const app = document.querySelector('#app');
 const connection = document.querySelector('#connection');

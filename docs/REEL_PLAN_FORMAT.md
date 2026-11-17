@@ -21,12 +21,11 @@ Use native choice buttons for questions and approvals. Open HTML plans through t
 
 Each scene or meaningful visual beat needs these columns:
 
-1. **Scene and timing**: scene number and start/end seconds. Use estimated times until a recording provides actual word timings. If a row changes from the person to a graphic, state the transition time explicitly.
+1. **Scene and timing**: scene number and start/end seconds. Use estimated times until a recording provides actual word timings. If a row changes from the person to a visual treatment, state the transition time explicitly.
 2. **What I say**: exact spoken words for that scene, matching the full script.
-3. **Picture and source**: explain what is visible and where it comes from: the user's recording, a real screenshot, a Remotion animation made with code, or an explicitly proposed generated asset. Keep the real recorded voice under graphics. Do not call code animation AI-generated footage.
-4. **CC on screen**: exact spoken words broken into short caption pages. Show page breaks clearly. Separate extra graphic labels/headlines from captions by putting them in the relevant graphic/effect column.
-5. **Vibha effect**: write **None**, or the verified visual-guide number and canonical effect name, plus a short suggestion for timing, text and placement. Verify IDs in `skills/effects/references/catalogue.json`.
-6. **Hyperframes finish** for new reels; **Remotion graphic** for existing Remotion projects: write **None**, or the Techno Reel scene name and a plain description of its text, animation and screen placement. Clearly mark any new custom scene as proposed, not already available. Remotion scenes have no Vibha catalogue number.
+3. **Picture and source**: explain what is visible and where it comes from: the user's recording, a real screenshot, or a proposed visual asset. Keep the real recorded voice under visual treatments. Do not show raw crop or scaling math here.
+4. **CC on screen**: exact spoken words broken into short caption pages. Show page breaks clearly.
+5. **Effects**: write **None**, or choose from the catalogue with its verified visual-guide number, canonical name and visual preview. In the interactive review, select effects directly from the dropdown to preview appearance on that row. The redundant finishing column is retired.
 
 ## Visual preferences and decisions
 

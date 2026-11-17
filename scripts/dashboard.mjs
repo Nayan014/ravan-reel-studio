@@ -1,12 +1,13 @@
 // Adapted from Techno Reel by Nayan V. See ../dashboard/LICENSE.
 import { createServer } from 'node:http';
 import {createHash} from 'node:crypto';
-import { createReadStream, realpathSync, statSync } from 'node:fs';
+import { createReadStream, realpathSync, statSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { basename, dirname, extname, join, resolve, win32 } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listProjects, mediaPath, mediaTypes } from './dashboard-library.mjs';
-import { readReview, submitReview, suggestedReview, reviewDocument } from './review-store.mjs';
+import { readReview, submitReview, suggestedReview, reviewDocument, prepareReview } from './review-store.mjs';
 import { audioCatalogue,libraryAudio,selectMusic } from './audio-library.mjs';
 import { studioProject, openNativeStudio } from './native-studio.mjs';
 
@@ -25,6 +26,113 @@ const showFile = (path, done) => {
 };
 const pagePolicy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self'; frame-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
+export function defaultSettings() {
+  return {
+    channelName: 'Techno Ravan',
+    creatorName: 'Nayan',
+    niche: 'Developer Tutorials, AI Engineering, Full-Stack Architecture',
+    targetAudience: 'Developers, Software Engineers, AI Builders',
+    youtubeHandle: '@TechnoRavan',
+    instagramHandle: '@technoravan',
+    linkedinUrl: 'https://www.linkedin.com/in/nayanv',
+    bio: 'Bite-sized developer workflows, AI systems, and modern software engineering.',
+    primaryRatio: '9:16 (Portrait Reel)',
+    targetResolution: '4K UHD (2160x3840)',
+    targetFps: 60,
+    aesthetic: 'Developer Dark (Deep Slate, Clean Accents, Terminal Highlighting)',
+    preferredEffectCategory: 'Techno Ravan Effects',
+    tone: 'Direct, punchy, pragmatic, high developer empathy, zero fluff',
+    pacing: 'Fast hook in 0-3s, rapid transitions every 3-5s, code/terminal proof first',
+    noEmDashes: true,
+    callToAction: 'Follow @TechnoRavan for more developer systems',
+    defaultMusicMood: 'Tech Minimal / Coding Focus',
+    voiceDucking: '-18 dB during dialogue',
+    sfxStyle: 'Subtle mechanical clicks, terminal beeps, soft risers',
+    theme: 'system'
+  };
+}
+
+export function getEffectsCatalogue() {
+  const catPath = join(studioRoot, 'skills/effects/references/catalogue.json');
+  const customPath = join(studioRoot, 'skills/effects/references/custom-catalogue.json');
+  const effects = [];
+  try {
+    const list = JSON.parse(readFileSync(catPath, 'utf8'));
+    for (const e of list) {
+      effects.push({
+        id: String(e.id),
+        name: e.name,
+        desc: e.desc,
+        use: e.use,
+        category: e.category || 'Vibha Effects',
+        author: e.author || 'Vibha',
+        subtitle: e.subtitle || e.use || '',
+        previewUrl: `/media/skills/effects/${e.preview}`
+      });
+    }
+  } catch {}
+  if (existsSync(customPath)) {
+    try {
+      const customList = JSON.parse(readFileSync(customPath, 'utf8'));
+      for (const e of customList) {
+        effects.push({
+          id: String(e.id),
+          name: e.name,
+          desc: e.desc,
+          use: e.use,
+          category: e.category || 'Techno Ravan Effects',
+          author: e.author || 'Techno Ravan',
+          subtitle: e.subtitle || e.use || '',
+          previewUrl: e.preview ? `/media/skills/effects/${e.preview}` : ''
+        });
+      }
+    } catch {}
+  }
+  return effects;
+}
+
+export async function selectEffect(root, kind, id, value) {
+  const planPath = join(root, 'outputs', kind, id, 'plan.json');
+  if (!existsSync(planPath)) throw new Error('Plan not found');
+  const plan = JSON.parse(readFileSync(planPath, 'utf8'));
+  const shot = plan.shots?.find(s => String(s.id) === String(value.scene));
+  if (!shot) throw new Error('Scene not found');
+  const catalogue = getEffectsCatalogue();
+  if (value.effectId && value.effectId !== 'none') {
+    const item = catalogue.find(e => String(e.id) === String(value.effectId));
+    if (!item) throw new Error('Unknown effect');
+    const duration = shot.clip ? (shot.clip[1] - shot.clip[0]) : (shot.estimated_duration || 3);
+    shot.vibha = {
+      status: 'selected',
+      category: item.category,
+      author: item.author,
+      effects: [{
+        id: String(item.id),
+        name: item.name,
+        category: item.category,
+        start: 0,
+        end: Math.round(duration * 100) / 100,
+        options: {}
+      }]
+    };
+  } else {
+    shot.vibha = { status: 'none', effects: [] };
+  }
+  writeFileSync(planPath, JSON.stringify(plan, null, 2) + '\n');
+  const projectDir = join(root, 'outputs', kind, id);
+  const venvPython = join(studioRoot, 'skills/effects/.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
+  const python = existsSync(venvPython) ? venvPython : (process.env.PYTHON || 'python3');
+  await promisify(execFile)(python, ['-c', `
+import sys, json
+sys.path.insert(0, 'scripts')
+from pathlib import Path
+from reel_workflow import make_html
+plan = json.loads(Path(r'${planPath}').read_text())
+make_html(Path(r'${projectDir}'), plan)
+`], { cwd: studioRoot });
+  return prepareReview(root, { kind, id, stage: readReview(root, kind, id).request.stage, document: readReview(root, kind, id).request.document });
+}
+
 export function createDashboard({ root = studioRoot, revealFolder = openFolder, revealFile = showFile, launchStudio = openNativeStudio } = {}) {
   root = realpathSync(root);
   return createServer((req, res) => {
@@ -38,12 +146,12 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
     if (req.headers.origin && req.headers.origin !== `http://${host}`) return finish(403, 'Cross-origin request blocked');
     try {
       const url = new URL(req.url, `http://${host}`);
-      const reviewMatch = /^\/api\/reviews\/(reels|videos|edits|plans)\/([A-Za-z0-9_-]+)(?:\/(submit|prepare|music|studio))?$/.exec(url.pathname);
+      const reviewMatch = /^\/api\/reviews\/(reels|videos|edits|plans)\/([A-Za-z0-9_-]+)(?:\/(submit|prepare|music|studio|effect))?$/.exec(url.pathname);
       if (reviewMatch) {
         const [, kind, id, action] = reviewMatch;
         const sendJson = (status, data) => { res.setHeader('Content-Type', 'application/json'); finish(status, JSON.stringify(data)); };
         if (['GET', 'HEAD'].includes(req.method) && !action) {
-          try { sendJson(200, { ...readReview(root, kind, id), catalogue:audioCatalogue(), studioAvailable: Boolean(studioProject(root,kind,id)) }); }
+          try { sendJson(200, { ...readReview(root, kind, id), catalogue: audioCatalogue(), effectsCatalogue: getEffectsCatalogue(), studioAvailable: Boolean(studioProject(root, kind, id)) }); }
           catch (error) { sendJson(error.status || 404, { error: error.message }); }
           return;
         }
@@ -55,11 +163,73 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
           try {
             if (length > 32768) return sendJson(413, { error: 'Review submission is too large.' });
             const value = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-            const result = action === 'studio' ? await launchStudio(root,kind,id) : action === 'prepare' ? suggestedReview(root, kind, id, value.stage || 'plan') : action === 'music' ? await selectMusic(root,kind,id,value) : submitReview(root, kind, id, value);
+            const result = action === 'studio' ? await launchStudio(root, kind, id) : action === 'prepare' ? suggestedReview(root, kind, id, value.stage || 'plan') : action === 'music' ? await selectMusic(root, kind, id, value) : action === 'effect' ? await selectEffect(root, kind, id, value) : submitReview(root, kind, id, value);
             sendJson(200, result);
           } catch (error) { sendJson(error.status || 400, { error: error.message }); }
         });
         return;
+      }
+      if (url.pathname === '/api/settings') {
+        if (['GET', 'HEAD'].includes(req.method)) {
+          const settingsPath = join(root, 'settings.json');
+          let settings = defaultSettings();
+          if (existsSync(settingsPath)) {
+            try {
+              const fileData = JSON.parse(readFileSync(settingsPath, 'utf8'));
+              settings = { ...settings, ...fileData };
+            } catch {}
+          }
+          res.setHeader('Content-Type', 'application/json');
+          return finish(200, JSON.stringify(settings));
+        }
+        if (req.method === 'POST') {
+          if (req.headers.origin !== `http://${host}` || req.headers['x-dashboard-action'] !== 'settings' || !/^application\/json(?:;|$)/i.test(req.headers['content-type'] || '')) {
+            return finish(403);
+          }
+          let length = 0, chunks = [];
+          req.on('data', chunk => { length += chunk.length; if (length <= 32768) chunks.push(chunk); });
+          req.on('end', () => {
+            if (length > 32768) {
+              res.setHeader('Content-Type', 'application/json');
+              return finish(413, JSON.stringify({ error: 'Settings payload is too large.' }));
+            }
+            try {
+              const value = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+              const current = defaultSettings();
+              const settingsPath = join(root, 'settings.json');
+              if (existsSync(settingsPath)) {
+                try { Object.assign(current, JSON.parse(readFileSync(settingsPath, 'utf8'))); } catch {}
+              }
+              const allowedKeys = [
+                'channelName', 'creatorName', 'niche', 'targetAudience',
+                'youtubeHandle', 'instagramHandle', 'linkedinUrl', 'bio',
+                'primaryRatio', 'targetResolution', 'targetFps', 'aesthetic',
+                'preferredEffectCategory', 'tone', 'pacing', 'noEmDashes',
+                'callToAction', 'defaultMusicMood', 'voiceDucking', 'sfxStyle', 'theme'
+              ];
+              for (const k of allowedKeys) {
+                if (k in value) {
+                  if (typeof current[k] === 'boolean') {
+                    current[k] = Boolean(value[k]);
+                  } else if (typeof current[k] === 'number') {
+                    const num = Number(value[k]);
+                    if (Number.isFinite(num)) current[k] = num;
+                  } else if (typeof value[k] === 'string') {
+                    current[k] = value[k].replace(/—/g, ' - ').trim();
+                  }
+                }
+              }
+              writeFileSync(settingsPath, JSON.stringify(current, null, 2) + '\n');
+              res.setHeader('Content-Type', 'application/json');
+              return finish(200, JSON.stringify(current));
+            } catch (error) {
+              res.setHeader('Content-Type', 'application/json');
+              return finish(400, JSON.stringify({ error: error.message || 'Invalid settings data.' }));
+            }
+          });
+          return;
+        }
+        return finish(405);
       }
       if (req.method === 'POST') {
         const match = /^\/api\/projects\/(reels|videos|edits)\/([A-Za-z0-9_-]+)\/(open|reveal)$/.exec(url.pathname);
@@ -117,7 +287,7 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
         }
       } else {
         const reviewPage = /^\/review\/(reels|videos|edits|plans)\/[A-Za-z0-9_-]+$/.test(url.pathname);
-        const name = reviewPage ? 'review.html' : { '/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/captions.mjs': 'captions.mjs', '/review.js': 'review.js', '/review.css': 'review.css' }[url.pathname];
+        const name = reviewPage ? 'review.html' : { '/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/captions.mjs': 'captions.mjs', '/review.js': 'review.js', '/review.css': 'review.css', '/settings.mjs': 'settings.mjs' }[url.pathname];
         if (!name) return finish(404, 'Not found');
         path = join(ui, name);
       }

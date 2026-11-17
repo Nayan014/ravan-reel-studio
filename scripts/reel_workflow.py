@@ -28,6 +28,38 @@ PROJECT_KIND = 'reels'
 CAMERAS = {'lean-in', 'locked-on', 'slow-push', 'over-the-shoulder-zoom'}
 
 
+def load_settings():
+    path = STUDIO / 'settings.json'
+    if path.exists():
+        try:
+            return json.loads(path.read_text('utf-8'))
+        except Exception:
+            pass
+    return {
+        'channelName': 'Techno Ravan',
+        'creatorName': 'Nayan',
+        'niche': 'Developer Tutorials, AI Engineering, Full-Stack Architecture',
+        'targetAudience': 'Developers, Software Engineers, AI Builders',
+        'youtubeHandle': '@TechnoRavan',
+        'instagramHandle': '@technoravan',
+        'linkedinUrl': 'https://www.linkedin.com/in/nayanv',
+        'bio': 'Bite-sized developer workflows, AI systems, and modern software engineering.',
+        'primaryRatio': '9:16 (Portrait Reel)',
+        'targetResolution': '4K UHD (2160x3840)',
+        'targetFps': 60,
+        'aesthetic': 'Developer Dark (Deep Slate, Clean Accents, Terminal Highlighting)',
+        'preferredEffectCategory': 'Techno Ravan Effects',
+        'tone': 'Direct, punchy, pragmatic, high developer empathy, zero fluff',
+        'pacing': 'Fast hook in 0-3s, rapid transitions every 3-5s, code/terminal proof first',
+        'noEmDashes': True,
+        'callToAction': 'Follow @TechnoRavan for more developer systems',
+        'defaultMusicMood': 'Tech Minimal / Coding Focus',
+        'voiceDucking': '-18 dB during dialogue',
+        'sfxStyle': 'Subtle mechanical clicks, terminal beeps, soft risers',
+        'theme': 'system'
+    }
+
+
 def project(slug):
     if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', slug):
         raise ValueError('Use a lowercase project slug with letters, numbers and hyphens.')
@@ -47,11 +79,17 @@ def natural(path):
 
 def inputs():
     root = STUDIO / 'inputs'
-    folders = [p for p in root.iterdir() if p.is_dir() and not p.is_symlink() and not p.name.startswith('.')
-               and any(f.is_file() and f.suffix.lower() in VIDEO_TYPES for f in p.iterdir())]
-    folders.sort(key=lambda p: max(f.stat().st_ctime for f in p.iterdir() if f.is_file()), reverse=True)
-    return [{'folder':p.relative_to(STUDIO).as_posix(),
-             'takes':len([f for f in p.iterdir() if f.suffix.lower() in VIDEO_TYPES])} for p in folders[:3]]
+    items = []
+    for f in root.iterdir():
+        if f.is_file() and not f.is_symlink() and not f.name.startswith('.') and f.suffix.lower() in VIDEO_TYPES:
+            items.append({'folder': f.relative_to(STUDIO).as_posix(), 'takes': 1, 'time': f.stat().st_ctime})
+    for p in root.iterdir():
+        if p.is_dir() and not p.is_symlink() and not p.name.startswith('.'):
+            takes = [f for f in p.iterdir() if f.is_file() and f.suffix.lower() in VIDEO_TYPES]
+            if takes:
+                items.append({'folder': p.relative_to(STUDIO).as_posix(), 'takes': len(takes), 'time': max(f.stat().st_ctime for f in takes)})
+    items.sort(key=lambda x: x['time'], reverse=True)
+    return [{'folder': x['folder'], 'takes': x['takes']} for x in items[:5]]
 
 
 class ScriptLines(HTMLParser):
@@ -72,8 +110,8 @@ def input_folder(folder):
     if not path.is_absolute():
         path=STUDIO/path if path.parts and path.parts[0]=='inputs' else STUDIO/'inputs'/path
     source=path.resolve()
-    if not source.is_relative_to((STUDIO/'inputs').resolve()) or not source.is_dir():
-        raise ValueError('Choose a recordings folder inside inputs.')
+    if not source.is_relative_to((STUDIO/'inputs').resolve()) or (not source.is_dir() and not source.is_file()):
+        raise ValueError('Choose a recordings folder or video file inside inputs.')
     if any(parent.is_symlink() for parent in [path,*path.parents] if parent.is_relative_to(STUDIO)):
         raise ValueError('Recordings folders cannot use symlinks.')
     return source
@@ -81,11 +119,16 @@ def input_folder(folder):
 
 def init(slug, folder, title, script_html=None):
     source=input_folder(folder)
-    if not source.is_relative_to((STUDIO/'inputs').resolve()) or not source.is_dir():
-        raise ValueError('Choose a reel folder inside this studio inputs folder.')
+    if not source.is_relative_to((STUDIO/'inputs').resolve()) or (not source.is_dir() and not source.is_file()):
+        raise ValueError('Choose a reel folder or video file inside this studio inputs folder.')
     dest=project(slug)
     if dest.exists(): raise ValueError('Project already exists. Use status to resume it.')
-    files=sorted([p for p in source.iterdir() if p.is_file() and not p.is_symlink() and p.suffix.lower() in VIDEO_TYPES], key=natural)
+    if source.is_file():
+        if source.suffix.lower() not in VIDEO_TYPES:
+            raise ValueError('Recording file must be a supported video type.')
+        files=[source]
+    else:
+        files=sorted([p for p in source.iterdir() if p.is_file() and not p.is_symlink() and p.suffix.lower() in VIDEO_TYPES], key=natural)
     if not files: raise ValueError('No recorded takes found.')
     expected=[]
     if script_html:
@@ -107,8 +150,15 @@ def init(slug, folder, title, script_html=None):
                       'expected_say':expected[idx] if expected else '', 'say':'','words':[],
                       'text_confirmed':False,'caption_pages':[], 'layout':'full','focus':[0.5,0.4],
                       'vibha':{'status':'pending','effects':[]},'remotion':{'status':'pending'}})
-    plan={'version':1,'project_type':'video' if PROJECT_KIND=='videos' else 'reel','slug':slug,'title':title,'channel':'Techno Ravan','language':'en','style':'flat','palette':'clay',
-          'handle':'@techno_ravan','visual_selection':None,'shots':shots}
+    settings = load_settings()
+    plan={'version':1,'project_type':'video' if PROJECT_KIND=='videos' else 'reel','slug':slug,'title':title,
+          'channel': settings.get('channelName', 'Techno Ravan'),
+          'creator': settings.get('creatorName', 'Nayan'),
+          'handle': settings.get('youtubeHandle', '@TechnoRavan'),
+          'niche': settings.get('niche', 'Developer Tutorials, AI Engineering, Full-Stack Architecture'),
+          'tone': settings.get('tone', 'Direct, punchy, pragmatic, high developer empathy, zero fluff'),
+          'language':'en','style':'flat','palette':'clay',
+          'visual_selection':None,'shots':shots}
     from reel_commands import upgrade
     upgrade(dest,plan)
     write_json(dest/'plan.json',plan); make_html(dest,plan)
@@ -151,7 +201,12 @@ def pages(say):
 
 
 def catalogue():
-    return {str(x['id']).lower():x for x in read_json(effects_root()/'references/catalogue.json')}
+    items = {str(x['id']).lower(): {**x, 'category': x.get('category', 'Vibha Effects'), 'author': x.get('author', 'Vibha')} for x in read_json(effects_root()/'references/catalogue.json')}
+    custom_path = effects_root() / 'references/custom-catalogue.json'
+    if custom_path.is_file():
+        for x in read_json(custom_path):
+            items[str(x['id']).lower()] = {**x, 'category': x.get('category', 'Techno Ravan Effects'), 'author': x.get('author', 'Techno Ravan')}
+    return items
 
 
 def asset(folder, value):
@@ -457,7 +512,6 @@ def make_html(folder,plan,output=None,images=None):
                'full':'Your recording · full frame'}[shot['layout']]
         if shot['layout']!='graphic': human+=duration
         source=f'<b>{esc(frame)}</b><p>Take {esc(ident)}</p>'
-        source+=f'<p>Framing: {esc(shot.get("framing","crop"))}</p>'
         if shot.get('source'): source+=f'<a href="{link(folder/"raw"/shot["source"])}">{esc(shot["source"])}</a>'
         else: source+=f'<p>Record after script approval. {esc(shot.get("shooting_note",""))}</p>'
         if not images and shot.get('source_frame') and (folder/shot['source_frame']).is_file():
@@ -471,39 +525,29 @@ def make_html(folder,plan,output=None,images=None):
         for image in images.get(ident,[]): source+=f'<a href="{link(image)}"><img alt="Actual combined preview for scene {esc(ident)}" src="{link(image)}"></a>'
         cc=''.join(f'<span class="cc">{esc(page)}</span>' for page in shot.get('caption_pages',[]) if page not in shot.get('caption_omit_pages',[])) or 'Pending speech verification'
         if shot.get('caption_omit_pages'): cc='<p>No captions during the channel title.</p>'+cc
-        if not shot.get('captions_visible', True): cc='None — the main headline carries this opening beat.'
+        if not shot.get('captions_visible', True): cc='None: the main headline carries this opening beat.'
         decision=shot['vibha']; fx='Pending your choice' if decision['status']=='pending' else 'None'
         if decision['status']=='pending':
             if decision.get('none_suggestion'): fx+=f'<p>{esc(decision["none_suggestion"])}</p>'
             for suggestion in decision.get('suggestions',[]):
                 item=catalogue()[str(suggestion['id']).lower()]
                 sample=effects_root()/item['preview']
-                fx+=f'<p><b>{esc(suggestion.get("title","Alternative"))} · #{esc(str(item["id"]))} — {esc(item["name"])}</b></p><p>{esc(suggestion["reason"])}</p>'
+                fx+=f'<p><b>{esc(suggestion.get("title","Alternative"))} · #{esc(str(item["id"]))} · {esc(item["name"])}</b></p><p>{esc(suggestion["reason"])}</p>'
                 fx+=f'<a href="{link(sample)}"><img alt="Dummy reference sample for effect {esc(str(item["id"]))}; not your video" src="{link(sample)}"></a><small>Dummy reference · not applied</small>'
         if decision.get('effects'):
-            fx='<br>'.join(f'<b>#{esc(str(e["id"]))} — {esc(catalogue()[str(e["id"]).lower()]["name"])}</b><p>{e["start"]:.2f}–{e["end"]:.2f}s within this shot</p>'
+            fx='<br>'.join(f'<b>#{esc(str(e["id"]))} · {esc(catalogue()[str(e["id"]).lower()]["name"])}</b><p>{e["start"]:.2f}–{e["end"]:.2f}s within this shot</p>'
                           + ''.join(f'<p>{esc(line)}</p>' for line in option_text(e.get('options',{}))) for e in decision['effects'])
         lighting=shot['lighting'] if 'lighting' in shot else plan.get('lighting')
         if validate_lighting(lighting):
             fx='<p><b>Natural studio lighting</b> · soft face key and muted blue/red background, before graphics.</p>'+fx
         if shot.get('reference_note'):
             fx+=f'<p><b>Reference treatment:</b> {esc(str(shot["reference_note"]))}</p>'
-        graphic=shot['remotion']; mg='Pending your choice' if graphic['status']=='pending' else 'None'
-        if graphic['status']=='pending' and graphic.get('suggestion'):
-            suggestion=graphic['suggestion']
-            mg+=f'<p><b>{esc(suggestion["scene"])} · suggestion</b></p><p>{esc(suggestion["description"])}</p>'
-        if graphic.get('scene'):
-            mg=f'<b>{esc(graphic["scene"])}</b>'+''.join(f'<p>{esc(line)}</p>' for line in option_text(graphic.get('props',{})))
-        if plan.get('renderer')=='hyperframes':
-            mg=esc(shot.get('hyperframes_note','Hyperframes captions, transition and audio finishing.'))
         state='' if shot.get('text_confirmed') else '<small>Expected / unverified speech</small>'
-        cells=[f'<b>{esc(ident)}</b><p>{timing}</p>',f'<p class="spoken">{esc(say)}</p>'+state,source,cc,fx,mg]
-        labels=['Scene / timing','What I say','Picture / source','CC on screen','Vibha effect','Remotion graphic']
+        cells=[f'<b>{esc(ident)}</b><p>{timing}</p>',f'<p class="spoken">{esc(say)}</p>'+state,source,cc,fx]
+        labels=['Scene / timing','What I say','Picture / source','CC on screen','Effects']
         rows.append('<tr>'+''.join(f'<td data-label="{label}">{value}</td>' for label,value in zip(labels,cells))+'</tr>')
         previous=shot
     template=(STUDIO/'skills/wf-reel-plan/assets/review-template.html').read_text()
-    if plan.get('renderer')=='hyperframes':
-        template=template.replace('Remotion graphic','Hyperframes finish').replace('<b>Remotion:</b> graphics made with code','<b>Hyperframes:</b> captions and final assembly')
     reference=plan.get('reference_style')
     if reference:
         takes.append('<aside><h3>Reference style · '+esc(str(reference['name']))+'</h3><p>'+esc(str(reference['summary']))+'</p><p>Style notes guide the proposed treatments below. Review their actual appearance in your preview frames.</p></aside>')

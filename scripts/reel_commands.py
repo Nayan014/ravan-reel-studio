@@ -81,7 +81,12 @@ def attach(rw,slug,source,mapping_file=None):
     if approval.get('script')!=[s['expected_say'] for s in plan['shots']]:
         raise ValueError('Approve the current script before attaching recordings.')
     source=rw.input_folder(source)
-    files={f.name:f for f in source.iterdir() if f.is_file() and not f.is_symlink() and f.suffix.lower() in rw.VIDEO_TYPES}
+    if source.is_file():
+        if source.suffix.lower() not in rw.VIDEO_TYPES:
+            raise ValueError('Recording file must be a supported video type.')
+        files={source.name: source}
+    else:
+        files={f.name:f for f in source.iterdir() if f.is_file() and not f.is_symlink() and f.suffix.lower() in rw.VIDEO_TYPES}
     infos={name:probe(path) for name,path in files.items()}
     if not files or not all(i['has_audio'] for i in infos.values()):
         raise ValueError('Every recording needs source audio.')
