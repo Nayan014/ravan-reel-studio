@@ -24,6 +24,8 @@ Read `docs/WORKFLOW_REVIEW.md` for all workflow questions, choices and approvals
 | wf-resume | Standalone shortcut for a saved session | `skills/wf-resume/SKILL.md` |
 | video-edit | Start a guided edit, choose from the three newest inputs, get effect recommendations with sample images, review actual frames and approve rendering | `skills/video-edit/SKILL.md` |
 | effects | Add or choose talking head video effects, animated text, graphic cards, camera movements or colour treatments | `skills/effects/SKILL.md` |
+| cover-image | Create consistent video covers and YouTube thumbnails using the shared, versioned Techno Ravan style | `skills/cover-image/SKILL.md` |
+| india-map | Prepare and verify maps using the Government of India's boundary depiction for covers and video graphics | `skills/india-map/SKILL.md` |
 
 For `/wf` commands, read `skills/wf/SKILL.md` and route there. Bare `/wf` shows a menu; `/wf video-edit` starts the guided workflow. For `Start video edit` or `/video-edit`, follow the video-edit skill directly. Its sample choice, actual preview review and final approval are separate user decisions. Use its helper to render only the approved plan. Direct effect requests can use the effects skill. For a visual choice, open `docs/Video_Effects_Visual_Guide.pdf` or inspect the appropriate image listed in `skills/effects/references/catalogue.json`. That JSON uses preview paths relative to `skills/effects/` and contains all 51 effects and three bonus looks.
 
@@ -31,10 +33,13 @@ For `/wf` commands, read `skills/wf/SKILL.md` and route there. Bare `/wf` shows 
 
 ## Working on a video
 
+- For geographic maps of India, its states/territories, or world/regional maps including India, use `skills/india-map/SKILL.md` in every cover and video-editing route. Verify the depiction against official Government of India sources; do not default to generic third-party or AI-generated outlines. Preserve source terms and the existing frame/audio approval gates.
+
 - For the local review dashboard, run `npm run dashboard` from this folder and open `http://127.0.0.1:4173`. See `docs/DASHBOARD.md`. It discovers reels, YouTube videos and edits. Interactive review pages accept feedback and stage-specific approvals for the agent to process. Viewing needs only Node 22.18+, without renderer setup.
 - Use the actual source video and user supplied assets. `inputs/` is available for local media; an external source path also works.
 - Run the local skill setup if its environment is missing. Use `skills/effects/.venv/bin/python` on macOS/Linux or `skills/effects/.venv/Scripts/python.exe` on Windows.
 - Save plans, check frames and renders in `outputs/` by default. Respect a different destination if the user gives one. Keep the original video intact.
+- After each new video export, use `skills/cover-image/SKILL.md` for the shared cover style unless the user specifies another cover or opts out. Ask for a separate creator photo or create a topic-led cover without their face; do not take their portrait from video unless they explicitly request that route. Apply the cover after rendering so an extracted first frame does not replace it. Use the same skill for `/cover-image` and standalone cover/thumbnail requests. Keep older videos unchanged unless a cover refresh is requested.
 - Inspect check frames before a full render. Correct face overlaps, unreadable copy, edge clipping and demo values. Use the user's actual words, handles and metrics.
 - Natural studio lighting is optional. Read `docs/STUDIO_LIGHTING.md` when requested; use the portable `studio-light` treatment before graphics, preserve existing effect numbers and review actual frames. Keep room-specific screen polygons in project settings, not the shared preset. It is supported by the Vibha pipeline; preserve Nafay's separate editor.
 - The skill adds visuals and carries the source audio into the export. Silence removal, new sound design and captions are separate tasks. `wave-trim` only animates a waveform.

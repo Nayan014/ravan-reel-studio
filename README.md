@@ -85,6 +85,8 @@ Send these shortcuts directly to your coding assistant.
 | `/wf-gallery` | Browse the effect reference pictures |
 | `/wf-effects` | Apply a named effect |
 | `/wf-resume` | Resume a saved single-video edit |
+| `/cover-image` | Create or revise a video cover using the shared Techno Ravan style |
+| `/india-map` | Prepare a verified map using the Government of India's boundary depiction |
 
 <details>
 <summary>Prefer the numbered workflow menu?</summary>
@@ -103,6 +105,8 @@ Send `/wf`, then reply with a menu number. For example, `/wf` followed by **5** 
 </details>
 
 `/wf reel-plan`, `/wf video-plan`, `/video-edit` and `/effects` remain available. Command discovery varies by agent; reading the shared instructions is the portable fallback.
+
+New video exports use the [shared cover skill](skills/cover-image/SKILL.md) for consistent portrait covers and landscape thumbnails. Its [versioned style guide](skills/cover-image/references/style.md) uses the selected headline-first layout, bold upright type and a restrained editorial palette, with orange TECHNO and red RAVAN separated by a compact measured gap. Covers use local code for layout and typography by default; the [Pillow renderer](skills/cover-image/references/code-rendering.md) keeps the composition editable. The skill asks whether you want to provide a separate photo or create a cover without your face. Taking your portrait from video is an optional route only when you request it. Refine the style guide to improve future covers; each project keeps a copy of the style it used.
 
 ## Nafay 3D motion graphics
 

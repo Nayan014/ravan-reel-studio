@@ -1,0 +1,4 @@
+interface:
+  display_name: "India Map"
+  short_description: "Government of India boundary-based map graphics"
+  default_prompt: "Use $india-map to prepare a source-verified India map for this cover or video graphic."

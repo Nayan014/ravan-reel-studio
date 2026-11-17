@@ -64,6 +64,8 @@ Ask which image number or combination the user prefers and wait. They may choose
 
 ## 3 Show actual frames and the plan
 
+For an India/state map or regional/world map including India, follow `../india-map/SKILL.md` before preparing the map asset. Include the verified graphic in the existing actual-frame review.
+
 After the user's choice, run `choose CARD_NUMBER --session ID`, or `choose 49,5,6 --session ID` for multiple selected cards. Draft a plan containing each selected effect exactly once with its canonical `fx` and optional `look` from the catalogue's `config`. Put camera effects before overlapping graphics in the effects list. Reuse only those identifiers from the sample config; its example copy, timing, names and metrics are not the user's data.
 
 Use the actual clip's words and timing. If exact text or necessary assets are still missing, ask before previewing. Save the plan in the session folder, then run:
@@ -87,4 +89,4 @@ render --session ID
 
 Never manufacture an approval message or treat silence as approval. `approve` records the user's decision; it is not a command to call speculatively. Use the helper's `render` command rather than bypassing this stage with a direct `fx.py` MP4 command.
 
-The helper blocks a render without approval and rejects changed plans, sources, assets or preview frames. If it rejects stale approval, generate new preview frames and ask again. The output stays in this session's directory under `outputs/edits/`. Give the finished MP4 path and remind the user to watch the result before posting.
+The helper blocks a render without approval and rejects changed plans, sources, assets or preview frames. If it rejects stale approval, generate new preview frames and ask again. The output stays in this session's directory under `outputs/edits/`. After rendering, follow `../cover-image/SKILL.md` for the shared-style cover unless the user requested another cover or opted out. Give the finished MP4 path and remind the user to watch the result before posting.
