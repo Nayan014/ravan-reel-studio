@@ -1,43 +1,50 @@
 # Techno Ravan cover style
 
-Version: **1.4**  
-Status: **Headline-first layout accepted; warm palette pending visual review**  
-Direction: **Understated editorial**
+Version: **2.0**  
+Status: **2D-3D pop-out avatar and topic-driven visual accepted**  
+Direction: **High-impact 2D-3D hybrid**
 
-The user chose option A (headline first) and requested colours and graphics that feel intentionally designed rather than a stereotypical AI aesthetic. Use restrained contrast, typography and relevant imagery. Do not describe an aesthetic as proof of human authorship; these covers are composed with local code.
+The cover combines full-bleed topic-driven visuals with an authentic creator 2D-3D pop-out avatar, high-contrast headline typography, and zero small text clutter.
 
 ## Shared identity
 
-| Element | Current value |
+| Element | Value |
 | --- | --- |
-| Background | Warm off-white `#F3EFE7` |
-| Headline | Charcoal `#252525`, bold and upright, including the final line |
-| Topic artwork | Muted stone `#C9C3B8` with a restrained dark outline `#55574F` |
+| Canvas ratio | 9:16 portrait (1080x1920) or 16:9 landscape (1920x1080) |
+| Topic visual | Full-bleed relevant 3D graphic, mobile UI, scene, or architecture |
+| Creator avatar | 2D-3D pop-out avatar in lower-left circle with head breaking out over top rim |
+| Circle ring | Warm gold `#FFB800` with subtle outer glow and drop shadow |
+| Headline line 1 | Bold pure white `#FFFFFF` with drop shadow (font size 108px) |
+| Headline line 2 | Bold warm gold `#FFB800` with drop shadow (font size 72px) |
 | Headline font | Bundled `skills/effects/fonts/ArchivoBlack-Regular.ttf` |
-| Brand font | Bundled `skills/effects/fonts/SpaceMono-Bold.ttf` |
-| Brand label | `TECHNO` in orange `#FF9933`, `RAVAN` in red `#EF3340` |
-| Brand spacing | One baseline, gap 0.25× the brand font size (9px at 36px); normal letter spacing within TECHNO |
-| Rendering | Local code; flat topic artwork, no glow, technical grid or glossy extrusion by default |
+| Brand header | `TECHNO` in white, `RAVAN` in red/coral `#FF5252` |
+| Top gradient | Ultra-smooth wide ambient gradient (y=0 to 680), zero harsh black strap |
+| Small text | None. Never use micro-badges, tiny subtitles, or unreadable code snippets |
 
-Orange TECHNO represents spirituality and red RAVAN represents evil in the creator's brand symbolism. Retain these two brand colours in portrait and landscape, with or without a photo. Do not recolour the entire headline orange/red.
+## Core design rules
 
-Editable renderer tokens live in [../assets/style.json](../assets/style.json). Keep those tokens and this guide aligned when changing the shared palette. The warm-neutral palette is the current proposal in response to the feedback; the headline-first layout and compact orange/red brand have been selected.
+1. **Zero small text**:
+   Never use small subtitles, category pills, or tiny badges. On mobile feeds and notification cards, small text is unreadable and clutters the visual hierarchy. Keep only the bold 2-tier headline.
 
-## Composition
+2. **2D-3D pop-out avatar**:
+   When creator footage or a portrait is provided:
+   - Position a circular badge in the lower-left (cx=240, cy=1620, R=210).
+   - Use automated local selfie segmentation (`selfie_segmenter.tflite`).
+   - The head and hair realistically pop out over the top rim into the 3D canvas space.
+   - A soft drop shadow is cast from the popping head onto the top rim.
+   - The chest and shoulders stay cleanly seated inside the bottom arc of the circle.
+   - Aspect ratio integrity: Always preserve the native aspect ratio with face-centered cropping. Never stretch or horizontally compress the face.
 
-- Use headline-first: small brand label, then the main headline, then the supporting photo or topic visual. The words carry the idea; the artwork supports it.
-- Portrait default: 1080×1920. Keep essential content within the central x=90–990, y=420–1500 region as a starting design aid. Inspect the full image, central square and 3:4 crop.
-- Landscape default: 1920×1080. Keep roughly 90px outer margins. Put the headline on the left and the supporting visual on the right, with clear separation and a quiet lower-right corner.
-- Use comfortable whitespace, clear alignment and 2–3 short headline lines where possible. Prefer deliberate line breaks over tiny type.
-- Ask for a separate creator photo or make a cover without their face, following `../SKILL.md`. Taking a portrait from the video remains an explicitly requested optional route.
-- For a cover without the creator's face, use one meaningful topic visual or a strong typographic treatment. Do not reserve a blank portrait area or reuse a previous video's topic object.
+3. **Smooth ambient gradient (no black strap)**:
+   Never create an abrupt dark bar or black strap across the top. Use a wide, gradual quadratic falloff gradient that seamlessly dissolves into the background atmosphere.
 
-## Restraint
-
-Avoid neon cyan/purple as default palettes, luminous outlines, futuristic grids, glossy 3D objects, decorative italic lettering, heavy gradients and visual clutter. A subdued secondary colour or natural photo is welcome when it helps the actual topic. Do not force every subject into a beige map template; retain the editorial principles while adapting the content.
-
-Do not add handles, episode labels, performance claims or badges without project support. Use original tool logos when relevant and available, without unnecessary name cards.
-
-## Improve without rewriting past covers
-
-Keep the selected composition, style-token snapshot and source/licence records in each project. Increment the shared version when the design changes. Older images and their snapshots stay unchanged unless a refresh is requested. A layout/style choice never substitutes for video-frame/audio approval.
+4. **Production script**:
+   Generate covers using the bundled production tool:
+   ```bash
+   skills/effects/.venv/bin/python skills/cover-image/scripts/render_2d3d_cover.py \
+     --visual <path-to-topic-visual> \
+     --creator <path-to-creator-frame> \
+     --line1 "<HEADLINE_1>" \
+     --line2 "<HEADLINE_2>" \
+     --output <output-path>
+   ```
