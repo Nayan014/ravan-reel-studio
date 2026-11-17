@@ -74,9 +74,182 @@ function captionsPanel(p) {
   return `<section class="panel caption-panel"><div class="panel-title"><div><div class="section-label">READY TO SHARE</div><h2>Social captions</h2></div></div>${sources || empty('No social captions yet. Add caption.txt, captions.md, or Social_Copy.md to this project when your copy is ready.')}</section>`;
 }
 
+function planPanel(p) {
+  const cp = p.creativePlan || {};
+  const hasStage1 = cp.planConfirmed || Boolean(cp.speech) || Boolean(cp.plannedEffects && cp.plannedEffects.length);
+  const hasStage2 = cp.approved || Boolean(cp.sliceFrames && cp.sliceFrames.length) || Boolean(p.previews && p.previews.length);
+
+  return `<section class="panel plan-panel">
+    <div class="panel-title">
+      <div>
+        <div class="section-label">THE CREATIVE BLUEPRINT</div>
+        <h2>Creative Plan & Confirmations</h2>
+      </div>
+      <button class="button primary" data-review="plan">Review plan in full ↗</button>
+    </div>
+    <p class="muted">
+      ${p.renderer === 'nafay'
+        ? 'Nafay motion graphics review includes script breakdown, scene feedback, and approval gates.'
+        : 'Track your video through its two distinct verification gates: the initial creative direction confirmation and the final slice frame approval before rendering.'}
+    </p>
+
+    <div class="confirmations-stack">
+      <!-- 1. Initial Plan Confirmation -->
+      <div class="confirmation-card ${hasStage1 ? 'confirmed' : 'pending'}">
+        <div class="confirmation-header">
+          <div class="confirmation-title-wrap">
+            <span class="step-num">1</span>
+            <div>
+              <h3>Initial Plan Confirmation</h3>
+              <p class="confirmation-subtitle">Creative direction, speech analysis & visual selection</p>
+            </div>
+          </div>
+          <span class="badge ${cp.planConfirmed ? 'success' : 'pending'}">${cp.planConfirmed ? '✓ Plan Confirmed' : 'Planning in progress'}</span>
+        </div>
+
+        ${cp.speech ? `
+          <div class="plan-speech-card">
+            <div class="micro-label">SPOKEN HOOK / SCRIPT</div>
+            <blockquote class="plan-speech-quote">“${escape(cp.speech)}”</blockquote>
+          </div>
+        ` : ''}
+
+        ${cp.planRationale ? `
+          <div class="plan-rationale-box">
+            <div class="micro-label">CREATIVE RATIONALE</div>
+            <p class="plan-rationale-text">${escape(cp.planRationale)}</p>
+          </div>
+        ` : ''}
+
+        ${cp.plannedEffects && cp.plannedEffects.length ? `
+          <div class="planned-effects-section">
+            <div class="micro-label">PLANNED VISUAL SCENES & EFFECTS</div>
+            <div class="planned-effects-grid">
+              ${cp.plannedEffects.map(fx => `
+                <div class="planned-effect-card">
+                  <div class="planned-effect-top">
+                    <span class="planned-effect-name">${escape(fx.name)}</span>
+                    ${fx.timing ? `<span class="planned-effect-time">${escape(fx.timing)}</span>` : ''}
+                  </div>
+                  ${fx.text ? `<div class="planned-effect-overlay">Overlay text: <strong>“${escape(fx.text)}”</strong></div>` : ''}
+                  ${fx.say ? `<div class="planned-effect-say">“${escape(fx.say)}”</div>` : ''}
+                  ${fx.reason ? `<p class="planned-effect-reason">${escape(fx.reason)}</p>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        ${cp.initialSelection ? `
+          <div class="confirmation-footer">
+            <span class="meta-label">CREATOR SELECTION / INSTRUCTION:</span>
+            <span class="meta-value">${escape(cp.initialSelection)}</span>
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- 2. Final Slice Frame Confirmation -->
+      <div class="confirmation-card ${hasStage2 ? 'confirmed' : 'pending'}">
+        <div class="confirmation-header">
+          <div class="confirmation-title-wrap">
+            <span class="step-num">2</span>
+            <div>
+              <h3>Final Slice Frame Confirmation</h3>
+              <p class="confirmation-subtitle">Actual rendered video frame slices & verification</p>
+            </div>
+          </div>
+          <span class="badge ${cp.approved ? 'success' : 'pending'}">${cp.approved ? '✓ Frames Approved & Verified' : 'Approval pending'}</span>
+        </div>
+
+        ${(cp.sliceFrames && cp.sliceFrames.length) ? `
+          <div class="slice-frames-section">
+            <div class="micro-label">VERIFIED SLICE FRAMES AT EXACT TIMESTAMPS</div>
+            <div class="slice-frames-grid">
+              ${cp.sliceFrames.map(f => `
+                <div class="slice-frame-card">
+                  <a href="${escape(f.url)}" target="_blank" rel="noreferrer" class="slice-frame-thumb" title="View full frame">
+                    <img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}" class="slice-frame-img">
+                    ${f.time ? `<span class="slice-frame-tag">${escape(f.time)}</span>` : ''}
+                  </a>
+                  <div class="slice-frame-meta">
+                    <span class="slice-frame-name">${escape(f.name.split('/').pop())}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : (p.previews && p.previews.length) ? `
+          <div class="slice-frames-section">
+            <div class="micro-label">PREVIEW FRAMES</div>
+            <div class="slice-frames-grid">
+              ${p.previews.map(f => `
+                <div class="slice-frame-card">
+                  <a href="${escape(f.url)}" target="_blank" rel="noreferrer" class="slice-frame-thumb" title="View full frame">
+                    <img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}" class="slice-frame-img">
+                  </a>
+                  <div class="slice-frame-meta">
+                    <span class="slice-frame-name">${escape(f.name.split('/').pop())}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : empty('No preview slice frames generated yet. Generate preview frames in your AI chat before approval.')}
+
+        ${cp.approval ? `
+          <div class="approval-card-details">
+            <div class="approval-detail-item">
+              <span class="detail-label">APPROVAL DECISION</span>
+              <strong class="detail-text">“${escape(cp.approval.user_message || cp.approval.message || 'Approved')}”</strong>
+            </div>
+            <div class="approval-detail-item">
+              <span class="detail-label">PREVIEW FINGERPRINT</span>
+              <code class="detail-code" title="${escape(cp.previewId || '')}">${escape((cp.previewId || '').slice(0, 16))}…</code>
+            </div>
+            <div class="approval-detail-item">
+              <span class="detail-label">VERIFIED AT</span>
+              <span class="detail-date">${date(cp.approval.at)} ${cp.approval.at ? new Date(cp.approval.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- Feedback History if present -->
+      ${cp.feedbackSubmissions && cp.feedbackSubmissions.length ? `
+        <div class="feedback-card">
+          <div class="micro-label">REVISION & FEEDBACK HISTORY</div>
+          <ul class="feedback-list">
+            ${cp.feedbackSubmissions.map(sub => `
+              <li class="feedback-item">
+                <div class="feedback-item-header">
+                  <span class="badge ${sub.status === 'handled' ? 'success' : 'warn'}">${escape(sub.status || 'submitted')}</span>
+                  <span class="feedback-date">${date(sub.at)}</span>
+                </div>
+                <p class="feedback-text">“${escape(sub.text)}”</p>
+                ${sub.result ? `<div class="feedback-result">↳ ${escape(sub.result)}</div>` : ''}
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      ` : ''}
+
+      <!-- Interactive Storyboard iframe if document exists -->
+      ${p.plans && p.plans.length ? `
+        <details class="storyboard-details">
+          <summary class="storyboard-summary">
+            <span>Interactive Storyboard Document</span>
+            <span class="badge">${escape(p.plans[0].name)}</span>
+          </summary>
+          <iframe class="preview-frame" title="Interactive Storyboard" sandbox="" loading="lazy" src="${escape(p.plans[0].url)}"></iframe>
+        </details>
+      ` : ''}
+    </div>
+  </section>`;
+}
+
 function content(p, tab) {
   if (tab === 'overview') return `<div class="overview-layout">${mediaPanel(p)}<section class="panel cover-panel"><div class="panel-title"><div><div class="section-label">YOUR THUMBNAIL</div><h2>Cover image</h2></div></div>${p.cover ? `<a class="cover-link" href="${escape(p.cover.url)}" target="_blank" rel="noreferrer"><img class="cover overview-cover" src="${escape(p.cover.url)}" alt="${escape(p.title)} cover"></a>${revealButton(p.cover, 'Show cover in folder', { className: 'cover-action' })}` : empty('No cover yet. Existing cover images will appear here when added to the project.')}</section><aside class="project-sidebar">${savedStatus(p)}</aside>${captionsPanel(p)}</div>`;
-  if (tab === 'plan') return `<section class="panel"><div class="panel-title"><div><div class="section-label">THE CREATIVE DIRECTION</div><h2>Plans & frame reviews</h2></div><button data-review="plan">Review plan ↗</button></div><p class="muted">${p.renderer==='nafay'?'The interactive review includes script, scene and frame feedback, voice/effects previews and approval.':'The interactive review includes script, scene and frame feedback, music selection and approval.'} ${p.renderer==='nafay'?'Nafay graphics are edited in chat through the saved story.js.':'Use Hyperframes Studio for visual editing.'}</p>${p.plans.length ? p.plans.map(f => `<details class="plan-document"${f.path === p.plans[0].path ? ' open' : ''}><summary>${escape(f.name)}</summary><p>${fileLink(f)} · <a href="${escape(download(f))}" download>Download HTML</a></p><iframe class="preview-frame" title="${escape(f.name)}" sandbox="" loading="lazy" src="${escape(f.url)}"></iframe></details>`).join('') : empty('No HTML plan yet. Saved JSON plans are available below.')}${fileList(p.files.filter(f => /(?:^|\/)(?:plan|session)\.json$/.test(f.name)))}</section>`;
+  if (tab === 'plan') return planPanel(p);
   if (tab === 'previews') return `<section class="panel"><div class="panel-title"><div><div class="section-label">ACTUAL REVIEW FRAMES</div><h2>Previews</h2></div><button data-review="frames">Review & approve frames ↗</button></div>${p.previews.length ? `<div class="frame-grid">${p.previews.map(f => `<figure><a href="${escape(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}"></a><figcaption>${escape(f.name)} <a href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓</a></figcaption></figure>`).join('')}</div>` : empty('No preview frames yet. Generate them in your AI chat before approving an export.')}</section>`;
   if (tab === 'exports') return `<section class="panel"><div class="section-label">SAVED ON THIS DEVICE</div><h2>Videos</h2>${fileList(p.exports, true)}</section><section class="panel"><h2>Covers</h2>${fileList(p.covers, true)}</section>${captionsPanel(p)}`;
   const originals = p.files.filter(f => f.name.startsWith('raw/') || f.path === p.source?.path);
