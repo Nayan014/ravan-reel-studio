@@ -183,8 +183,14 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
           return finish(200, JSON.stringify(settings));
         }
         if (req.method === 'POST') {
-          if (req.headers.origin !== `http://${host}` || req.headers['x-dashboard-action'] !== 'settings' || !/^application\/json(?:;|$)/i.test(req.headers['content-type'] || '')) {
+          if (req.headers.origin !== `http://${host}`) {
             return finish(403);
+          }
+          if (req.headers['x-dashboard-action'] !== 'settings') {
+            return finish(405);
+          }
+          if (!/^application\/json(?:;|$)/i.test(req.headers['content-type'] || '')) {
+            return finish(400);
           }
           let length = 0, chunks = [];
           req.on('data', chunk => { length += chunk.length; if (length <= 32768) chunks.push(chunk); });

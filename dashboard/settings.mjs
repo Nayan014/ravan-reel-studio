@@ -9,7 +9,6 @@ export function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', effective);
   const toggleBtn = document.getElementById('theme-toggle');
   if (toggleBtn) {
-    toggleBtn.textContent = effective === 'dark' ? '☀️' : '🌙';
     toggleBtn.title = effective === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
     toggleBtn.setAttribute('aria-label', toggleBtn.title);
   }
@@ -42,7 +41,9 @@ const SETTINGS_MODAL_HTML = `
         <h2 class="settings-modal-title">Studio Settings</h2>
         <p class="settings-modal-subtitle">Creator profile and defaults for new reels and YouTube plans</p>
       </div>
-      <button type="button" id="close-settings-x" class="settings-close-x" aria-label="Close dialog">&times;</button>
+      <button type="button" id="close-settings-x" class="settings-close-x" aria-label="Close dialog" title="Close dialog">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
     </div>
     <form id="settings-form" class="settings-form">
       <div class="settings-tabs-nav" role="tablist">
