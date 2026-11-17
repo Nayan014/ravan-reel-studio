@@ -26,6 +26,7 @@ Read `docs/WORKFLOW_REVIEW.md` for all workflow questions, choices and approvals
 | effects | Add or choose talking head video effects, animated text, graphic cards, camera movements or colour treatments | `skills/effects/SKILL.md` |
 | cover-image | Create consistent video covers and YouTube thumbnails using the shared, versioned Techno Ravan style | `skills/cover-image/SKILL.md` |
 | india-map | Prepare and verify maps using the Government of India's boundary depiction for covers and video graphics | `skills/india-map/SKILL.md` |
+| captions | Author multi-platform social captions (Instagram, YouTube, TikTok, LinkedIn) with zero em dashes | `skills/captions/SKILL.md` |
 
 For `/wf` commands, read `skills/wf/SKILL.md` and route there. Bare `/wf` shows a menu; `/wf video-edit` starts the guided workflow. For `Start video edit` or `/video-edit`, follow the video-edit skill directly. Its sample choice, actual preview review and final approval are separate user decisions. Use its helper to render only the approved plan. Direct effect requests can use the effects skill. For a visual choice, open `docs/Video_Effects_Visual_Guide.pdf` or inspect the appropriate image listed in `skills/effects/references/catalogue.json`. That JSON uses preview paths relative to `skills/effects/` and contains all 51 effects and three bonus looks.
 

@@ -276,11 +276,13 @@ test('plain captions and titles retain paragraphs, bullets, hashtags and Unicode
 });
 
 test('LinkedIn offers styled text and a matching normal-text clipboard representation', () => {
-  const value = formatCaption({ label: 'LinkedIn', text: '**Building apps**\n\nA *new experiment* with AI.\n#BuildInPublic' });
+  const value = formatCaption({ label: 'LinkedIn', text: '**Building apps**\n\n• **Lead point:** description\n\nA *new experiment* with AI.\n#BuildInPublic' });
   assert.match(value.html, /<strong>Building apps<\/strong>/);
+  assert.match(value.html, /• <strong>Lead point:<\/strong> description/);
   assert.match(value.html, /<em>new experiment<\/em>/);
   assert.match(value.clipboardHtml, /<strong>Building apps<\/strong>/);
-  assert.equal(value.text, 'Building apps\n\nA new experiment with AI.\n#BuildInPublic');
+  assert.match(value.clipboardHtml, /<strong>Lead point:<\/strong>/);
+  assert.equal(value.text, 'Building apps\n\n• Lead point: description\n\nA new experiment with AI.\n#BuildInPublic');
 });
 
 test('caption rows pair Instagram/TikTok, then YouTube fields, then LinkedIn while retaining copy indices', () => {

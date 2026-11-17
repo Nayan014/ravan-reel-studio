@@ -60,7 +60,7 @@ function captionsPanel(p) {
   const sources = p.captions.map((f, fileIndex) => {
     const sections = captionRows(captionSections(f.text)).map(row => `<div class="caption-row">${row.map(({ section, index: sectionIndex }) => {
       const formatted = formatCaption(section);
-      return `<details class="caption-item" data-caption-section="${escape(JSON.stringify([f.path, section.label]))}"><summary>${escape(section.label)}</summary><p class="caption-text">${formatted.html}</p><p class="caption-format-note">${escape(formatted.hint)}</p><button class="secondary copy-part" data-caption="${fileIndex}:${sectionIndex}" aria-label="Copy ${escape(section.label)}">${formatted.clipboardHtml ? 'Copy formatted' : 'Copy'}</button></details>`;
+      return `<details class="caption-item" data-caption-section="${escape(JSON.stringify([f.path, section.label]))}"><summary>${escape(section.label)}</summary><p class="caption-text">${formatted.html}</p>${formatted.hint ? `<p class="caption-format-note">${escape(formatted.hint)}</p>` : ''}<button class="secondary copy-part" data-caption="${fileIndex}:${sectionIndex}" aria-label="Copy ${escape(section.label)}">${formatted.clipboardHtml ? 'Copy formatted' : 'Copy'}</button></details>`;
     }).join('')}</div>`).join('');
     return `<div class="caption-source"><p class="muted">${fileLink(f)}</p>${sections}</div>`;
   }).join('');

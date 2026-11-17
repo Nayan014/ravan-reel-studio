@@ -1,0 +1,4 @@
+interface:
+  display_name: "Captions"
+  short_description: "Author multi-platform social captions and posting copy"
+  default_prompt: "Use $captions to write or revise social captions for this video project."

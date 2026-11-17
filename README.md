@@ -87,6 +87,7 @@ Send these shortcuts directly to your coding assistant.
 | `/wf-resume` | Resume a saved single-video edit |
 | `/cover-image` | Create or revise a video cover using the shared Techno Ravan style |
 | `/india-map` | Prepare a verified map using the Government of India's boundary depiction |
+| `/captions` | Author multi-platform social captions (Instagram, YouTube, TikTok, LinkedIn) without em dashes |
 
 <details>
 <summary>Prefer the numbered workflow menu?</summary>
