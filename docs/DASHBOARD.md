@@ -11,6 +11,8 @@ For a safe example, run `npm run demo` in another terminal. The pre-rendered syn
 The dashboard needs **Node 22.18 or newer**. It uses built-in Node libraries: no `npm install`,
 Python, ffmpeg, voice engine, or Remotion setup is needed for viewing existing work.
 
+Under **Studio Settings → Audio & Sound**, preview a background track or choose **No background music**. Play the same line in each local Kokoro voice to choose your English narrator. **Save Settings** applies both choices to newly created Reels and YouTube projects. Each project keeps its choices and has its own scene audio review.
+
 If another dashboard is using the default port, set `DASHBOARD_PORT` before starting.
 For example, on macOS/Linux:
 
@@ -73,7 +75,7 @@ warnings without breaking the rest of the library. The dashboard does not create
 checks, and export metadata are displayed as historical records; the dashboard does not rerun
 validation or certify that those records match the current files.
 
-Creation, effects, and rendering stay with the editing agent. The interactive review page accepts script, scene and individual frame feedback, music selection and explicit stage-specific approval. Direct visual editing uses Hyperframes Studio. The agent processes these submissions through the existing workflow checks. The dashboard has no AI access, settings editor, media uploads, or publish action. See [Clickable workflow reviews](WORKFLOW_REVIEW.md).
+Creation, effects, and rendering stay with the editing agent. The interactive review page accepts script, scene and individual frame feedback, music selection and explicit stage-specific approval. Direct visual editing uses Hyperframes Studio. The agent processes these submissions through the existing workflow checks. See [Clickable workflow reviews](WORKFLOW_REVIEW.md).
 
 ## Development and credits
 

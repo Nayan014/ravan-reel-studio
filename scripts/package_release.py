@@ -15,7 +15,7 @@ PRIVATE_DIRS={'.git','.venv','.cache','__pycache__','node_modules','inputs','out
 PRIVATE_DOCS={'intro-reel-plan.html','intro-reel-script.md','Intro_Reel_Shoot_Plan.pdf'}
 VIDEO_TYPES={'.mp4','.mov','.m4v','.mkv','.avi','.webm','.mts','.m2ts'}
 AUDIO_TYPES={'.wav','.mp3','.m4a','.aac','.flac','.aif','.aiff','.ogg'}
-PUBLIC_AUDIO_DIRS={'tools/techno-reel/public/music','tools/techno-reel/public/sfx','tools/techno-reel/examples/example/audio'}
+PUBLIC_AUDIO_DIRS={'tools/techno-reel/public/music','tools/techno-reel/public/sfx','tools/techno-reel/examples/example/audio','assets/audio/voices'}
 
 
 def excluded(path):

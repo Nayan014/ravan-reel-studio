@@ -41,7 +41,7 @@ class QualityTests(unittest.TestCase):
    self.assertFalse(any(r['cached'] for r in first))
  def test_audio_catalogue_has_existing_credited_files(self):
   from audio_library import audio_file
-  items=catalogue();self.assertEqual(sum(t['kind']=='music' for t in items.values()),4);self.assertEqual(sum(t['kind']=='sfx' for t in items.values()),23)
+  items=catalogue();self.assertEqual(sum(t['kind']=='music' for t in items.values()),5);self.assertEqual(sum(t['kind']=='sfx' for t in items.values()),23)
   for ident,item in items.items():self.assertTrue(audio_file(ident).exists());self.assertTrue(item['source']);self.assertTrue(item['license']);self.assertGreater(item['duration'],0)
  def test_speech_backend_numpy_values_produce_portable_cache_json(self):
   import numpy as np

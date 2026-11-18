@@ -26,6 +26,35 @@ async function serverFixture(t, root, options = {}) {
   return `http://127.0.0.1:${server.address().port}`;
 }
 
+test('audio settings stream the listed recordings and persist only valid selections', async t => {
+  const {root, put} = fixture(t);
+  put('settings.json', {channelName: 'My channel', defaultMusicMood: 'Quiet'});
+  const base = await serverFixture(t, root);
+  const settings = () => fetch(base + '/api/settings').then(r => r.json());
+  const save = data => fetch(base + '/api/settings', {method: 'POST', body: JSON.stringify(data),
+    headers: {origin: base, 'content-type': 'application/json', 'x-dashboard-action': 'settings'}});
+  assert.equal((await settings()).defaultNarrationVoice, 'af_heart');
+  const {music, voices} = await fetch(base + '/api/settings/audio-options').then(r => r.json());
+  assert.ok(music.some(row => row.id === 'none' && row.preview === null));
+  assert.ok(voices.some(row => row.id === 'am_michael'));
+  for (const choice of [...music, ...voices].filter(row => row.preview)) {
+    const response = await fetch(base + choice.preview, {headers: {range: 'bytes=0-255'}});
+    assert.equal(response.status, 206, choice.name);
+    assert.equal(response.headers.get('content-type'), 'audio/mpeg');
+    assert.equal((await response.arrayBuffer()).byteLength, 256);
+  }
+  assert.equal((await fetch(base + '/voice-preview/unknown')).status, 404);
+  assert.equal((await save({defaultMusicTrack: 'music-bubbles', defaultNarrationVoice: 'am_michael'})).status, 200);
+  for (const data of [{defaultMusicTrack: 'sfx-pop-1'}, {defaultMusicTrack: 'none', defaultNarrationVoice: 'system'}]) {
+    assert.equal((await save(data)).status, 400);
+  }
+  const saved = await settings();
+  assert.deepEqual([saved.defaultMusicTrack, saved.defaultNarrationVoice, saved.defaultMusicMood, saved.channelName],
+    ['music-bubbles', 'am_michael', 'Quiet', 'My channel']);
+  assert.equal((await save({defaultMusicTrack: 'none'})).status, 200);
+  assert.equal((await settings()).defaultMusicTrack, 'none');
+});
+
 test('discovers reels, Hyperframes, export packages and edits without changing working directory', t => {
   const { root, put } = fixture(t);
   put('outputs/reels/first/plan.json', { title: 'First reel', renderer: 'hyperframes' });

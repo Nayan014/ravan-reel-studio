@@ -1,6 +1,4 @@
 // Studio Creator Profile & Theme Management
-const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-
 export function applyTheme(theme) {
   let effective = theme;
   if (!theme || theme === 'system') {
@@ -156,8 +154,20 @@ const SETTINGS_MODAL_HTML = `
 
       <div class="settings-tab-content" id="tab-audio" role="tabpanel" hidden>
         <div class="settings-grid">
+          <div class="form-group">
+            <label for="set-defaultMusicTrack">Background music</label>
+            <select id="set-defaultMusicTrack" name="defaultMusicTrack"></select>
+            <small>Preview a CC0 track for new projects.</small>
+            <audio id="settings-music-preview" controls preload="none" aria-label="Background music preview" hidden></audio>
+          </div>
+          <div class="form-group">
+            <label for="set-defaultNarrationVoice">AI narration voice</label>
+            <select id="set-defaultNarrationVoice" name="defaultNarrationVoice"></select>
+            <small>Local Kokoro · US English text to speech</small>
+            <audio id="settings-voice-preview" controls preload="none" aria-label="Narration voice preview" hidden></audio>
+          </div>
           <div class="form-group full-width">
-            <label for="set-defaultMusicMood">Default background music vibe</label>
+            <label for="set-defaultMusicMood">Music direction</label>
             <input type="text" id="set-defaultMusicMood" name="defaultMusicMood" placeholder="Tech Minimal / Coding Focus">
           </div>
           <div class="form-group">
@@ -202,12 +212,38 @@ export function initSettingsModal() {
   if (!dialog || !openBtn) return;
 
   dialog.innerHTML = SETTINGS_MODAL_HTML;
+  const form = dialog.querySelector('#settings-form');
+  const saveBtn = dialog.querySelector('#save-settings-btn');
+  const previews = [
+    {select: form.elements.defaultMusicTrack, player: dialog.querySelector('#settings-music-preview'), key: 'music'},
+    {select: form.elements.defaultNarrationVoice, player: dialog.querySelector('#settings-voice-preview'), key: 'voices'}
+  ];
+  const pausePreviews = () => previews.forEach(({player}) => player.pause());
+  function updatePreview({select, player}) {
+    const source = select.selectedOptions[0]?.dataset.preview;
+    player.pause();
+    if (source) player.setAttribute('src', source);
+    else player.removeAttribute('src');
+    player.hidden = !source;
+    player.load();
+  }
+  for (const preview of previews) {
+    preview.select.addEventListener('change', () => {
+      pausePreviews();
+      updatePreview(preview);
+    });
+    preview.player.addEventListener('play', () => {
+      for (const {player} of previews) if (player !== preview.player) player.pause();
+    });
+  }
+  dialog.addEventListener('close', pausePreviews);
 
   // Tab switching
   const tabs = dialog.querySelectorAll('.settings-tab');
   const panels = dialog.querySelectorAll('.settings-tab-content');
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
+      if (tab.dataset.tab !== 'audio') pausePreviews();
       tabs.forEach(t => {
         t.classList.remove('active');
         t.setAttribute('aria-selected', 'false');
@@ -243,16 +279,25 @@ export function initSettingsModal() {
     const status = dialog.querySelector('#settings-status');
     status.textContent = 'Loading settings…';
     status.className = 'settings-status';
+    saveBtn.disabled = true;
     try {
       dialog.showModal();
-      const res = await fetch('/api/settings');
-      if (!res.ok) throw new Error('Could not load settings');
-      const data = await res.json();
-      status.textContent = '';
+      const [data, choices] = await Promise.all(['/api/settings', '/api/settings/audio-options'].map(async url => {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Could not load studio settings. Close and reopen to retry.');
+        return res.json();
+      }));
+      for (const {select, key} of previews) {
+        select.replaceChildren(...choices[key].map(({name, id, preview}) => {
+          const option = new Option(name, id);
+          if (preview) option.dataset.preview = preview;
+          return option;
+        }));
+      }
 
       // Populate form
       for (const [key, value] of Object.entries(data)) {
-        const input = dialog.querySelector(`[name="${key}"]`);
+        const input = form.elements.namedItem(key);
         if (!input) continue;
         if (input.type === 'checkbox') {
           input.checked = Boolean(value);
@@ -260,6 +305,9 @@ export function initSettingsModal() {
           input.value = value ?? '';
         }
       }
+      previews.forEach(updatePreview);
+      saveBtn.disabled = false;
+      status.textContent = '';
     } catch (err) {
       status.textContent = err.message;
       status.className = 'settings-status error';
@@ -267,10 +315,9 @@ export function initSettingsModal() {
   });
 
   // Submit & save settings
-  const form = dialog.querySelector('#settings-form');
   form.addEventListener('submit', async event => {
     event.preventDefault();
-    const saveBtn = dialog.querySelector('#save-settings-btn');
+    if (saveBtn.disabled) return;
     const status = dialog.querySelector('#settings-status');
     saveBtn.disabled = true;
     status.textContent = 'Saving settings…';

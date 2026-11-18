@@ -104,7 +104,7 @@ function context(root, kind, id, stage, document) {
       };
       for(const dir of ['hyperframes','hyperframes-4k','raw','assets'])track(join(root,base,dir));
       if(plan.pipeline_version===2){
-        for(const name of ['scripts/reel_workflow.py','scripts/reel_pipeline.py','scripts/media_profile.py','scripts/audio_library.py','assets/audio/catalogue.json']){
+        for(const name of ['scripts/reel_workflow.py','scripts/reel_pipeline.py','scripts/media_profile.py','scripts/audio_library.py','scripts/narration.py','assets/audio/catalogue.json']){
           const path=join(bundled,name);files.push([`engine:${name}`,hash(readFileSync(path))]);
         }
         for(const name of ['scripts','fonts','models'])track(join(bundled,'skills/effects',name));
@@ -125,7 +125,7 @@ function context(root, kind, id, stage, document) {
     }
     title = plan?.title || session?.source?.split('/').at(-1) || title;
     outputProfile=plan?.output_profile||null;sourceProfiles=plan?.source_profiles||[];
-    audio=plan?.pipeline_version===2?{...plan.audio,mixSample:preview?.mix_sample?mediaUrl(slash(relative(root,preview.mix_sample))):null}:null;
+    audio=plan?.pipeline_version===2?{...plan.audio,fullMix:preview?.mix_version===2, mixSample:stage==='frames'&&preview?.mix_sample?mediaUrl(slash(relative(root,preview.mix_sample))):null}:null;
     let cursor=0;const parts=String(outputProfile?.fps||30).split('/'),fps=Number(parts[0])/Number(parts[1]||1);
     scenes = (Array.isArray(plan?.shots) ? plan.shots : []).map((s,index) => {
       const start=cursor,duration=s.clip?Math.max(1,Math.round((s.clip[1]-s.clip[0])*fps))/fps:s.estimated_duration||0;cursor+=duration;
@@ -134,14 +134,33 @@ function context(root, kind, id, stage, document) {
         ? `Displayed source ${source.width}×${source.height} · fit with padding · picture ${Math.round(source.width*scale)}×${Math.round(source.height*scale)} · scale ${scale.toFixed(3)}×`
         : `Displayed source ${source.width}×${source.height} · crop ${Math.round(outputProfile.width/scale)}×${Math.round(outputProfile.height/scale)} · scale ${scale.toFixed(3)}×`
         : '';
-      return { id: String(s.id), text: String(s.say || s.expected_say || ''),timeline:[start,cursor],
+      let audition=null;
+      if(plan.pipeline_version===2 && s.audition){
+        const takes={};
+        for(const key of ['A','B']){
+          const file=s.audition.takes[key].file;
+          if(!/^working\/narration\/[0-9a-f]{32}\/[AB]\.wav$/.test(file))throw new ReviewError('Invalid narration audition path.');
+          const name=base+'/'+file;
+          const checksum=hashFile(mediaPath(root,name));
+          if(checksum!==s.audition.takes[key].sha256)throw new ReviewError('Reading changed. Generate a fresh audition.');
+          files.push([name,checksum]);
+          takes[key]=mediaUrl(name);
+        }
+        audition={id:s.audition.id,takes};
+      }
+      if(s.narration){
+        const name=base+'/'+s.narration.file;
+        if(!/^assets\/narration\/[a-f0-9]{64}\.wav$/.test(s.narration.file))throw new ReviewError('Invalid selected voice file.');
+        files.push([name,hashFile(mediaPath(root,name))]);
+      }
+      return { audition,voice:s.narration?.kind||s.voice_mode||'source',id: String(s.id), text: String(s.say || s.expected_say || ''),timeline:preview?.mix_version===2&&stage==='frames'?preview.scene_audio_times?.[s.id]||[start,cursor]:[start,cursor],
       source:s.source||'Awaiting numbered recording',shootingNote:s.shooting_note||'',referenceNote:String(s.reference_note||''),clip:s.clip||null,
       captions:renderer==='nafay'&&!plan.nafay?.captions?[]:s.caption_pages||[],effects:s.vibha||{},finish:s.hyperframes_note||(renderer==='nafay'?'Nafay 3D graphics and audio':'Hyperframes assembly, captions and audio'),
       sourceFrame:s.source_frame?mediaUrl(`${base}/${s.source_frame}`):null,focus:s.focus||[.5,.4],framing };});
     if(stage==='frames')for(const file of preview?.audio_files||[]){
       const name=isAbsolute(file)?slash(relative(root,file)):file;
       // Library audio is fingerprinted separately; only project audio may be served as media.
-      if(name.startsWith(base+'/')){const path=mediaPath(root,name);files.push([name,hash(readFileSync(path))]);}
+      if(name.startsWith(base+'/')){const path=mediaPath(root,name);files.push([name,hashFile(path)]);}
     }
     if (session?.plan) {
       const name = isAbsolute(session.plan) ? slash(relative(root, session.plan)) : session.plan.startsWith('outputs/') ? session.plan : `${base}/${session.plan}`;
@@ -156,6 +175,8 @@ function context(root, kind, id, stage, document) {
         const path=mediaPath(root,name);files.push([name,hashFile(path)]);
         audioReview={url:mediaUrl(name),start:preview.mix_start||0,label:'Nafay source voice and effects'};
       }
+      if(preview?.mix_version===2 && preview.review_plan_sha256!==hashFile(mediaPath(root,base+'/plan.json')))
+        throw new ReviewError('Generate fresh frames and audio for the changed plan.');
       if (!preview?.id) throw new ReviewError('Generate actual preview frames before opening a frame approval.');
       previewId = preview.id;
       const source = Array.isArray(preview.frames) ? preview.frames : Array.isArray(preview.files) ? preview.files : [];
@@ -222,6 +243,7 @@ export function submitReview(root, kind, id, value) {
   const duplicate = state.submissions.find(s => s.id === value.id);
   if (duplicate) return duplicate;
   if (state.stale || value.requestId !== r.id) throw new ReviewError('This review changed. Reload the latest revision before submitting.', 409);
+  if (value.action === 'approve' && r.stage!=='script' && r.scenes.some(s=>s.audition)) throw new ReviewError('Select a reading or supply a recorded take first.');
   if (value.action === 'approve' && state.submissions.some(s => s.status === 'pending')) {
     if (value.resolvePending) {
       for (const s of state.submissions) {

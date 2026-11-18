@@ -33,3 +33,4 @@ included, no credit required. Made by `npm run sfx`, which also trims and levels
 | `music/upbeat.mp3` | [Happy Lo-Fi: Puppy Love](https://opengameart.org/content/happy-lo-fi-lofi-collection) | HoliznaCC0 | CC0 1.0 |
 | `music/chill.mp3` | [Chill Beats: Autumn](https://opengameart.org/content/chill-beats-collection) | HoliznaCC0 | CC0 1.0 |
 | `music/funk.mp3` | [Funk: Make Funk](https://opengameart.org/content/funk-collection) | HoliznaCC0 | CC0 1.0 |
+| `music/bubbles.mp3` | [Bubbles](https://freemusicarchive.org/music/holiznacc0/public-domain-lofi/bubbles-lofi-bright-relaxed/) | HoliznaCC0 | CC0 1.0 |

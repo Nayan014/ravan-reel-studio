@@ -17,6 +17,8 @@
   "noEmDashes": true,
   "callToAction": "Follow @TechnoRavan for more developer systems",
   "defaultMusicMood": "Tech Minimal / Coding Focus",
+  "defaultMusicTrack": "music-bubbles",
+  "defaultNarrationVoice": "af_heart",
   "voiceDucking": "-18 dB during dialogue",
   "sfxStyle": "Subtle mechanical clicks, terminal beeps, soft risers",
   "theme": "light"

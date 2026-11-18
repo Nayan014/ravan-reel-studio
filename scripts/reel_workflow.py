@@ -141,7 +141,6 @@ def init(slug, folder, title, script_html=None):
         ids.append(f'{int(match[1]):02d}' if match else '01')
     if len(set(ids))!=len(ids): raise ValueError('Two recordings have the same take number; clarify the preferred take first.')
     infos=[probe(f) for f in files]
-    if not all(i['has_audio'] for i in infos): raise ValueError('Every recorded take needs its source audio.')
     (dest/'raw').mkdir(parents=True); (dest/'assets').mkdir(); (dest/'working').mkdir()
     shots=[]
     for idx,(f,ident,info) in enumerate(zip(files,ids,infos)):
@@ -160,7 +159,7 @@ def init(slug, folder, title, script_html=None):
           'language':'en','style':'flat','palette':'clay',
           'visual_selection':None,'shots':shots}
     from reel_commands import upgrade
-    upgrade(dest,plan)
+    upgrade(dest,plan,settings)
     write_json(dest/'plan.json',plan); make_html(dest,plan)
     return {'project':slug,'stage':'verify_speech','takes':len(shots),'plan':str(dest/'plan.json'),'review':str(dest/'review.html')}
 
@@ -267,7 +266,10 @@ def validate(folder,plan):
         if not all(isinstance(v,(float,int)) and math.isfinite(v) for v in [start,end]) or not 0<=start<end<=info['duration']+1e-6:
             raise ValueError('Clip boundaries must be inside the source take.')
         duration=end-start
-        if not shot.get('text_confirmed') or not shot['say'].strip() or not shot['words']:
+        if shot.get('audition'):
+            raise ValueError('Select a narration reading or supply a recorded take before previewing.')
+        silent = plan.get('pipeline_version') == 2 and shot.get('voice_mode') == 'silent' and not shot.get('narration')
+        if not shot.get('text_confirmed') or (not silent and (not shot['say'].strip() or not shot['words'])):
             raise ValueError('Verify the actual transcript and word timings before previewing.')
         if shot['say'].split()!=[w['text'] for w in shot['words']]:
             raise ValueError('say and timed words must match exactly.')
@@ -437,12 +439,20 @@ def approve(slug,ident,message):
     return {'project':slug,'stage':'approved','preview_id':ident}
 
 
+def invalidate_approval(folder):
+    path = folder / 'approval.json'
+    if path.is_file():
+        previous = read_json(path)
+        previous['superseded'] = True
+        write_json(path, previous)
+
+
 def approval_check(folder):
     pending_feedback(folder.name)
     if not (folder/'preview.json').is_file() or not (folder/'approval.json').is_file():
         raise ValueError('No approval for the current plan and actual preview frames.')
     record=read_json(folder/'preview.json'); approval=read_json(folder/'approval.json')
-    if approval.get('preview_id')!=record['id'] or preview_digest(record)!=record['id'] or input_hash(folder)!=record['inputs']:
+    if approval.get('superseded') or approval.get('preview_id')!=record['id'] or preview_digest(record)!=record['id'] or input_hash(folder)!=record['inputs']:
         raise ValueError('No approval for the current plan, inputs and actual preview frames.')
     return record
 
@@ -512,6 +522,8 @@ def make_html(folder,plan,output=None,images=None):
                'full':'Your recording · full frame'}[shot['layout']]
         if shot['layout']!='graphic': human+=duration
         source=f'<b>{esc(frame)}</b><p>Take {esc(ident)}</p>'
+        if shot.get('narration'):
+            source += '<p>' + ('Selected Kokoro narration' if shot['narration']['kind']=='kokoro' else 'Recorded voiceover') + '</p>'
         if shot.get('source'): source+=f'<a href="{link(folder/"raw"/shot["source"])}">{esc(shot["source"])}</a>'
         else: source+=f'<p>Record after script approval. {esc(shot.get("shooting_note",""))}</p>'
         if not images and shot.get('source_frame') and (folder/shot['source_frame']).is_file():
@@ -604,6 +616,11 @@ def main():
         if name=='profile':
             p.add_argument('--width',type=int,required=True);p.add_argument('--height',type=int,required=True);p.add_argument('--fps',required=True)
         if name=='approve-script': p.add_argument('--message',required=True)
+    p=sub.add_parser('audition');p.add_argument('--project',required=True);p.add_argument('--scene',required=True)
+    p.add_argument('--line');p.add_argument('--delivery');p.add_argument('--confirm-no-speech',action='store_true')
+    p=sub.add_parser('select-voice');p.add_argument('--project',required=True);p.add_argument('--scene',required=True)
+    choice=p.add_mutually_exclusive_group(required=True);choice.add_argument('--take',choices=['A','B']);choice.add_argument('--recording')
+    p.add_argument('--audition-id');p.add_argument('--confirm-no-speech',action='store_true')
     for name in ['analyze','plan','status','preview','approve','render']:
         p=sub.add_parser(name);p.add_argument('--project',required=True)
         if name=='approve': p.add_argument('--preview-id',required=True);p.add_argument('--message',required=True)
@@ -629,6 +646,12 @@ def main():
     elif args.cmd=='scenes':
         import reel_commands
         result=reel_commands.scenes(sys.modules[__name__],args.project,args.file)
+    elif args.cmd=='audition':
+        from narration import audition
+        result=audition(sys.modules[__name__],args.project,args.scene,args.line,args.delivery,args.confirm_no_speech)
+    elif args.cmd=='select-voice':
+        from narration import select
+        result=select(sys.modules[__name__],args.project,args.scene,args.take,args.audition_id,args.recording,args.confirm_no_speech)
     elif args.cmd=='audio':
         from reel_pipeline import choose_music
         result=choose_music(args.project,None if args.track=='none' else args.track)

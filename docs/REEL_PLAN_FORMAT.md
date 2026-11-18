@@ -48,7 +48,7 @@ Keep a creator's approved script, channel, assets and effect decisions in that p
 
 Inspect recordings locally, including rotation and exact frame rate. Matching sources choose portrait output automatically; 4K/60 remains 2160×3840 at 60 FPS, and fractional rates stay exact. Mixed/variable/unsupported profiles require an explicit choice. Show output dimensions, FPS and crop/scaling before approval. Review thumbnails never become production footage.
 
-The final approval page includes recommended music preselected, playable alternatives, No music, the voice/music mix sample, and suggested playable sound cues. Use the existing 4 music/23 SFX catalogue with licence notices. Selection changes the review revision; playing does not approve. Final approval covers current frames, crop, output profile and audio together.
+The final approval page includes recommended music preselected, playable alternatives, No music, the full mix and per-scene playback, and suggested playable sound cues. Use the credited audio catalogue with verified CC0 recording popularity. Selection changes the review revision; playing does not approve. Final approval covers current frames, crop, output profile and audio together.
 
 ## Planning entry points and YouTube videos
 

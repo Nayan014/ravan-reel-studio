@@ -8,7 +8,7 @@ import { basename, dirname, extname, join, resolve, win32 } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listProjects, mediaPath, mediaTypes } from './dashboard-library.mjs';
 import { readReview, submitReview, suggestedReview, reviewDocument, prepareReview } from './review-store.mjs';
-import { audioCatalogue,libraryAudio,selectMusic } from './audio-library.mjs';
+import { audioCatalogue,libraryAudio,selectAudio,settingsAudioOptions,voicePreviewFile } from './audio-library.mjs';
 import { studioProject, openNativeStudio } from './native-studio.mjs';
 
 export const studioRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -46,6 +46,8 @@ export function defaultSettings() {
     noEmDashes: true,
     callToAction: 'Follow @TechnoRavan for more developer systems',
     defaultMusicMood: 'Tech Minimal / Coding Focus',
+    defaultMusicTrack: 'music-lofi',
+    defaultNarrationVoice: 'af_heart',
     voiceDucking: '-18 dB during dialogue',
     sfxStyle: 'Subtle mechanical clicks, terminal beeps, soft risers',
     theme: 'system'
@@ -149,8 +151,6 @@ print(json.dumps(opts))
   }
   writeFileSync(planPath, JSON.stringify(plan, null, 2) + '\n');
   const projectDir = join(root, 'outputs', kind, id);
-  const venvPython = join(studioRoot, 'skills/effects/.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
-  const python = existsSync(venvPython) ? venvPython : (process.env.PYTHON || 'python3');
   await promisify(execFile)(python, ['-c', `
 import sys, json
 sys.path.insert(0, 'scripts')
@@ -175,7 +175,7 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
     if (req.headers.origin && req.headers.origin !== `http://${host}`) return finish(403, 'Cross-origin request blocked');
     try {
       const url = new URL(req.url, `http://${host}`);
-      const reviewMatch = /^\/api\/reviews\/(reels|videos|edits|plans)\/([A-Za-z0-9_-]+)(?:\/(submit|prepare|music|studio|effect))?$/.exec(url.pathname);
+      const reviewMatch = /^\/api\/reviews\/(reels|videos|edits|plans)\/([A-Za-z0-9_-]+)(?:\/(submit|prepare|music|voice|studio|effect))?$/.exec(url.pathname);
       if (reviewMatch) {
         const [, kind, id, action] = reviewMatch;
         const sendJson = (status, data) => { res.setHeader('Content-Type', 'application/json'); finish(status, JSON.stringify(data)); };
@@ -197,8 +197,8 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
               result = await launchStudio(root, kind, id);
             } else if (action === 'prepare') {
               result = suggestedReview(root, kind, id, value.stage || 'plan');
-            } else if (action === 'music') {
-              result = await selectMusic(root, kind, id, value);
+            } else if (action === 'music' || action === 'voice') {
+              result = await selectAudio(root, kind, id, value, action);
             } else if (action === 'effect') {
               result = await selectEffect(root, kind, id, value);
             } else {
@@ -277,6 +277,13 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
               if (existsSync(settingsPath)) {
                 try { Object.assign(current, JSON.parse(readFileSync(settingsPath, 'utf8'))); } catch {}
               }
+              const options = settingsAudioOptions();
+              for (const [key, choices] of [['defaultMusicTrack', options.music], ['defaultNarrationVoice', options.voices]]) {
+                if (key in value) {
+                  if (!choices.some(choice => choice.id === value[key])) throw new Error('Choose a listed music track and narration voice.');
+                  current[key] = value[key];
+                }
+              }
               const allowedKeys = [
                 'channelName', 'creatorName', 'niche', 'targetAudience',
                 'youtubeHandle', 'instagramHandle', 'linkedinUrl', 'bio',
@@ -344,6 +351,10 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
         return;
       }
       if (!['GET', 'HEAD'].includes(req.method)) return finish(405, 'Review only');
+      if (url.pathname === '/api/settings/audio-options') {
+        res.setHeader('Content-Type', 'application/json');
+        return finish(200, JSON.stringify(settingsAudioOptions()));
+      }
       if(url.pathname==='/api/health'){
         res.setHeader('Content-Type','application/json');
         return finish(200,JSON.stringify({app:'ravan-reel-studio',workspace:workspaceId(root)}));
@@ -354,6 +365,7 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
       }
       let path;
       if(url.pathname.startsWith('/audio/')){path=libraryAudio(decodeURIComponent(url.pathname.slice(7)));}
+      else if (url.pathname.startsWith('/voice-preview/')) { path = voicePreviewFile(url.pathname.slice('/voice-preview/'.length)); }
       else if (url.pathname.startsWith('/media/')) {
         const name = decodeURIComponent(url.pathname.slice(7));
         path = name.startsWith('docs/') && name.endsWith('.html') ? reviewDocument(root, name) : mediaPath(root, name);

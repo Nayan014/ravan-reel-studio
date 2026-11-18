@@ -36,7 +36,7 @@ def transcribe_jobs(jobs,language='en',model=None,worker=None):
         words=[{**w,'s':float(w['s']),'e':float(w['e']),
                 'probability':None if w.get('probability') is None else float(w['probability'])}
                for w in worker(Path(job['wav']))]
-        if not words: raise ValueError(f'No speech found in take {job["source"]}.')
+        if not words and not job.get('allow_empty'): raise ValueError(f'No speech found in take {job["source"]}.')
         if any(not w['w'] or w['s']<0 or w['e']<w['s'] for w in words): raise ValueError('Invalid local speech timings; review the source.')
         value={'signature':signature,'backend':backend,'model':model,'language':language,'words':words}
         path=Path(job['cache']);path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(value,indent=2)+'\n')

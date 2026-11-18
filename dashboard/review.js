@@ -136,9 +136,10 @@ function controls() {
   } else if (state?.request?.stage === 'script') {
     $('approve').textContent = 'Approve script';
   }
-  $('approve').disabled = Boolean(blocked);
+  const pendingReading = state?.request?.stage !== 'script' && state?.request?.scenes.some(s => s.audition);
+  $('approve').disabled = Boolean(blocked || (pendingReading && !hasFeedbackText));
 
-  document.querySelectorAll('[data-music]').forEach(button => {
+  document.querySelectorAll('[data-music],[data-reading]').forEach(button => {
     button.disabled = Boolean(blocked);
   });
   document.querySelectorAll('.effect-dropdown').forEach(select => {
@@ -156,8 +157,8 @@ function controls() {
 
 function audioPanel(r) {
   if (!r.audio) return '';
-  const tracks = state.catalogue.filter(t => t.kind === 'music');
-  const sfxTracks = state.catalogue.filter(t => t.kind === 'sfx');
+  const tracks = state.catalogue.filter(t => t.kind === 'music' && (t.popularity?.scope === 'recording' || t.id === r.audio.music));
+  const sfxTracks = state.catalogue.filter(t => t.kind === 'sfx' && t.popularity?.scope === 'recording');
   const selectedTrackId = r.audio.music || 'none';
   const recommendedTrackId = r.audio.recommended_music || (tracks[0]?.id || '');
 
@@ -206,9 +207,10 @@ function audioPanel(r) {
 
       ${r.audio.mixSample ? `
         <div class="audio-mix-card">
-          <label><strong>Voice + music mix sample</strong></label>
+          <label><strong>${r.audio.fullMix ? 'Full audio mix' : 'Archived audio sample'}</strong></label>
           <audio controls preload="metadata" src="${esc(r.audio.mixSample)}" aria-label="Selected music mixed with voice"></audio>
-          <p class="audio-meta">Preview of your voice recording mixed with the selected music track.</p>
+          ${r.audio.fullMix ? r.scenes.map(scene => `<div><label>Scene ${esc(scene.id)} · ${Number(scene.timeline[0]).toFixed(1)}–${Number(scene.timeline[1]).toFixed(1)}s</label><audio controls preload="none" aria-label="Mix for scene ${esc(scene.id)}" src="${esc(r.audio.mixSample)}#t=${Number(scene.timeline[0])},${Number(scene.timeline[1])}"></audio></div>`).join('') : ''}
+          <p class="audio-meta">${r.audio.fullMix ? 'Play any scene to hear its speech, music and sound effects.' : 'Generate fresh frames to review the full mix.'}</p>
         </div>
       ` : ''}
     </div>
@@ -232,6 +234,12 @@ function audioPanel(r) {
   `;
 }
 
+function readings(scene) {
+  if (!scene.audition) return scene.voice === 'kokoro' ? '<small>Selected Kokoro narration</small>' : '';
+  return ['A','B'].map(key => `<div><audio controls preload="none" src="${esc(scene.audition.takes[key])}" aria-label="Scene ${esc(scene.id)} reading ${key}"></audio>
+    <button type="button" data-reading="${key}" data-scene="${esc(scene.id)}" data-audition="${esc(scene.audition.id)}">Use reading ${key}</button></div>`).join('');
+}
+
 function render() {
   const r = state.request;
   $('title').textContent = r.title;
@@ -244,7 +252,7 @@ function render() {
     $('quality').innerHTML = quality ? `<div class="spec-tags-row"><span class="spec-tag">${quality.width > quality.height ? 'Landscape' : 'Portrait'}</span><span class="spec-tag accent">${Math.min(quality.width, quality.height) === 2160 ? '4K UHD' : Math.min(quality.width, quality.height) === 1080 ? '1080p HD' : ''}</span><span class="spec-tag">${quality.width}×${quality.height}</span><span class="spec-tag">${quality.fps} FPS</span></div>` : 'Output quality will be confirmed from the recordings.';
     $('crop').textContent = quality ? 'Framing follows the reviewed crop or fit choice. Changing aspect ratio can crop the picture or add padding. The actual frames below show the result.' : '';
     $('script').innerHTML = `<h2>Full script</h2><div class="script-card">${r.scenes.map(s => `<p class="script-line"><strong class="script-scene-num">Scene ${esc(s.id)}</strong> <span class="script-text">${esc(s.text)}</span></p>`).join('')}</div>${feedback('script')}${r.referenceStyle ? `<aside><h3>Reference style · ${esc(r.referenceStyle.name)}</h3><p>${esc(r.referenceStyle.summary)}</p><p>Style notes guide the proposed scene treatments. Review their actual appearance in the frames below.</p></aside>` : ''}`;
-    $('scene-summary').innerHTML = r.scenes.length ? `<h2>Scene-by-scene production plan</h2><div class="table-scroll"><table><thead><tr><th class="col-time">Scene / timing</th><th class="col-dialogue">Dialogue</th><th class="col-footage">Footage / shooting notes</th><th class="col-captions">Spoken captions</th><th class="col-effects">Effects</th></tr></thead><tbody>${r.scenes.map(s => `<tr><td><strong class="scene-id">Scene ${esc(s.id)}</strong><span class="scene-timing-badge">${s.timeline ? s.timeline.map(n => Number(n).toFixed(2)).join('–') + 's' : 'Record after approval'}</span></td><td><p class="scene-dialogue-text">${esc(s.text)}</p>${feedback('scene', s.id, s.id)}</td><td><strong class="footage-name">${esc(s.source)}</strong>${s.shootingNote ? `<p class="shooting-note">${esc(s.shootingNote)}</p>` : ''}${s.sourceFrame ? `<img class="source-frame" src="${esc(s.sourceFrame)}" alt="Original scene ${esc(s.id)} before effects">` : ''}</td><td>${s.captions.length ? `<div class="caption-pages-wrap">${s.captions.map(c => `<span class="caption-pill">${esc(c)}</span>`).join('')}</div>` : '<span class="muted">Pending speech verification</span>'}</td><td>${effectCell(s)}</td></tr>`).join('')}</tbody></table></div>` : '';
+    $('scene-summary').innerHTML = r.scenes.length ? `<h2>Scene-by-scene production plan</h2><div class="table-scroll"><table><thead><tr><th class="col-time">Scene / timing</th><th class="col-dialogue">Dialogue</th><th class="col-footage">Footage / shooting notes</th><th class="col-captions">Spoken captions</th><th class="col-effects">Effects</th></tr></thead><tbody>${r.scenes.map(s => `<tr><td><strong class="scene-id">Scene ${esc(s.id)}</strong><span class="scene-timing-badge">${s.timeline ? s.timeline.map(n => Number(n).toFixed(2)).join('–') + 's' : 'Record after approval'}</span></td><td><p class="scene-dialogue-text">${esc(s.text)}</p>${readings(s)}${feedback('scene', s.id, s.id)}</td><td><strong class="footage-name">${esc(s.source)}</strong>${s.shootingNote ? `<p class="shooting-note">${esc(s.shootingNote)}</p>` : ''}${s.sourceFrame ? `<img class="source-frame" src="${esc(s.sourceFrame)}" alt="Original scene ${esc(s.id)} before effects">` : ''}</td><td>${s.captions.length ? `<div class="caption-pages-wrap">${s.captions.map(c => `<span class="caption-pill">${esc(c)}</span>`).join('')}</div>` : '<span class="muted">Pending speech verification</span>'}</td><td>${effectCell(s)}</td></tr>`).join('')}</tbody></table></div>` : '';
     $('document').innerHTML = r.document ? `<details ${!r.scenes.length ? 'open' : ''}><summary>Original HTML plan and visual references</summary><iframe title="Production plan with visual references" class="review-document" sandbox="" src="${esc(media(r.document))}?revision=${r.fingerprint}"></iframe></details>` : '';
     $('frames').innerHTML = r.frames.map(f => `<figure><a href="${esc(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${esc(f.url)}" alt="Actual preview ${esc(f.id)}"></a><figcaption>${f.scene ? 'Scene ' + esc(f.scene) : esc(f.name)}${f.time !== null ? ' · ' + Number(f.time).toFixed(2) + 's' : ''}</figcaption>${feedback('frame', f.id, f.scene)}</figure>`).join('');
     $('audio').innerHTML = r.audioReview ? `<h2>Source voice and Nafay effects</h2><p>Review sample from ${Number(r.audioReview.start).toFixed(2)}s in the edited timeline.</p><audio controls preload="metadata" src="${esc(r.audioReview.url)}" aria-label="${esc(r.audioReview.label)}"></audio>` : audioPanel(r);
@@ -371,13 +379,15 @@ document.addEventListener('change', async event => {
 });
 
 document.addEventListener('click', async event => {
-  const button = event.target.closest('[data-music]');
+  const button = event.target.closest('[data-music],[data-reading]');
   if (!button || sending) return;
   sending = true;
   controls();
-  $('review-status').textContent = 'Preparing the selected music and voice sample locally…';
+  $('review-status').textContent = 'Applying your audio selection…';
   try {
-    await post('music', { requestId: state.request.id, track: button.dataset.music === 'none' ? null : button.dataset.music });
+    if (button.dataset.reading) {
+      await post('voice', {requestId:state.request.id,scene:button.dataset.scene,auditionId:button.dataset.audition,take:button.dataset.reading});
+    } else await post('music', { requestId: state.request.id, track: button.dataset.music === 'none' ? null : button.dataset.music });
     const response = await fetch(api);
     state = await response.json();
     displayed = '';

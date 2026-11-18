@@ -312,6 +312,16 @@ for (const [name, source] of Object.entries(MUSIC_SOURCES)) {
   made.push({ file, ...source });
 }
 
+// The studio uses the full CC0 recording alongside the four bundled loops.
+const bubbles = {
+  "url": "https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/zh5usndkyEfVvKOz8dvsrCd1Ga0jfz4xIcLUendD.mp3",
+  "page": "https://freemusicarchive.org/music/holiznacc0/public-domain-lofi/bubbles-lofi-bright-relaxed/",
+  "title": "Bubbles",
+  "author": "HoliznaCC0"
+};
+writeFileSync("public/music/bubbles.mp3", readFileSync(await fetchSource(bubbles)));
+made.push({ file: "music/bubbles.mp3", ...bubbles });
+
 // Drop sounds the kit no longer makes.
 for (const file of readdirSync("public/sfx")) {
   if (file.endsWith(".wav") && !made.some((m) => m.file === `sfx/${file}`))
