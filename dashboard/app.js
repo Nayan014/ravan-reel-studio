@@ -8,7 +8,7 @@ initSettingsModal();
 const app = document.querySelector('#app');
 const connection = document.querySelector('#connection');
 const tabs = ['overview', 'plan', 'previews', 'exports', 'files'];
-let projects = [], search = '', filter = 'all', routeKey = '', signature = '', loaded = false;
+let projects = [], search = '', filter = 'reels', routeKey = '', signature = '', loaded = false;
 const selectedVideos = new Map();
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const date = value => value ? new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
@@ -28,7 +28,7 @@ function fileList(files, reveal = false) {
 }
 
 function renderCards() {
-  const filtered = projects.filter(p => (filter === 'all' || p.kind === filter) && `${p.title} ${p.id}`.toLowerCase().includes(search.toLowerCase()));
+  const filtered = projects.filter(p => p.kind === filter && `${p.title} ${p.id}`.toLowerCase().includes(search.toLowerCase()));
   document.querySelector('#project-count').textContent = `${filtered.length} OF ${projects.length} PROJECT${projects.length === 1 ? '' : 'S'}`;
   document.querySelector('#cards').innerHTML = filtered.map(p => {
     const poster = p.cover || p.previews[0];
@@ -41,7 +41,7 @@ function renderCards() {
 
 function renderHome() {
   if (routeKey !== 'home') {
-    app.innerHTML = `<div class="hero-section"><div class="eyebrow"><span class="eyebrow-dot"></span>Your local studio</div><h1>Your studio. One place.</h1><p class="description">Your footage, your ideas, your finished work. Browse reels, YouTube videos and edits, review the details, and find everything you need to share.</p></div><div class="toolbar"><div class="library-controls"><div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div><div class="filters" role="group" aria-label="Project type">${[['all', 'All'], ['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits']].map(([value, label]) => `<button class="filter" data-filter="${value}" aria-pressed="${filter === value}">${label}</button>`).join('')}</div></div><span class="count" id="project-count"></span></div><div id="cards" class="grid"></div><div class="notice"><div class="notice-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div><div class="notice-body"><strong>Your next project starts in your AI chat.</strong><p>Use <code>/wf-reel-plan</code> for a reel, <code>/wf-video-plan</code> for YouTube, or <code>/wf-video</code> for a quick single-video edit. Plans, previews, and exports appear here automatically.</p></div></div>`;
+    app.innerHTML = `<div class="hero-section"><div class="eyebrow"><span class="eyebrow-dot"></span>Your local studio</div><h1>Your studio. One place.</h1><p class="description">Your footage, your ideas, your finished work. Browse reels, YouTube videos and edits, review the details, and find everything you need to share.</p></div><div class="toolbar"><div class="library-controls"><div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div><div class="filters" role="group" aria-label="Project type">${[['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits']].map(([value, label]) => `<button class="filter" data-filter="${value}" aria-pressed="${filter === value}">${label}</button>`).join('')}</div></div><span class="count" id="project-count"></span></div><div id="cards" class="grid"></div><div class="notice"><div class="notice-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div><div class="notice-body"><strong>Your next project starts in your AI chat.</strong><p>Use <code>/wf-reel-plan</code> for a reel, <code>/wf-video-plan</code> for YouTube, or <code>/wf-video</code> for a quick single-video edit. Plans, previews, and exports appear here automatically.</p></div></div>`;
     document.querySelector('#search').addEventListener('input', e => { search = e.target.value; renderCards(); });
     document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
       filter = button.dataset.filter;

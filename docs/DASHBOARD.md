@@ -26,9 +26,9 @@ are intentionally not accepted. The server stays on this device.
 
 ## Your library
 
-The dashboard discovers **Reels** in `outputs/reels/` and **Edits** in `outputs/edits/`.
-Export packages with videos but no workflow plan also appear. Use search and the All / Reels /
-Edits filters to find a project. Data refreshes every five seconds. Search, selected tabs,
+The dashboard opens on **Reels**. Choose **Videos** or **Edits** to browse those projects,
+or search within the selected type. Export packages with videos but no workflow plan also appear.
+Data refreshes every five seconds. Search, selected tabs,
 export selection, and playing videos are preserved during refresh.
 
 Each project has five sections:
