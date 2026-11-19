@@ -39,6 +39,9 @@ class CombinedReelTests(unittest.TestCase):
         self.assertEqual(rw.effects_for(self.folder,shot,self.plan)[0]['fx'],'studio-light')
         shot['vibha']={'status':'selected','effects':[{'id':5,'start':0,'end':2,'options':{}}]}
         self.assertEqual([e['fx'] for e in rw.effects_for(self.folder,shot,self.plan)],['studio-light','lean-in'])
+        shot['lighting']={'preset':'adaptive-studio'}
+        self.assertEqual(rw.effects_for(self.folder,shot,self.plan)[0]['preset'],'adaptive-studio')
+        self.assertIn('Shot lighting override · adaptive-studio',rw.make_html(self.folder,self.plan).read_text())
         shot['lighting']=None
         self.assertEqual([e['fx'] for e in rw.effects_for(self.folder,shot,self.plan)],['lean-in'])
         self.validate()

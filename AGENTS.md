@@ -27,6 +27,8 @@ Read `docs/WORKFLOW_REVIEW.md` for all workflow questions, choices and approvals
 | cover-image | Create consistent video covers and YouTube thumbnails using the shared, versioned Techno Ravan style | `skills/cover-image/SKILL.md` |
 | india-map | Prepare and verify maps using the Government of India's boundary depiction for covers and video graphics | `skills/india-map/SKILL.md` |
 | captions | Author multi-platform social captions (Instagram, YouTube, TikTok, LinkedIn) with zero em dashes | `skills/captions/SKILL.md` |
+| studio-wall-lights | Add blue light beside artwork and red light behind a monitor, with neutral face lighting | `skills/studio-wall-lights/SKILL.md` |
+| studio-lighting | Improve face and room exposure with adaptive studio lighting and review matched frames and motion | `skills/studio-lighting/SKILL.md` |
 | sound-design | Select credited CC0 music and scene cues with documented popularity | `skills/sound-design/SKILL.md` |
 | natural-narration | Audition and select local Kokoro readings for speech-free scenes | `skills/natural-narration/SKILL.md` |
 | effect-tailor | Analyze speech and branding to author meaningful effect options, eliminating placeholder text | `skills/effect-tailor/SKILL.md` |

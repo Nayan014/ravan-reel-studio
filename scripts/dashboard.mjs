@@ -7,7 +7,7 @@ import { promisify } from 'node:util';
 import { basename, dirname, extname, join, resolve, win32 } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listProjects, mediaPath, mediaTypes } from './dashboard-library.mjs';
-import { readReview, submitReview, suggestedReview, reviewDocument, prepareReview } from './review-store.mjs';
+import { readReview, submitReview, suggestedReview, reviewDocument, prepareReview, selectLighting } from './review-store.mjs';
 import { audioCatalogue,libraryAudio,selectAudio,settingsAudioOptions,voicePreviewFile } from './audio-library.mjs';
 import { studioProject, openNativeStudio } from './native-studio.mjs';
 
@@ -145,11 +145,15 @@ print(json.dumps(opts))
   } else {
     shot.vibha = { status: 'none', effects: [] };
   }
-  const pending = plan.shots?.some(s => s.vibha?.status === 'pending');
+  const current = JSON.parse(readFileSync(planPath, 'utf8'));
+  const currentShot = current.shots?.find(s => String(s.id) === String(value.scene));
+  if (!currentShot) throw new Error('The selected scene changed.');
+  currentShot.vibha = shot.vibha;
+  const pending = current.shots?.some(s => s.vibha?.status === 'pending');
   if (!pending) {
-    plan.visual_selection = plan.shots.map(s => `Scene ${s.id}: ${s.vibha?.effects?.[0]?.name || 'none'}`).join('; ');
+    current.visual_selection = current.shots.map(s => `Scene ${s.id}: ${s.vibha?.effects?.[0]?.name || 'none'}`).join('; ');
   }
-  writeFileSync(planPath, JSON.stringify(plan, null, 2) + '\n');
+  writeFileSync(planPath, JSON.stringify(current, null, 2) + '\n');
   const projectDir = join(root, 'outputs', kind, id);
   await promisify(execFile)(python, ['-c', `
 import sys, json
@@ -175,7 +179,7 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
     if (req.headers.origin && req.headers.origin !== `http://${host}`) return finish(403, 'Cross-origin request blocked');
     try {
       const url = new URL(req.url, `http://${host}`);
-      const reviewMatch = /^\/api\/reviews\/(reels|videos|edits|plans)\/([A-Za-z0-9_-]+)(?:\/(submit|prepare|music|voice|studio|effect))?$/.exec(url.pathname);
+      const reviewMatch = /^\/api\/reviews\/(reels|videos|edits|plans)\/([A-Za-z0-9_-]+)(?:\/(submit|prepare|music|voice|studio|effect|lighting))?$/.exec(url.pathname);
       if (reviewMatch) {
         const [, kind, id, action] = reviewMatch;
         const sendJson = (status, data) => { res.setHeader('Content-Type', 'application/json'); finish(status, JSON.stringify(data)); };
@@ -199,6 +203,8 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
               result = suggestedReview(root, kind, id, value.stage || 'plan');
             } else if (action === 'music' || action === 'voice') {
               result = await selectAudio(root, kind, id, value, action);
+            } else if (action === 'lighting') {
+              result = selectLighting(root, kind, id, value);
             } else if (action === 'effect') {
               result = await selectEffect(root, kind, id, value);
             } else {

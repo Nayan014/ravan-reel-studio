@@ -17,7 +17,7 @@ import uuid
 
 from video_workflow import digest, probe, run, runtime, effects_root, read_json, write_json
 from text_layers import validate_layers, render_layers
-from studio_lighting import lighting_effect, validate_lighting
+from studio_lighting import lighting_effect, validate_lighting, shot_lighting
 
 STUDIO = Path(__file__).resolve().parents[1]
 ENGINE = STUDIO / 'tools/techno-reel'
@@ -238,7 +238,7 @@ def effects_for(folder, shot, project_plan=None):
     selected = sorted(selected,key=lambda r: r['fx'] not in CAMERAS)
     if project_plan is None:
         project_plan = read_json(folder/'plan.json') if (folder/'plan.json').is_file() else {}
-    config = shot['lighting'] if 'lighting' in shot else project_plan.get('lighting')
+    config = shot_lighting(project_plan, shot)
     lighting = lighting_effect(config, duration)
     return ([lighting] if lighting else []) + selected
 
@@ -549,9 +549,10 @@ def make_html(folder,plan,output=None,images=None):
         if decision.get('effects'):
             fx='<br>'.join(f'<b>#{esc(str(e["id"]))} · {esc(catalogue()[str(e["id"]).lower()]["name"])}</b><p>{e["start"]:.2f}–{e["end"]:.2f}s within this shot</p>'
                           + ''.join(f'<p>{esc(line)}</p>' for line in option_text(e.get('options',{}))) for e in decision['effects'])
-        lighting=shot['lighting'] if 'lighting' in shot else plan.get('lighting')
-        if validate_lighting(lighting):
-            fx='<p><b>Natural studio lighting</b> · soft face key and muted blue/red background, before graphics.</p>'+fx
+        if 'lighting' in shot:
+            lighting = shot_lighting(plan, shot)
+            name = (lighting.get('look') or lighting['preset']) if lighting else 'off'
+            fx = f'<p><b>Shot lighting override · {esc(name)}</b></p>' + fx
         if shot.get('reference_note'):
             fx+=f'<p><b>Reference treatment:</b> {esc(str(shot["reference_note"]))}</p>'
         state='' if shot.get('text_confirmed') else '<small>Expected / unverified speech</small>'
@@ -564,6 +565,22 @@ def make_html(folder,plan,output=None,images=None):
     if reference:
         takes.append('<aside><h3>Reference style · '+esc(str(reference['name']))+'</h3><p>'+esc(str(reference['summary']))+'</p><p>Style notes guide the proposed treatments below. Review their actual appearance in your preview frames.</p></aside>')
     result=template.replace('{{TITLE}}',esc(plan['title'])).replace('{{CHANNEL}}',esc(plan.get('channel','Techno Ravan')))
+    if plan.get('renderer') != 'nafay':
+        options = read_json(STUDIO/'assets/styles/studio-lighting.json')
+        config = plan.get('lighting') or {}
+        selected = next((o['name'] for o in options if o['id'] == config.get('look')), config.get('preset', 'Off'))
+        cards = []
+        for option in options:
+            filename = 'lighting-' + option['id'] + '.jpg'
+            sample = folder/'assets'/filename
+            if not sample.is_file():
+                sample = effects_root()/'assets/reference-previews'/filename
+            cards.append(f'<figure><img width="125" alt="{esc(option["name"])} example" src="{link(sample)}">'
+                         f'<figcaption>{esc(option["name"])}</figcaption></figure>')
+        lighting_section = ('<section><h2>Project lighting</h2><p>All camera shots · '
+                            f'<strong data-studio-selection>{esc(selected)}</strong></p>'
+                            '<div style="display:flex;flex-wrap:wrap">' + ''.join(cards) + '</div></section>')
+        result = result.replace('<section><h2>Scene-by-scene production plan', lighting_section + '<section><h2>Scene-by-scene production plan')
     result=result.replace('{{TAKES}}',''.join(takes)).replace('{{ROWS}}',''.join(rows))
     if not plan.get('visual_selection'):
         summary=f'{cursor:.1f}s timing draft · visual choices pending · source frames before effects'

@@ -11,7 +11,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from text_layers import validate_layers, render_layers
-from studio_lighting import expand_lighting, validate_lighting, render_studio_light
+from studio_lighting import AdaptiveAnalysis, expand_lighting, validate_lighting, render_studio_light, render_adaptive
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONT = {k: os.path.join(ROOT, 'fonts', v) for k, v in {
@@ -320,7 +320,10 @@ def grid(c):
 
 @effect('studio-light', 'natural studio lighting: muted blue/red room and a soft face key')
 def fx_studio_light(c, e):
-    render_studio_light(c, e, grid, guided)
+    if e.o.get('preset') == 'adaptive-studio':
+        render_adaptive(c, e, grid)
+    else:
+        render_studio_light(c, e, grid, guided)
 
 
 @effect('spotlight', 'kill the lights, keep you lit')
@@ -2320,9 +2323,12 @@ class Tracker:
         if self.prev is not None: m = 0.65 * m + 0.35 * self.prev
         self.prev = m
         _, f = self.fd.detect(cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
+        self.detected_face = None
         face = None
         if f is not None and len(f):
             r = max(f, key=lambda r: r[2] * r[3] * r[-1]); face = (r[0] + r[2] / 2, r[1] + r[3] / 2, r[2])
+            if r[-1] >= .8:
+                self.detected_face = face
         else:
             rows = np.where((m > 0.5).sum(1) > m.shape[1] * 0.01)[0]
             if len(rows):
@@ -2370,10 +2376,13 @@ def main():
     ap.add_argument('--plan'); ap.add_argument('--start', type=float); ap.add_argument('--end', type=float)
     ap.add_argument('--text'); ap.add_argument('--images'); ap.add_argument('--opt', action='append', default=[], help='key=value')
     ap.add_argument('--still', help='comma-separated seconds: save PNG check frames instead of a video')
+    ap.add_argument('--comparison', metavar='MP4', help='With --still, show matched original/treated pairs and a short motion sample with source audio')
     ap.add_argument('--warmup', action='store_true', help='Replay preceding effect frames for stateful still/video parity')
     ap.add_argument('--width', type=int, default=1080, help='short side of the output (1080 default, 2160 for 4K)')
     ap.add_argument('--list', action='store_true')
     a = ap.parse_args()
+    if a.comparison and not a.still:
+        ap.error('--comparison requires --still')
     text_layers=[]
     if a.list:
         for i, (k, (_, d)) in enumerate((item for item in EFFECTS.items() if item[0] != 'studio-light')): print(f'{i + 1:2d}. {k:15s} {d}')
@@ -2407,12 +2416,18 @@ def main():
     inwin = lambda t: any(f.start - 0.5 <= t < f.end + 0.5 for f in fxs)
     print(f'Pass 1: tracking you ({len(fxs)} effect{"s" * (len(fxs) > 1)})...', flush=True)
     trk = Tracker(aw, ah); masks, faces, thumbs = {}, [], []
+    adaptive = AdaptiveAnalysis(fps) if any(f.name == 'studio-light' and f.o.get('preset') == 'adaptive-studio' for f in fxs) else None
+    lighting_samples = {}
     n_thumb = 10; thumb_at = {int(dur * fps * (j + 0.5) / n_thumb) for j in range(n_thumb)}
     for i, fr_ in enumerate(read_frames(src, aw, ah, fr)):
         t = i / fps
         if i in thumb_at: thumbs.append(Image.fromarray(fr_.copy()))
         if inwin(t):
+            if adaptive and adaptive.start_frame(fr_):
+                trk.prev = None
             m, f = trk(fr_, int(t * 1000)); masks[i] = m; faces.append(f)
+            if adaptive:
+                lighting_samples[i] = adaptive.measure(fr_, m, trk.detected_face)
         else:
             faces.append(None); trk.prev = None
     sm = smooth(faces, fps)
@@ -2420,6 +2435,19 @@ def main():
     for f in fxs:
         if f.name in CARD_FX: f.cards = load_cards(f.o.get('images'), thumbs)
     stills = sorted({int(round(float(s) * fps)) for s in a.still.split(',')}) if a.still else None
+    sample = None
+    motion_frames = range(0)
+    if a.comparison:
+        length = min(len(faces), max(1, min(round(3 * fps), len(faces) // 2)))
+        first = (len(faces) - length) // 2
+        motion_frames = range(first, first + length)
+        # Render with the production geometry, then downsample for playback.
+        panel_w = min(W, 640)
+        panel_h = max(2, round(H * panel_w / W / 2) * 2)
+        sample = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24',
+            '-s', f'{panel_w * 2}x{panel_h}', '-r', str(fr), '-i', '-', '-ss', str(first / fps), '-i', src,
+            '-map', '0:v', '-map', '1:a:0?', '-c:v', 'libx264', '-crf', '16', '-pix_fmt', 'yuv420p',
+            '-c:a', 'aac', '-t', str(length / fps), '-movflags', '+faststart', a.comparison], stdin=subprocess.PIPE)
     enc = None
     if not stills:
         enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(fr), '-i', '-',
@@ -2431,27 +2459,41 @@ def main():
         t = i / fps
         act = [f for f in fxs if f.start <= t < f.end]
         if stills is not None:
-            if i > stills[-1]: break
-            if i not in stills and not a.warmup: continue
+            if i > max(stills[-1], motion_frames.stop - 1): break
+            if i not in stills and i not in motion_frames and not a.warmup: continue
+        original = frame
         if act:
             c = Ctx(); c.W, c.H, c.t, c.fps = W, H, t, fps
             c.img = frame.astype(np.float32) / 255.0
             m = masks.get(i)
             c.m = cv2.resize(m, (W, H), interpolation=cv2.INTER_LINEAR).astype(np.float32) / 255.0 if m is not None else np.zeros((H, W), np.float32)
             fx_, fy_, fw_ = sm[min(i, len(sm) - 1)]; c.fx, c.fy, c.fw = fx_ * sc, fy_ * sc, max(fw_ * sc, W * 0.05)
+            if adaptive:
+                sample_data = lighting_samples.get(i)
+                c.adaptive = None if sample_data is None else (
+                    sample_data[0] * sc, sample_data[1] * H / ah, sample_data[2] * sc, *sample_data[3:])
             for f in act:
                 c.lt = t - f.start; EFFECTS[f.name][0](c, f)
             frame = (np.clip(c.img, 0, 1) * 255 + 0.5).astype(np.uint8)
         if overlay is not None:
             alpha=overlay[:,:,3:4]/255
             frame=np.clip(frame*(1-alpha)+overlay[:,:,:3]*alpha+.5,0,255).astype(np.uint8)
+        if sample and i in motion_frames:
+            panels = [cv2.resize(img, (panel_w, panel_h), interpolation=cv2.INTER_AREA) for img in (original, frame)]
+            sample.stdin.write(np.hstack(panels).tobytes())
         if stills is not None:
             if i not in stills: continue
+            if a.comparison:
+                frame = np.hstack((original, frame))
             out = dst if len(stills) == 1 else dst.replace('.png', f'_{t:.2f}.png')
             cv2.imwrite(out, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)); print('saved', out)
         else:
             enc.stdin.write(frame.tobytes())
             if i % int(fps * 5) == 0: print(f'  {t:5.1f}s / {dur:.1f}s', flush=True)
+    if sample:
+        sample.stdin.close()
+        if sample.wait() != 0:
+            raise RuntimeError('ffmpeg could not encode the lighting comparison')
     if enc:
         enc.stdin.close()
         if enc.wait()!=0: raise RuntimeError('ffmpeg could not encode the effects output')

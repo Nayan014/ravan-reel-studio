@@ -17,6 +17,8 @@ These are the studio's reusable planning defaults; adapt the channel and style t
 
 Use native choice buttons for questions and approvals. Open HTML plans through the interactive studio review page, with feedback beneath the full script, in every scene row and beneath every actual frame. Use Hyperframes Studio for direct text/style editing; no custom review canvas. Apply feedback to the actual production plan; changes require fresh reviewed content before approval. See `WORKFLOW_REVIEW.md` for the local submission flow. Keep the standalone HTML readable without the server.
 
+Place one **Project lighting** selector with example pictures between the full script and scene table in Reel and YouTube plans. Offer Studio softbox, Blue/red wall lights and Off. A selection covers all camera shots before scene effects. Keep lighting approval tied to actual frame/audio review.
+
 ## Production table
 
 Each scene or meaningful visual beat needs these columns:

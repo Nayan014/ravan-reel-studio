@@ -47,6 +47,8 @@ A single effect needs no plan: `.venv/bin/python scripts/fx.py orbit <video> <ou
 
 ## The 51 effects
 
+For adaptive face and room correction, route to [studio-lighting](../studio-lighting/SKILL.md).
+
 **Optional lighting:** `studio-light` adds a natural face key and muted blue/red room accents using the existing local tracking models. It is separate from the numbered catalogue. Read `../../docs/STUDIO_LIGHTING.md` for lighting-only requests, project/shot settings, optional screen calibration and actual-frame review. Apply it before graphics; do not tint a finished reel's captions/logos. No reference media or hard-coded room coordinates are required.
 
 | # | `fx` name | What it does | Options (all optional) |

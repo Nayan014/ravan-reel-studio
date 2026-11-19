@@ -56,6 +56,23 @@ function feedback(scope, target = '', scene = '', label = '') {
   `;
 }
 
+function projectLights(request) {
+  const panel = request.projectLighting;
+  if (!panel) return '';
+  const editable = ['script', 'plan'].includes(request.stage);
+  const active = panel.options.find(o => o.id === panel.selected);
+  if (!editable) return `<h2>Project lighting</h2><p>${esc(active?.name || (panel.selected === 'none' ? 'Off' : panel.selected))}</p>`;
+  const cards = panel.options.map(o =>
+    `<label class="lighting-choice"><img src="${esc(o.image)}" alt="${esc(o.name)} example">
+      <span><input type="radio" name="project-look" value="${esc(o.id)}" ${panel.selected === o.id ? 'checked' : ''}>
+      <strong>${esc(o.name)}</strong><small>${esc(o.description)}</small></span></label>`).join('');
+  const saved = !active && panel.selected !== 'none' ? `<p>Current preset · ${esc(panel.selected)}</p>` : '';
+  return `<fieldset class="lighting-field"><legend>Project lighting</legend>
+    <p>Choose once for every camera shot. Review the result on your footage before export.</p>
+    <div class="lighting-options">${cards}</div>${saved}
+    <label><input type="radio" name="project-look" value="none" ${panel.selected === 'none' ? 'checked' : ''}> Off</label></fieldset>`;
+}
+
 function effectCell(scene) {
   const effects = state.effectsCatalogue || [];
   const selectedId = scene.effects?.effects?.[0]?.id ? String(scene.effects.effects[0].id) : (scene.effects?.status === 'none' ? 'none' : '');
@@ -142,7 +159,7 @@ function controls() {
   document.querySelectorAll('[data-music],[data-reading]').forEach(button => {
     button.disabled = Boolean(blocked);
   });
-  document.querySelectorAll('.effect-dropdown').forEach(select => {
+  document.querySelectorAll('.effect-dropdown, input[name="project-look"]').forEach(select => {
     select.disabled = Boolean(blocked);
   });
   if ($('music-select')) {
@@ -252,8 +269,15 @@ function render() {
     $('quality').innerHTML = quality ? `<div class="spec-tags-row"><span class="spec-tag">${quality.width > quality.height ? 'Landscape' : 'Portrait'}</span><span class="spec-tag accent">${Math.min(quality.width, quality.height) === 2160 ? '4K UHD' : Math.min(quality.width, quality.height) === 1080 ? '1080p HD' : ''}</span><span class="spec-tag">${quality.width}×${quality.height}</span><span class="spec-tag">${quality.fps} FPS</span></div>` : 'Output quality will be confirmed from the recordings.';
     $('crop').textContent = quality ? 'Framing follows the reviewed crop or fit choice. Changing aspect ratio can crop the picture or add padding. The actual frames below show the result.' : '';
     $('script').innerHTML = `<h2>Full script</h2><div class="script-card">${r.scenes.map(s => `<p class="script-line"><strong class="script-scene-num">Scene ${esc(s.id)}</strong> <span class="script-text">${esc(s.text)}</span></p>`).join('')}</div>${feedback('script')}${r.referenceStyle ? `<aside><h3>Reference style · ${esc(r.referenceStyle.name)}</h3><p>${esc(r.referenceStyle.summary)}</p><p>Style notes guide the proposed scene treatments. Review their actual appearance in the frames below.</p></aside>` : ''}`;
-    $('scene-summary').innerHTML = r.scenes.length ? `<h2>Scene-by-scene production plan</h2><div class="table-scroll"><table><thead><tr><th class="col-time">Scene / timing</th><th class="col-dialogue">Dialogue</th><th class="col-footage">Footage / shooting notes</th><th class="col-captions">Spoken captions</th><th class="col-effects">Effects</th></tr></thead><tbody>${r.scenes.map(s => `<tr><td><strong class="scene-id">Scene ${esc(s.id)}</strong><span class="scene-timing-badge">${s.timeline ? s.timeline.map(n => Number(n).toFixed(2)).join('–') + 's' : 'Record after approval'}</span></td><td><p class="scene-dialogue-text">${esc(s.text)}</p>${readings(s)}${feedback('scene', s.id, s.id)}</td><td><strong class="footage-name">${esc(s.source)}</strong>${s.shootingNote ? `<p class="shooting-note">${esc(s.shootingNote)}</p>` : ''}${s.sourceFrame ? `<img class="source-frame" src="${esc(s.sourceFrame)}" alt="Original scene ${esc(s.id)} before effects">` : ''}</td><td>${s.captions.length ? `<div class="caption-pages-wrap">${s.captions.map(c => `<span class="caption-pill">${esc(c)}</span>`).join('')}</div>` : '<span class="muted">Pending speech verification</span>'}</td><td>${effectCell(s)}</td></tr>`).join('')}</tbody></table></div>` : '';
+    $('project-lighting').innerHTML = projectLights(r);
+    $('scene-summary').innerHTML = r.scenes.length ? `<h2>Scene-by-scene production plan</h2><div class="table-scroll"><table><thead><tr><th class="col-time">Scene / timing</th><th class="col-dialogue">Dialogue</th><th class="col-footage">Footage / shooting notes</th><th class="col-captions">Spoken captions</th><th class="col-effects">Effects</th></tr></thead><tbody>${r.scenes.map(s => `<tr><td><strong class="scene-id">Scene ${esc(s.id)}</strong><span class="scene-timing-badge">${s.timeline ? s.timeline.map(n => Number(n).toFixed(2)).join('–') + 's' : 'Record after approval'}</span></td><td><p class="scene-dialogue-text">${esc(s.text)}</p>${readings(s)}${feedback('scene', s.id, s.id)}</td><td><strong class="footage-name">${esc(s.source)}</strong>${s.shootingNote ? `<p class="shooting-note">${esc(s.shootingNote)}</p>` : ''}${s.sourceFrame ? `<img class="source-frame" src="${esc(s.sourceFrame)}" alt="Original scene ${esc(s.id)} before effects">` : ''}</td><td>${s.captions?.length ? `<div class="caption-pages-wrap">${s.captions.map(c => `<span class="caption-pill">${esc(c)}</span>`).join('')}</div>` : '<span class="muted">Pending speech verification</span>'}</td><td>${effectCell(s)}</td></tr>`).join('')}</tbody></table></div>` : '';
     $('document').innerHTML = r.document ? `<details ${!r.scenes.length ? 'open' : ''}><summary>Original HTML plan and visual references</summary><iframe title="Production plan with visual references" class="review-document" sandbox="" src="${esc(media(r.document))}?revision=${r.fingerprint}"></iframe></details>` : '';
+    $('lighting-comparison').innerHTML = r.comparison
+      ? `<p>Original on the left · Studio lighting on the right</p><video controls playsinline preload="metadata" style="width:100%;max-height:65vh" aria-label="Lighting comparison with recorded audio" src="${esc(r.comparison)}"></video>` : '';
+    if (r.comparison) {
+      $('script').innerHTML = feedback('script', '', '', 'studio lighting');
+      $('crop').textContent = 'The stills show the lighting at export resolution. Play the motion sample to check your face and the room as you move.';
+    }
     $('frames').innerHTML = r.frames.map(f => `<figure><a href="${esc(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${esc(f.url)}" alt="Actual preview ${esc(f.id)}"></a><figcaption>${f.scene ? 'Scene ' + esc(f.scene) : esc(f.name)}${f.time !== null ? ' · ' + Number(f.time).toFixed(2) + 's' : ''}</figcaption>${feedback('frame', f.id, f.scene)}</figure>`).join('');
     $('audio').innerHTML = r.audioReview ? `<h2>Source voice and Nafay effects</h2><p>Review sample from ${Number(r.audioReview.start).toFixed(2)}s in the edited timeline.</p><audio controls preload="metadata" src="${esc(r.audioReview.url)}" aria-label="${esc(r.audioReview.label)}"></audio>` : audioPanel(r);
     displayed = r.id;
@@ -353,6 +377,31 @@ document.addEventListener('change', async event => {
     return;
   }
 
+  if (event.target.name === 'project-look' && !sending) {
+    sending = true;
+    controls();
+    const drafts = [...document.querySelectorAll('.target-feedback')].map(form => ({
+      ...form.dataset, text:form.querySelector('textarea').value
+    }));
+    try {
+      const updated = await post('lighting', {requestId:state.request.id, look:event.target.value});
+      state = {...state, ...updated, stale:false};
+      for (const item of drafts) {
+        if (item.text) localStorage.setItem(key(item.scope, item.target), item.text);
+      }
+      displayed = '';
+      render();
+    } catch (error) {
+      displayed = '';
+      render();
+      $('review-status').textContent = error.message;
+    } finally {
+      sending = false;
+      controls();
+    }
+    return;
+  }
+
   const select = event.target.closest('.effect-dropdown');
   if (!select || sending) return;
   const scene = select.dataset.scene;
@@ -366,7 +415,7 @@ document.addEventListener('change', async event => {
       scene,
       effectId
     });
-    state = updated;
+    state = {...state, ...updated};
     displayed = '';
     render();
     $('review-status').textContent = 'Effect updated.';
