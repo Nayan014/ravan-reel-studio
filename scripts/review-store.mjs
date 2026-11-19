@@ -15,6 +15,21 @@ const parse = path => JSON.parse(readFileSync(path, 'utf8'));
 const inside = (base, path) => path.startsWith(base + sep);
 const slash = path => path.split(sep).join('/');
 const bundled=fileURLToPath(new URL('../',import.meta.url));
+const lightingOptions = parse(join(bundled, 'assets/styles/studio-lighting.json'));
+
+function lightingPanel(root, base, plan) {
+  const config = plan.lighting;
+  return {
+    selected: config?.look || config?.preset || 'none',
+    options: lightingOptions.map(option => {
+      const filename = 'lighting-' + option.id + '.jpg';
+      const local = base + '/assets/' + filename;
+      const path = existsSync(join(root, local)) ? local : 'skills/effects/assets/reference-previews/' + filename;
+      return {...option, image: mediaUrl(path)};
+    })
+  };
+}
+
 export class ReviewError extends Error {
   constructor(message, status = 400) { super(message); this.status = status; }
 }
@@ -57,11 +72,13 @@ function context(root, kind, id, stage, document) {
     try { const path = mediaPath(root, name); files.push([name, hash(readFileSync(path))]); return parse(path); }
     catch { return null; }
   };
-  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[], referenceStyle=null, audioReview=null, renderer=null;
+  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[], referenceStyle=null, audioReview=null, comparison=null, projectLighting=null, renderer=null;
   if (kind !== 'plans') {
     const base = `outputs/${kind}/${id}`;
     const plan = add(`${base}/plan.json`), session = add(`${base}/session.json`);
     renderer=plan?.renderer||null;
+    if (['reels', 'videos'].includes(kind) && Array.isArray(plan?.shots) && renderer !== 'nafay')
+      projectLighting = lightingPanel(root, base, plan);
     if(renderer==='nafay') {
       const trackFile=path=>{
         if(!existsSync(path))return;
@@ -179,6 +196,18 @@ function context(root, kind, id, stage, document) {
         throw new ReviewError('Generate fresh frames and audio for the changed plan.');
       if (!preview?.id) throw new ReviewError('Generate actual preview frames before opening a frame approval.');
       previewId = preview.id;
+      if (kind === 'edits' && session?.mode === 'lighting' && preview.comparison) {
+        const name = preview.comparison;
+        if (!name.startsWith(base + '/') || !name.endsWith('.mp4')) throw new ReviewError('Select a lighting comparison inside this edit.');
+        files.push([name, hashFile(mediaPath(root, name))]);
+        comparison = mediaUrl(name);
+        title = 'Studio lighting · ' + session.source.split('/').slice(-2).join(' / ');
+        const info = add(session.analysis);
+        if (info) {
+          const scale = session.width / Math.min(info.width, info.height);
+          outputProfile = {width: Math.round(info.width * scale / 2) * 2, height: Math.round(info.height * scale / 2) * 2, fps: info.fps_fraction};
+        }
+      }
       const source = Array.isArray(preview.frames) ? preview.frames : Array.isArray(preview.files) ? preview.files : [];
       frames = source.filter(p => typeof p === 'string' && /\.(png|jpe?g|webp)$/i.test(p)).map(p => {
         const name = isAbsolute(p) ? slash(relative(root, p)) : p.startsWith('outputs/') ? p : `${base}/${p}`;
@@ -208,7 +237,7 @@ function context(root, kind, id, stage, document) {
     files.push(['draft-text-layers',hash(JSON.stringify(design))]);
     if (!scenes.length) scenes=[{id:'01',text:'Draft text design'}];
   }
-  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio,referenceStyle,audioReview,renderer, fingerprint: hash(JSON.stringify([stage, files])) };
+  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio,referenceStyle,audioReview,comparison,projectLighting,renderer, fingerprint: hash(JSON.stringify([stage, files])) };
 }
 
 export function prepareReview(root, { kind, id, stage = 'plan', document = null }) {
@@ -232,9 +261,47 @@ export function readReview(root, kind, id) {
   if (!existsSync(path)) throw new ReviewError('No review is open. Ask your editing agent to open this plan for review.', 404);
   const state = parse(path), r = state.request;
   let stale = false;
-  try { stale = context(root, kind, id, r.stage, r.document).fingerprint !== r.fingerprint; }
+  try {
+    const snapshot = context(root, kind, id, r.stage, r.document);
+    stale = snapshot.fingerprint !== r.fingerprint;
+    r.projectLighting = snapshot.projectLighting;
+  }
   catch { stale = true; }
   return { ...state, stale };
+}
+
+export function selectLighting(root, kind, id, value) {
+  const {request, stale} = readReview(root, kind, id);
+  if (stale || request.id !== value.requestId) throw new ReviewError('Reload the current review before changing lighting.', 409);
+  if (!request.projectLighting || !['script', 'plan'].includes(request.stage))
+    throw new ReviewError('Choose lighting from the production plan.');
+  const option = lightingOptions.find(o => o.id === value.look);
+  if (!option && value.look !== 'none') throw new ReviewError('Unknown project lighting.');
+  const base = `outputs/${kind}/${id}`;
+  const path = mediaPath(root, base + '/plan.json');
+  const plan = parse(path);
+  // One explicit whole-project choice replaces prior shot looks, keeping the
+  // camera-specific calibration available even when toggling lighting off.
+  for (const record of [plan, ...plan.shots]) {
+    for (const key of ['screen_regions', 'accent_centers']) {
+      if (record.lighting?.[key]) {
+        record.lighting_calibration ||= {};
+        record.lighting_calibration[key] = record.lighting[key];
+      }
+    }
+    delete record.lighting;
+  }
+  plan.lighting = option ? {preset:'adaptive-studio', look:option.id} : null;
+  const name = option?.name || 'Off';
+  const htmlName = base + '/review.html';
+  if (existsSync(join(root, htmlName))) {
+    const htmlPath = mediaPath(root, htmlName);
+    const html = readFileSync(htmlPath, 'utf8');
+    const updated = html.replace(/<p data-shot-lighting><b>[^<]*<\/b><\/p>/g, '').replace(/(<strong data-studio-selection>)[^<]*(<\/strong>)/, '$1' + name + '$2');
+    if (updated !== html) writeFileSync(htmlPath, updated);
+  }
+  if (JSON.stringify(plan) !== JSON.stringify(parse(path))) save(path, plan);
+  return prepareReview(root, {kind, id, stage:request.stage, document:request.document});
 }
 
 export function submitReview(root, kind, id, value) {

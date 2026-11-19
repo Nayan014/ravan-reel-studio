@@ -666,3 +666,12 @@ button:disabled {
 [data-theme="dark"] .action-buttons-bar button.secondary:hover:not(:disabled) { background: #28364e; }
 [data-theme="dark"] #review-status { background: #0f1523; color: #cbd5e1; border-color: #242f44; }
 [data-theme="dark"] .feedback-event { border-bottom-color: #242f44; }
+
+.lighting-field { margin: 1.75rem 0; padding: 1rem; border: 1px solid #8886; border-radius: 12px; }
+.lighting-field legend { font-size: 1.2rem; font-weight: 700; padding: 0 .4rem; }
+.lighting-field p { margin: .1rem 0 1rem; }
+.lighting-options { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,230px),1fr)); gap: .75rem; margin-bottom: .9rem; }
+.lighting-choice { display: flex; align-items: center; gap: .8rem; border: 1px solid #8886; border-radius: 8px; padding: .5rem; cursor: pointer; }
+.lighting-choice:has(input:checked) { outline: 2px solid #5191c5; }
+.lighting-choice img { width: 5rem; height: 7rem; object-fit: contain; border-radius: 4px; }
+.lighting-choice small { display: block; margin-top: .4rem; }

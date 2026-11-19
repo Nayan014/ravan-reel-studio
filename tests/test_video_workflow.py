@@ -66,6 +66,28 @@ class WorkflowTests(unittest.TestCase):
         workflow.save_session(folder, session)
         return folder, session
 
+    def test_lighting_only_review_binds_the_motion_sample(self):
+        folder, session = self.reviewable()
+        session.pop('chosen_id')
+        session['mode'] = 'lighting'
+        plan = {'lighting': {'preset':'adaptive-studio'}, 'effects':[]}
+        workflow.write_json(folder / 'plan.json', plan)
+        (self.root / 'skills/effects/scripts/studio_lighting.py').write_text('test lighting renderer')
+        sample = folder / 'comparison.mp4'
+        sample.write_bytes(b'first comparison')
+        session['preview']['comparison'] = workflow.relative(sample)
+        current = workflow.preview_id(session)
+        session['preview']['id'] = current
+        workflow.save_session(folder, session)
+        self.assertEqual(workflow.engine_plan(plan)['effects'][0]['preset'], 'adaptive-studio')
+        with self.assertRaisesRegex(ValueError, 'blocked'):
+            workflow.render(session['id'])
+        sample.write_bytes(b'replaced comparison')
+        with self.assertRaisesRegex(ValueError, 'changed'):
+            workflow.approve(session['id'], current, 'fixture review')
+        with self.assertRaises(ValueError):
+            workflow.validated_plan(session, {**plan, 'effects':[{'fx':'orbit'}]})
+
     def test_three_recent_arrivals_not_latest_modified(self):
         for name in ['first.mp4', 'second.MOV', 'third.webm', 'fourth.mp4']:
             self.video(name)

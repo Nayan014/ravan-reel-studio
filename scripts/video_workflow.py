@@ -307,10 +307,13 @@ def choose(session_id, effect_id):
 
 def validated_plan(session, data):
     entries = catalogue()
-    selected = session.get('chosen_ids', [session['chosen_id']])
+    lighting_only = session.get('mode') == 'lighting'
+    selected = [] if lighting_only else session.get('chosen_ids', [session['chosen_id']])
     remaining = [(entries[key]['config']['fx'], entries[key]['config'].get('look')) for key in selected]
     rows = data.get('effects') if isinstance(data, dict) else None
-    if not isinstance(rows, list) or not rows or len(rows) != len(selected):
+    if lighting_only and (not isinstance(data, dict) or set(data) - {'lighting', 'effects'} or not data.get('lighting')):
+        raise ValueError('A lighting-only session needs only an active lighting preset and an empty effects list.')
+    if not isinstance(rows, list) or len(rows) != len(selected) or (not rows and not lighting_only):
         raise ValueError('The plan must include each chosen effect exactly once.')
     info = read_json(STUDIO / session['analysis'])
     normalized = []
@@ -395,13 +398,15 @@ def preview_id(session):
     data = {'inputs': fingerprint(session),
             'frames': [[name, digest(STUDIO / name)] for name in preview['frames']],
             'overview': digest(STUDIO / preview['overview'])}
+    if preview.get('comparison'):
+        data['comparison'] = digest(STUDIO / preview['comparison'])
     return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
 
 
 def preview(session_id, file, width=1080):
     folder, session = load_session(session_id)
     source = check_source(session)
-    if 'chosen_id' not in session:
+    if 'chosen_id' not in session and session.get('mode') != 'lighting':
         raise ValueError('The user must choose an effect sample before real preview frames are created.')
     plan = validated_plan(session, read_json(file))
     if width < 144 or width > 2160 or width % 2:
@@ -418,20 +423,43 @@ def preview(session_id, file, width=1080):
     write_json(output / 'engine-plan.json', engine_plan(plan))
     info = read_json(STUDIO / session['analysis'])
     times = preview_times(plan, info)
+    comparison = output / 'comparison.mp4' if session.get('mode') == 'lighting' else None
     run([runtime(), effects_root() / 'scripts/fx.py', '--plan', output / 'engine-plan.json',
-         source, output / 'frame.png', '--still', ','.join(str(t) for t in times), '--width', width],
+         source, output / 'frame.png', '--still', ','.join(str(t) for t in times), '--width', width,
+         *(['--comparison', comparison] if comparison else [])],
         output / 'preview.log')
-    frames = sorted(output.glob('frame*.png'))
+    frames = sorted(output.glob('frame*.png'), key=lambda p: float(p.stem.partition('_')[2] or 0))
     if len(frames) != len(times):
         raise ValueError('The renderer did not create all requested preview frames. Inspect preview.log.')
     board(frames, output / 'overview.jpg', [f'{t:.2f} seconds' for t in times])
     session['preview'] = {'frames': [relative(p) for p in frames], 'times': times,
                           'overview': relative(output / 'overview.jpg')}
+    if comparison:
+        session['preview']['comparison'] = relative(comparison)
+        session['preview']['frame_details'] = [{'file': relative(p), 'time': t} for p, t in zip(frames, times)]
     session['preview']['id'] = preview_id(session)
     session['stage'] = 'review_preview'
     save_session(folder, session)
     return {'session': session_id, 'stage': session['stage'], 'plan': plan, **session['preview'],
             'next': 'Show the actual frames and this plan. Wait for explicit user approval before calling approve or render.'}
+
+
+def lighting_preview(source, plan_file=None):
+    source = source.resolve()
+    if not source.is_relative_to((STUDIO / 'inputs').resolve()) or source.suffix.lower() not in VIDEO_TYPES:
+        raise ValueError('Select a recording inside inputs/ for a lighting review.')
+    plan = read_json(plan_file) if plan_file else {'lighting': {'preset': 'adaptive-studio'}, 'effects': []}
+    if not validate_lighting(plan.get('lighting')) or plan.get('effects') != [] or set(plan) - {'lighting', 'effects'}:
+        raise ValueError('Supply a lighting-only plan with an empty effects list.')
+    info = probe(source)
+    session_id = 'studio-lighting-' + uuid.uuid4().hex[:8]
+    folder = STUDIO / 'outputs/edits' / session_id
+    write_json(folder / 'analysis.json', info)
+    write_json(folder / 'lighting.json', plan)
+    session = {'id': session_id, 'mode': 'lighting', 'stage': 'selected', 'source': relative(source),
+               'source_sha256': digest(source), 'analysis': relative(folder / 'analysis.json')}
+    save_session(folder, session)
+    return preview(session_id, folder / 'lighting.json', min(info['width'], info['height'], 2160))
 
 
 def approve(session_id, expected_id, message):
@@ -482,6 +510,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('start', help='List at most three newest input videos; wait for a choice.')
+    lighting = commands.add_parser('lighting-preview', help='Review a recorded take with adaptive studio lighting.')
+    lighting.add_argument('source', type=Path)
+    lighting.add_argument('--plan', type=Path)
     pick = commands.add_parser('select'); pick.add_argument('number', type=int)
     for name in ('analyze', 'recommend', 'choose', 'preview', 'approve', 'render', 'status'):
         command = commands.add_parser(name)
@@ -498,6 +529,7 @@ def main():
     args = parser.parse_args()
     try:
         if args.command == 'start': result = start()
+        elif args.command == 'lighting-preview': result = lighting_preview(args.source, args.plan)
         elif args.command == 'select': result = select(args.number)
         elif args.command == 'analyze': result = analyze(args.session, args.transcribe)
         elif args.command == 'recommend': result = recommend(args.session, args.file)

@@ -1,4 +1,16 @@
-# Natural studio lighting
+# Studio lighting
+
+Use the [studio-lighting skill](../skills/studio-lighting/SKILL.md) for adaptive correction of the recorded presenter and room. Set `{"lighting":{"preset":"adaptive-studio"},"effects":[]}` in an effects plan. This preset samples the confirmed face and surrounding room, gently fills the darker cheek, and rolls the gain back near highlights. The tracking pass stabilizes measurements within the shot and resets them at detected cuts. Frames without a reliable face receive no adaptive correction. Optional calibrated screen polygons protect background display pixels.
+
+For a stronger studio look use `{"lighting":{"preset":"adaptive-studio","look":"softbox"},"effects":[]}`. It shapes a broad key from above, lowers room exposure and adds a cool pool of reflected light. Calibrated displays retain their recorded image.
+
+For a standalone before-and-after review use `scripts/video_workflow.py lighting-preview "inputs/take.mov"` with the effects Python. The returned session contains matched stills and a short motion sample with the recording's audio. Open the edits frame review and obtain approval before export. For the direct renderer, the equivalent named command is `fx.py studio-light … --opt preset=adaptive-studio`.
+
+## Project lighting in the plan
+
+Choose **Studio softbox**, **Blue/red wall lights** or **Off** in the single section above the scene table. The whole-project choice replaces per-shot look overrides and keeps camera-specific geometry. For the coloured look use `{"preset":"adaptive-studio","look":"wall-accents"}`. Set normalized `accent_centers` for blue and red at the wall beside the artwork and above the display. Use `screen_regions` to protect display content. Plans can store geometry separately as `lighting_calibration` at project or shot level. The [wall lights skill](../skills/studio-wall-lights/SKILL.md) covers placement and review.
+
+## Existing blue/red room look
 
 `studio-light` is an optional local treatment, separate from the 51 numbered effects. It uses the existing local person segmentation and face tracking, with muted blue/red room lights, a darker background and a small neutral face lift. It retains the recorded skin texture and facial shading; it does not generate a replacement face or reconstruct physical 3D lighting.
 

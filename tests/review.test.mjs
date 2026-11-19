@@ -4,7 +4,7 @@ import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,realpathSync,sym
 import {tmpdir} from 'node:os';
 import {join,dirname} from 'node:path';
 import {createHash,randomUUID} from 'node:crypto';
-import {prepareReview,readReview,submitReview,acknowledgeReview,suggestedReview} from '../scripts/review-store.mjs';
+import {prepareReview,readReview,submitReview,acknowledgeReview,suggestedReview,selectLighting} from '../scripts/review-store.mjs';
 import {readVisual,saveVisual,validateLayers} from '../scripts/visual-editor.mjs';
 import {waitForSubmission} from '../scripts/review.mjs';
 import {createDashboard} from '../scripts/dashboard.mjs';
@@ -192,4 +192,45 @@ test('voice auditions are revision-bound and frame reviews use the full mix and 
  put(base+'/plan.json',plan);
  assert.equal(readReview(root,'reels','demo').stale,true);
  assert.throws(()=>prepare('frames'),/fresh frames and audio/);
+});
+
+test('lighting frame approval includes the matched motion sample', t => {
+  const {root, put} = fixture(t);
+  const base = 'outputs/edits/lighting';
+  const comparison = base + '/preview/comparison.mp4';
+  const frame = base + '/preview/frame.png';
+  put(comparison, 'review motion');
+  put(frame, 'matched still');
+  put(base + '/analysis.json', {width:2160, height:3840, fps_fraction:'60000/1001'});
+  put(base + '/session.json', {mode:'lighting', source:'inputs/shot.mov', width:2160,
+    analysis:base + '/analysis.json', preview:{id:'fixture-preview', frames:[frame], comparison}});
+  const {request} = prepareReview(root, {kind:'edits', id:'lighting', stage:'frames'});
+  assert.equal(request.comparison, '/media/' + comparison);
+  assert.equal(request.outputProfile.height, 3840);
+  put(comparison, 'different sample');
+  assert.equal(readReview(root, 'edits', 'lighting').stale, true);
+  assert.throws(() => submitReview(root, 'edits', 'lighting', {id:randomUUID(), requestId:request.id, action:'approve'}), /changed/);
+});
+
+test('project lighting choices apply to the whole plan and retain shot geometry across Off', t => {
+  for (const kind of ['reels','videos']) {
+    const {root,put} = fixture(t), base = `outputs/${kind}/lights`;
+    const regions = [[[.1,.2],[.2,.2],[.2,.4]]];
+    const cuts = [{id:'01',lighting:null}, {id:'02',lighting:{preset:'natural-studio',screen_regions:regions}}];
+    put(base + '/plan.json', {title:'Lighting plan',shots:cuts});
+    const {request} = prepareReview(root, {kind,id:'lights',stage:'plan'});
+    assert.equal(request.projectLighting.options.length, 2);
+    let revision = request.id;
+    for (const look of ['softbox','none','wall-accents']) {
+      const next = selectLighting(root,kind,'lights',{requestId:revision,look}).request;
+      assert.notEqual(revision,next.id);
+      revision = next.id;
+      const plan = JSON.parse(readFileSync(join(root,base,'plan.json')));
+      assert.equal(plan.lighting?.look || 'none',look);
+      assert.deepEqual(plan.shots[1].lighting_calibration.screen_regions,regions);
+      assert.ok(plan.shots.every(shot => !Object.hasOwn(shot,'lighting')));
+    }
+    assert.throws(()=>selectLighting(root,kind,'lights',{requestId:request.id,look:'softbox'}),/Reload/);
+    assert.throws(()=>selectLighting(root,kind,'lights',{requestId:revision,look:'bogus'}),/Unknown/);
+  }
 });

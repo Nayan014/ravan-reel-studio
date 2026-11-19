@@ -9,11 +9,24 @@ import math
 def validate_lighting(value):
     if value is None:
         return None
-    if not isinstance(value, dict) or set(value) - {'preset', 'screen_regions'}:
-        raise ValueError('Lighting must contain preset and optional screen_regions.')
-    if value.get('preset') != 'natural-studio':
-        raise ValueError('Choose the natural-studio lighting preset, or null for no lighting.')
-    result = {'preset': 'natural-studio'}
+    if not isinstance(value, dict) or set(value) - {'preset', 'screen_regions', 'look', 'accent_centers'}:
+        raise ValueError('Lighting must contain preset and optional look or screen_regions.')
+    if value.get('preset') not in ('natural-studio', 'adaptive-studio'):
+        raise ValueError('Choose natural-studio or adaptive-studio, or null for no lighting.')
+    result = {'preset': value['preset']}
+    if 'look' in value:
+        if result['preset'] != 'adaptive-studio' or value['look'] not in ('softbox', 'wall-accents'):
+            raise ValueError('The softbox and wall-accents looks require the adaptive-studio preset.')
+        result['look'] = value['look']
+    if 'accent_centers' in value:
+        centers = value['accent_centers']
+        if (result.get('look') != 'wall-accents' or not isinstance(centers, dict)
+                or set(centers) != {'blue', 'red'} or not all(
+                    isinstance(point, (tuple, list)) and len(point) == 2 and all(
+                        type(n) in (float, int) and math.isfinite(n) and 0 <= n <= 1 for n in point)
+                    for point in centers.values())):
+            raise ValueError('Wall accent centers need a normalized [x,y] for both blue and red.')
+        result['accent_centers'] = {name: list(point) for name, point in centers.items()}
     if 'screen_regions' in value:
         polygons = value['screen_regions']
         if not isinstance(polygons, list):
@@ -34,12 +47,29 @@ def validate_lighting(value):
     return result
 
 
+def shot_lighting(plan, shot):
+    """Resolve a shot override and its camera-specific wall/screen geometry."""
+    config = shot.get('lighting', plan.get('lighting'))
+    if config is None:
+        return None
+    config = validate_lighting(config)
+    calibration = dict(plan.get('lighting_calibration', {}))
+    calibration.update({k: config[k] for k in ('screen_regions', 'accent_centers') if k in config})
+    calibration.update(shot.get('lighting_calibration', {}))
+    if 'screen_regions' in calibration:
+        config['screen_regions'] = calibration['screen_regions']
+    if config.get('look') == 'wall-accents' and 'accent_centers' in calibration:
+        config['accent_centers'] = calibration['accent_centers']
+    return validate_lighting(config)
+
+
 def lighting_effect(value, end):
     config = validate_lighting(value)
     if config is None:
         return None
-    return {'fx': 'studio-light', 'start': 0, 'end': end,
-            **{key: value for key, value in config.items() if key != 'preset'}}
+    if config['preset'] == 'natural-studio':
+        del config['preset']  # The original direct effect defaults to this look.
+    return {'fx': 'studio-light', 'start': 0, 'end': end, **config}
 
 
 def expand_lighting(plan):
@@ -117,3 +147,142 @@ def render_studio_light(c, e, grid, guided):
     highlight = np.clip((linear.max(axis=2) - .65) / .28, 0, 1)
     gain = 1 + .24 * face * foreground * (1 - highlight)
     c.img = to_srgb(linear * gain[..., None])
+
+
+class AdaptiveAnalysis:
+    """Pass-one measurements in tracking coordinates, independently indexed for stills."""
+    def __init__(self, fps):
+        self.exposure_alpha = 1 - math.exp(-1 / (fps * .40))
+        self.position_alpha = 1 - math.exp(-1 / (fps * .065))
+        self.previous_scene = None
+        self.estimate = None
+        self.position = None
+
+    def start_frame(self, rgb):
+        import cv2
+        import numpy as np
+
+        # Block averages avoid declaring a cut on sensor noise or small hand motion.
+        scene = cv2.resize(rgb, (12, 8), interpolation=cv2.INTER_AREA).astype(np.float32)
+        cut = self.previous_scene is None or np.mean(np.abs(scene - self.previous_scene)) > 32
+        self.previous_scene = scene
+        if cut:
+            self.estimate = self.position = None
+        return cut
+
+    def measure(self, rgb, mask, detection):
+        import numpy as np
+
+        if detection is None:
+            self.position = self.estimate = None
+            return None
+        x, y, width = detection
+        # Sample central cheek patches. Ignore silhouette fallbacks, facial edges and room pixels.
+        h, w = mask.shape
+        left, right = max(0, int(x - .34 * width)), min(w, int(x + .34 * width))
+        top, bottom = max(0, int(y)), min(h, int(y + .23 * width))
+        patch = rgb[top:bottom, left:right]
+        person = mask[top:bottom, left:right] > 210
+        cols = np.arange(left, right) - x
+        cheeks = []
+        for side in (-1, 1):
+            pixels = patch[person & (side * cols > .08 * width)]
+            if len(pixels) < 8:
+                self.position = self.estimate = None
+                return None
+            cheeks.append(float(np.median(pixels @ [.2126, .7152, .0722])) / 255)
+        small = rgb[::8, ::8]
+        room = small[mask[::8, ::8] < 32]
+        face = sum(cheeks) / 2
+        ambient = float(np.percentile(room @ [.2126, .7152, .0722], 70)) / 255 if len(room) >= 12 else face
+        contrast = max(0, ambient - face - .12)
+        key = np.clip((.40 - face) * 2.3 + contrast * .95, 0, .88)
+        room_dim = np.clip(contrast * .72, 0, .32)
+        difference = cheeks[1] - cheeks[0]
+        fill = math.copysign(min(.48, max(0, abs(difference) - .035) * 2.2), difference)
+        target = np.array([key, fill, room_dim])
+        position = np.array(detection, dtype=float)
+        if self.estimate is None:
+            self.estimate, self.position = target, position
+        else:
+            self.estimate += self.exposure_alpha * (target - self.estimate)
+            self.position += self.position_alpha * (position - self.position)
+        return (*self.position, *self.estimate)
+
+
+def render_adaptive(c, e, grid):
+    import cv2
+    import numpy as np
+
+    if c.adaptive is None:
+        return
+    x, y, width, key, fill, room_dim = c.adaptive
+    accents = e.o.get('look') == 'wall-accents'
+    softbox = accents or e.o.get('look') == 'softbox'
+    if not softbox and max(key, abs(fill), room_dim) < .005:
+        return
+    xx, yy = grid(c)
+    dx, dy = (xx - x) / width, (yy - y) / width
+    face = np.exp(-.5 * ((dx / .54) ** 2 + (dy / .76) ** 2))
+    darker_side = np.clip(.5 - np.sign(fill) * dx * 1.8, 0, 1)
+    # Feather uncertainty around moving hair and hands using the soft person mask.
+    subject = np.clip((c.m - .12) / .76, 0, 1)
+    subject *= subject * (3 - 2 * subject)
+    if softbox:
+        # An elevated, broad key on the existing lit cheek. Blend direction
+        # continuously through ambiguous readings so the key never flips sides.
+        direction = np.clip(fill / .12, -1, 1)
+        key_shape = np.exp(-.5 * (((dx - .31 * direction) / .64) ** 2 + ((dy + .19) / .86) ** 2))
+        subject_stops = (.98 + .85 * key) * key_shape + .23 * face - .10
+        # Keep the pool of background light stationary, as a real fixture would be.
+        if 'room_falloff' not in e.state:
+            e.state['room_falloff'] = np.exp(-.5 * (((xx / c.W - .16) / .34) ** 2
+                                                  + ((yy / c.H - .49) / .33) ** 2))
+        pool = e.state['room_falloff']
+        stops = subject_stops * subject - (1.70 + room_dim - .62 * pool) * (1 - subject)
+    else:
+        stops = face * subject * (key + abs(fill) * darker_side) - room_dim * (1 - subject)
+    peak = c.img.max(axis=2)
+    # Roll off the adjustment towards speculars and deep blacks. Apply one RGB
+    # multiplier to retain channel ratios and texture in the recorded image.
+    highlight_guard = np.clip((.94 - peak) / .22, 0, 1)
+    if softbox:
+        # Limit added light on skin and white clothing, while still bringing
+        # bright walls down to the room exposure.
+        highlight_guard = 1 - subject * (1 - highlight_guard)
+    stops *= highlight_guard * np.clip(peak / .12, 0, 1)
+    room_weight = 1 - subject
+    if e.o.get('screen_regions'):
+        if 'screen_mask' not in e.state:
+            screen = np.zeros((c.H, c.W), np.float32)
+            for polygon in e.o['screen_regions']:
+                points = np.rint(np.array(polygon) * [c.W - 1, c.H - 1]).astype(np.int32)
+                cv2.fillPoly(screen, [points], 1)
+            e.state['screen_mask'] = cv2.GaussianBlur(screen, (0, 0), max(.6, c.W * .002))
+        protection = e.state['screen_mask'] * (1 - subject)
+        stops *= 1 - protection
+        room_weight *= 1 - e.state['screen_mask']
+    gain = np.minimum(np.exp2(stops / 2.2), 1 + .85 * (1 - peak))
+    c.img *= gain[..., None]
+    if accents:
+        # Wall-mounted practicals stay in camera coordinates as the presenter moves.
+        # Scale the radius in physical pixels so landscape and portrait pools stay soft.
+        if 'accent_pools' not in e.state:
+            centers = e.o.get('accent_centers', {'blue': [.17, .44], 'red': [.84, .35]})
+            short = min(c.W, c.H)
+            def wall_pool(center, height):
+                x, y = center
+                return np.exp(-.5 * (((xx - x*c.W) / (.34*short))**2
+                                    + ((yy - y*c.H) / (height*short))**2))
+            e.state['accent_pools'] = wall_pool(centers['blue'], .23), wall_pool(centers['red'], .18)
+        blue, red = (p * room_weight for p in e.state['accent_pools'])
+        # Modulate the recorded wall colour; displayed content, skin and clothing
+        # receive no coloured light inside their protected masks.
+        for channel, (b, r) in enumerate(((-.55, .86), (-.18, -.44), (.98, -.38))):
+            pixels = c.img[..., channel]
+            change = blue*b + red*r
+            pixels += pixels * change * np.where(change > 0, 1 - pixels, 1)
+    elif softbox:
+        # A restrained cool bounce on the wall beside the neutral face key.
+        c.img[..., 0] *= 1 - .19 * room_weight * pool
+        c.img[..., 2] *= 1 + .21 * room_weight * pool
