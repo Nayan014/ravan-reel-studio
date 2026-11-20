@@ -6,7 +6,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { basename, dirname, extname, join, resolve, win32 } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { listProjects, mediaPath, mediaTypes } from './dashboard-library.mjs';
+import { listProjects, mediaPath, mediaTypes, setUploaded, uploadPlatforms } from './dashboard-library.mjs';
 import { readReview, submitReview, suggestedReview, reviewDocument, prepareReview, selectLighting } from './review-store.mjs';
 import { audioCatalogue,libraryAudio,selectAudio,settingsAudioOptions,voicePreviewFile } from './audio-library.mjs';
 import { studioProject, openNativeStudio } from './native-studio.mjs';
@@ -179,6 +179,17 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
     if (req.headers.origin && req.headers.origin !== `http://${host}`) return finish(403, 'Cross-origin request blocked');
     try {
       const url = new URL(req.url, `http://${host}`);
+      const uploadRoute = /^\/api\/projects\/(reels|ai-reels|videos|edits)\/([A-Za-z0-9_-]+)\/uploads\/([a-z]+)$/.exec(url.pathname);
+      if (uploadRoute && (req.method === 'PUT' || req.method === 'DELETE')) {
+        const [, kind, id, platform] = uploadRoute;
+        if (!uploadPlatforms.includes(platform)) return finish(404);
+        if (req.headers.origin !== `http://${host}` || req.headers['x-dashboard-action'] !== 'track-upload') return finish(403);
+        const project = listProjects(root).find(p => p.kind === kind && p.id === id);
+        if (!project) return finish(404, 'Project not found');
+        try { setUploaded(root, project, platform, req.method === 'PUT'); }
+        catch { return finish(500, 'Could not save upload status.'); }
+        return finish(204);
+      }
       const reviewMatch = /^\/api\/reviews\/(reels|videos|edits|plans)\/([A-Za-z0-9_-]+)(?:\/(submit|prepare|music|voice|studio|effect|lighting))?$/.exec(url.pathname);
       if (reviewMatch) {
         const [, kind, id, action] = reviewMatch;
@@ -322,7 +333,7 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
         return finish(405);
       }
       if (req.method === 'POST') {
-        const match = /^\/api\/projects\/(reels|videos|edits)\/([A-Za-z0-9_-]+)\/(open|reveal)$/.exec(url.pathname);
+        const match = /^\/api\/projects\/(reels|ai-reels|videos|edits)\/([A-Za-z0-9_-]+)\/(open|reveal)$/.exec(url.pathname);
         if (!match) return finish(405, 'Review only');
         const action = match[3];
         if (req.headers.origin !== `http://${host}` || req.headers['x-dashboard-action'] !== (action === 'reveal' ? 'reveal-file' : 'open-folder')) return finish(403);

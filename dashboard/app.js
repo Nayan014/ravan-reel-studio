@@ -9,6 +9,15 @@ const app = document.querySelector('#app');
 const connection = document.querySelector('#connection');
 const tabs = ['overview', 'plan', 'previews', 'exports', 'files'];
 let projects = [], search = '', filter = 'reels', routeKey = '', signature = '', loaded = false;
+const uploadLabels = { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube' };
+let uploadRevision = 0;
+const savingUploads = new Map();
+const postedCount = p => Object.keys(uploadLabels).filter(platform => p.uploads?.[platform]).length;
+const platformMarks = {
+  tiktok: '<path fill="currentColor" d="M15.5 3c.4 2.3 1.8 3.8 4.5 4.2v3.1a9 9 0 0 1-4.5-1.5v6.4a6 6 0 1 1-6.8-6v3.2a2.8 2.8 0 1 0 3.5 2.8V3z"/>',
+  instagram: '<g fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></g><circle cx="17.4" cy="6.7" r="1" fill="currentColor"/>',
+  youtube: '<path fill="currentColor" d="M22 8s-.2-2-1.1-2.8c-.8-.9-2.1-.9-2.6-1C14.8 4 12 4 12 4s-2.8 0-6.3.2c-.5.1-1.8.1-2.6 1C2.2 6 2 8 2 8s-.2 1.8-.2 4 .2 4 .2 4 .2 2 1.1 2.8c.8.9 2.1.9 2.6 1 3.5.2 6.3.2 6.3.2s2.8 0 6.3-.2c.5-.1 1.8-.1 2.6-1C21.8 18 22 16 22 16s.2-1.8.2-4S22 8 22 8Zm-12.2 7.5v-7l6 3.5z"/>',
+};
 const selectedVideos = new Map();
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const date = value => value ? new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
@@ -16,6 +25,8 @@ const bytes = n => n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` :
 const href = (p, tab = 'overview') => `#${p.kind}/${encodeURIComponent(p.id)}/${tab}`;
 const download = f => `${f.url}?download=1`;
 const badge = text => `<span class="badge">${escape(text)}</span>`;
+const aiBadge = p => p.fullyAiGenerated ? '<span class="badge ai-badge" title="Fully AI-generated video" aria-label="Fully AI-generated video">AI</span>' : '';
+const libraryKind = p => p.kind === 'ai-reels' ? 'reels' : p.kind;
 const empty = text => `<p class="empty-state">${escape(text)}</p>`;
 const fileLink = f => `<a href="${escape(f.url)}" target="_blank" rel="noreferrer">${escape(f.name)}</a>`;
 
@@ -28,20 +39,47 @@ function fileList(files, reveal = false) {
 }
 
 function renderCards() {
-  const filtered = projects.filter(p => p.kind === filter && `${p.title} ${p.id}`.toLowerCase().includes(search.toLowerCase()));
-  document.querySelector('#project-count').textContent = `${filtered.length} OF ${projects.length} PROJECT${projects.length === 1 ? '' : 'S'}`;
+  const matchesFilter = p => {
+    if (filter === 'needs-upload') return Object.keys(uploadLabels).some(platform => !p.uploads?.[platform]);
+    return filter === 'ai' ? p.fullyAiGenerated : libraryKind(p) === filter;
+  };
+  const filtered = projects.filter(p => matchesFilter(p) && `${p.title} ${p.id}`.toLowerCase().includes(search.toLowerCase()));
+  document.querySelector('#project-count').textContent = `${filtered.length} of ${projects.length} project${projects.length === 1 ? '' : 's'}`;
+  const emptyState = document.querySelector('#library-empty');
+  emptyState.hidden = filtered.length > 0;
+  if (!filtered.length) {
+    const messages = {
+      reels: 'No reels yet', videos: 'No videos yet', edits: 'No edits yet',
+      ai: 'No AI-generated projects yet', 'needs-upload': 'All uploads are checked off',
+    };
+    const title = !projects.length ? 'No projects yet' : search ? 'No matching projects' : messages[filter];
+    const heading = emptyState.querySelector('h2');
+    if (heading.textContent !== title) heading.textContent = title;
+    emptyState.querySelector('a').hidden = projects.length > 0 && (Boolean(search) || !['reels', 'videos', 'edits'].includes(filter));
+  }
   document.querySelector('#cards').innerHTML = filtered.map(p => {
     const poster = p.cover || p.previews[0];
     const statusBadge = (p.status && p.status !== 'export available') ? badge(p.status) : '';
     const warnBadge = p.warnings.length ? '<span class="badge warn">Missing files</span>' : '';
-    const tagsHtml = (statusBadge || warnBadge) ? `<div class="tag-list">${statusBadge}${warnBadge}</div>` : '';
-    return `<a class="card" href="${href(p)}" data-kind="${p.kind}"><div class="poster">${poster ? `<img loading="lazy" src="${escape(poster.url)}" alt="${escape(p.title)}${p.cover ? ' cover' : ' preview'}">` : `<span class="placeholder">${escape(p.title.slice(0, 2).toLowerCase())}.</span>`}<span class="poster-kind">${p.kind === 'reels' ? 'REEL' : p.kind === 'videos' ? 'YOUTUBE VIDEO' : 'SINGLE-VIDEO EDIT'}</span></div><div class="card-body">${tagsHtml}<h2>${escape(p.title)}</h2><div class="card-meta"><span class="meta-exports"><svg class="meta-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg> ${p.exports.length ? `${p.exports.length} export${p.exports.length === 1 ? '' : 's'}` : 'In progress'}</span><span class="meta-date">${date(p.updated)}</span></div></div></a>`;
-  }).join('') || `<div class="empty">${projects.length ? 'No projects match your search or filter.' : 'Your library is ready. Create a reel with /wf-reel or edit a video with /wf-video in your AI chat. Finished work and previews will appear here.'}</div>`;
+    const tags = statusBadge + warnBadge;
+    const tagsHtml = tags ? `<div class="tag-list">${tags}</div>` : '';
+    return `<a class="card" href="${href(p)}" data-kind="${libraryKind(p)}"><div class="poster">${poster ? `<img loading="lazy" src="${escape(poster.url)}" alt="${escape(p.title)}${p.cover ? ' cover' : ' preview'}">` : `<span class="placeholder">${escape(p.title.slice(0, 2).toLowerCase())}.</span>`}${aiBadge(p)}<span class="poster-kind">${libraryKind(p) === 'reels' ? 'REEL' : p.kind === 'videos' ? 'YOUTUBE VIDEO' : 'SINGLE-VIDEO EDIT'}</span></div><div class="card-body">${tagsHtml}<h2>${escape(p.title)}</h2><div class="card-meta"><span class="meta-exports"><svg class="meta-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg> ${p.exports.length ? `${p.exports.length} export${p.exports.length === 1 ? '' : 's'}` : 'In progress'}</span><span class="card-posted" title="Uploads recorded">${postedCount(p)}/3 posted</span></div></div></a>`;
+  }).join('');
 }
 
 function renderHome() {
   if (routeKey !== 'home') {
-    app.innerHTML = `<div class="hero-section"><div class="eyebrow"><span class="eyebrow-dot"></span>Your local studio</div><h1>Your studio. One place.</h1><p class="description">Your footage, your ideas, your finished work. Browse reels, YouTube videos and edits, review the details, and find everything you need to share.</p></div><div class="toolbar"><div class="library-controls"><div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div><div class="filters" role="group" aria-label="Project type">${[['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits']].map(([value, label]) => `<button class="filter" data-filter="${value}" aria-pressed="${filter === value}">${label}</button>`).join('')}</div></div><span class="count" id="project-count"></span></div><div id="cards" class="grid"></div><div class="notice"><div class="notice-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div><div class="notice-body"><strong>Your next project starts in your AI chat.</strong><p>Use <code>/wf-reel-plan</code> for a reel, <code>/wf-video-plan</code> for YouTube, or <code>/wf-video</code> for a quick single-video edit. Plans, previews, and exports appear here automatically.</p></div></div>`;
+    app.innerHTML = `
+      <div class="library-heading"><h1>Project library</h1><span class="count" id="project-count"></span></div>
+      <div class="toolbar"><div class="library-controls">
+        <div class="filters" role="group" aria-label="Project filters">${[['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits'], ['ai', 'AI'], ['needs-upload', 'Needs upload']].map(([value, label]) => `<button class="filter" data-filter="${value}"${value === 'ai' ? ' aria-label="Fully AI-generated videos" title="Fully AI-generated videos"' : ''} aria-pressed="${filter === value}">${label}</button>`).join('')}</div>
+        <div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div>
+      </div></div>
+      <div id="cards" class="grid"></div>
+      <section id="library-empty" class="library-empty" hidden>
+        <h2></h2>
+        <a href="#guide">How to start a project</a>
+      </section>`;
     document.querySelector('#search').addEventListener('input', e => { search = e.target.value; renderCards(); });
     document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
       filter = button.dataset.filter;
@@ -53,14 +91,84 @@ function renderHome() {
   renderCards();
 }
 
-function savedStatus(p) {
-  return `<section class="panel status-panel"><div class="section-label">SAVED PROJECT STATUS</div><div class="tag-list">${badge(p.status)}${p.renderer ? badge(p.renderer) : ''}</div><p class="next-action">Approvals and checks below are saved records. Their validity for the current files has not been rechecked.</p>${p.records.map(r => `<details><summary>${escape(r.label)}</summary><pre>${escape(JSON.stringify(r.data, null, 2))}</pre></details>`).join('')}${p.warnings.length ? `<div class="warnings" role="status">${p.warnings.map(w => `<p>${escape(w)}</p>`).join('')}</div>` : ''}<p class="intro-note">Create and revise with your editing agent. Submit feedback and approvals in the interactive review.</p></section>`;
+function uploadChecklist(p) {
+  const rows = Object.entries(uploadLabels).map(([platform, label]) => {
+    const pending = savingUploads.get(`${p.path}/${platform}`);
+    const checked = (pending ?? p.uploads?.[platform]) ? ' checked' : '';
+    const disabled = pending !== undefined ? ' disabled' : '';
+    return `<label class="upload-row">
+      <span class="platform-mark ${platform}" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24">${platformMarks[platform]}</svg></span>
+      <span class="platform-name">${label}</span>
+      <input type="checkbox" role="switch" data-upload="${platform}" aria-label="${label} uploaded"${checked}${disabled}>
+    </label>`;
+  });
+  return `<section class="panel upload-panel" aria-labelledby="upload-title">
+    <div class="panel-title"><h2 id="upload-title">Upload checklist</h2>
+      <span class="upload-count">${postedCount(p)}/3 posted</span>
+    </div>
+    <div class="upload-progress" aria-hidden="true">${Object.keys(uploadLabels).map((_, i) => `<i class="${i < postedCount(p) ? 'done' : ''}"></i>`).join('')}</div>
+    ${rows.join('')}
+    <p class="upload-message" role="status"></p>
+  </section>`;
+}
+
+async function saveUpload(p, input) {
+  const platform = input.dataset.upload;
+  const checked = input.checked;
+  const marker = `${p.path}/${platform}`;
+  const panel = input.closest('.upload-panel');
+  let errorMessage = '';
+  savingUploads.set(marker, checked);
+  uploadRevision++;
+  input.disabled = true;
+  panel.querySelector('.upload-message').textContent = '';
+  try {
+    const response = await fetch(`/api/projects/${p.kind}/${encodeURIComponent(p.id)}/uploads/${platform}`, {
+      method: checked ? 'PUT' : 'DELETE', headers: { 'X-Dashboard-Action': 'track-upload' },
+    });
+    if (!response.ok) throw Error();
+    const current = projects.find(project => project.path === p.path);
+    if (current) current.uploads = { ...current.uploads, [platform]: checked };
+  } catch {
+    errorMessage = `Couldn’t save ${uploadLabels[platform]}. Try again.`;
+  } finally {
+    savingUploads.delete(marker);
+    uploadRevision++;
+    render();
+    if (routeKey === `${p.kind}/${p.id}/overview`) {
+      const checkbox = document.querySelector(`[data-upload="${platform}"]`);
+      checkbox.disabled = false;
+      checkbox.checked = errorMessage ? !checked : checked;
+      if (errorMessage) document.querySelector('.upload-message').textContent = errorMessage;
+    }
+  }
 }
 
 function mediaPanel(p) {
   const key = `${p.kind}/${p.id}`, selected = selectedVideos.get(key);
   const current = p.exports.find(f => f.path === selected) || p.primary;
-  return `<section class="panel media-panel"><div class="panel-title"><div><div class="section-label">YOUR REEL</div><h2>Video</h2></div>${current ? revealButton(current, 'Show video in folder', { id: 'video-reveal' }) : ''}</div>${current ? `<div class="video-wrap"><video id="reel-video" controls playsinline preload="metadata"${p.cover ? ` poster="${escape(p.cover.url)}"` : ''} src="${escape(current.url)}"></video></div>${p.exports.length > 1 ? `<label class="export-label" for="video-select">Available exports</label><select id="video-select">${p.exports.map(f => `<option value="${escape(f.path)}"${f.path === current.path ? ' selected' : ''}>${escape(f.name)}</option>`).join('')}</select>` : `<p class="media-filename">${escape(current.name)}</p>`}` : empty('No exported video yet. Review your plan and previews below.')}</section>`;
+  const preview = current?.path === p.primary?.path ? p.creativePlan?.sliceFrames?.[0]?.url : null;
+  const picker = p.exports.length > 1 ? `
+    <label class="export-picker" for="video-select">Video version
+      <select id="video-select">${p.exports.map(f => `<option value="${escape(f.path)}"${f.path === current?.path ? ' selected' : ''}>${escape(f.name)}</option>`).join('')}</select>
+    </label>` : '';
+  return `<section class="panel media-panel">
+    <div class="panel-title"><h2>${libraryKind(p) === 'reels' ? 'Reel preview' : 'Video preview'}</h2></div>
+    ${current ? `<div class="video-wrap"><video id="reel-video" aria-label="${escape(p.title)}" controls playsinline preload="metadata"${preview ? ` poster="${escape(preview)}"` : ''} src="${escape(current.url)}"></video></div>
+      <div class="media-footer"><span class="media-specs" id="video-specs"></span>${picker || `<span class="media-filename">${escape(current.name.split('/').pop())}</span>`}
+        ${revealButton(current, 'Show in folder', {id: 'video-reveal'})}</div>` : empty('No exported video yet.')}
+  </section>`;
+}
+
+function coverPanel(p) {
+  const cover = p.cover;
+  return `<section class="panel cover-panel">
+    <div class="panel-title"><h2>Cover image</h2></div>
+    ${cover ? `<a class="cover-link" href="${escape(cover.url)}" target="_blank" rel="noreferrer" aria-label="View full cover for ${escape(p.title)}">
+      <img src="${escape(cover.url)}" alt="${escape(p.title)} cover"></a>
+      <div class="media-footer"><span class="asset-info">${escape(cover.name.split('/').pop())} · ${bytes(cover.size)}</span>
+        ${revealButton(cover, 'Show in folder')}</div>` : empty('No cover image yet.')}
+    </section>`;
 }
 
 function captionsPanel(p) {
@@ -71,7 +179,7 @@ function captionsPanel(p) {
     }).join('')}</div>`).join('');
     return `<div class="caption-source"><p class="muted">${fileLink(f)}</p>${sections}</div>`;
   }).join('');
-  return `<section class="panel caption-panel"><div class="panel-title"><div><div class="section-label">READY TO SHARE</div><h2>Social captions</h2></div></div>${sources || empty('No social captions yet. Add caption.txt, captions.md, or Social_Copy.md to this project when your copy is ready.')}</section>`;
+  return `<section class="panel caption-panel"><div class="panel-title"><h2>Social captions</h2></div>${sources || empty('No social captions yet. Add caption.txt, captions.md, or Social_Copy.md to this project when your copy is ready.')}</section>`;
 }
 
 function planPanel(p) {
@@ -81,11 +189,8 @@ function planPanel(p) {
 
   return `<section class="panel plan-panel">
     <div class="panel-title">
-      <div>
-        <div class="section-label">THE CREATIVE BLUEPRINT</div>
-        <h2>Creative Plan & Confirmations</h2>
-      </div>
-      <button class="button primary" data-review="plan">Review plan in full ↗</button>
+      <h2>Creative plan</h2>
+      ${p.kind === 'ai-reels' ? '' : '<button class="button primary" data-review="plan">Review plan in full ↗</button>'}
     </div>
     <p class="muted">
       ${p.renderer === 'nafay'
@@ -248,13 +353,14 @@ function planPanel(p) {
 }
 
 function content(p, tab) {
-  if (tab === 'overview') return `<div class="overview-layout">${mediaPanel(p)}<section class="panel cover-panel"><div class="panel-title"><div><div class="section-label">YOUR THUMBNAIL</div><h2>Cover image</h2></div></div>${p.cover ? `<a class="cover-link" href="${escape(p.cover.url)}" target="_blank" rel="noreferrer"><img class="cover overview-cover" src="${escape(p.cover.url)}" alt="${escape(p.title)} cover"></a>${revealButton(p.cover, 'Show cover in folder', { className: 'cover-action' })}` : empty('No cover yet. Existing cover images will appear here when added to the project.')}</section><aside class="project-sidebar">${savedStatus(p)}</aside>${captionsPanel(p)}</div>`;
+  if (tab === 'overview') return `<div class="overview-layout" data-format="${libraryKind(p) === 'reels' || p.projectType === 'reel' ? 'portrait' : 'landscape'}">
+    ${mediaPanel(p)}${coverPanel(p)}<div class="project-sidebar">${uploadChecklist(p)}${captionsPanel(p)}</div></div>`;
   if (tab === 'plan') return planPanel(p);
-  if (tab === 'previews') return `<section class="panel"><div class="panel-title"><div><div class="section-label">ACTUAL REVIEW FRAMES</div><h2>Previews</h2></div><button data-review="frames">Review & approve frames ↗</button></div>${p.previews.length ? `<div class="frame-grid">${p.previews.map(f => `<figure><a href="${escape(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}"></a><figcaption>${escape(f.name)} <a href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓</a></figcaption></figure>`).join('')}</div>` : empty('No preview frames yet. Generate them in your AI chat before approving an export.')}</section>`;
-  if (tab === 'exports') return `<section class="panel"><div class="section-label">SAVED ON THIS DEVICE</div><h2>Videos</h2>${fileList(p.exports, true)}</section><section class="panel"><h2>Covers</h2>${fileList(p.covers, true)}</section>${captionsPanel(p)}`;
+  if (tab === 'previews') return `<section class="panel"><div class="panel-title"><div><h2>Previews</h2></div>${p.kind === 'ai-reels' ? '' : '<button data-review="frames">Review & approve frames ↗</button>'}</div>${p.previews.length ? `<div class="frame-grid">${p.previews.map(f => `<figure><a href="${escape(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}"></a><figcaption>${escape(f.name)} <a href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓</a></figcaption></figure>`).join('')}</div>` : empty('No preview frames yet. Generate them in your AI chat before approving an export.')}</section>`;
+  if (tab === 'exports') return `<section class="panel"><h2>Videos</h2>${fileList(p.exports, true)}</section><section class="panel"><h2>Covers</h2>${fileList(p.covers, true)}</section>${captionsPanel(p)}`;
   const originals = p.files.filter(f => f.name.startsWith('raw/') || f.path === p.source?.path);
   const supporting = p.files.filter(f => !originals.includes(f));
-  return `<section class="panel"><div class="section-label">YOUR ORIGINAL RECORDINGS</div><h2>Original footage</h2>${fileList(originals)}</section><section class="panel"><h2>Supporting files</h2><p class="muted">Plans, assets, saved checks, and exports. Runtime caches and composition source folders are omitted.</p>${fileList(supporting)}</section>`;
+  return `<section class="panel"><h2>Original footage</h2>${fileList(originals)}</section><section class="panel"><h2>Supporting files</h2><p class="muted">Plans, assets, saved checks, and exports. Runtime caches and composition source folders are omitted.</p>${fileList(supporting)}</section>`;
 }
 
 async function copy(button, text, html = '') {
@@ -269,19 +375,52 @@ function renderProject(p, tab) {
   const key = `${p.kind}/${p.id}/${tab}`;
   const nextSignature = JSON.stringify(p);
   if (key === routeKey && signature === nextSignature) return;
+  const focusedUpload = key === routeKey && document.activeElement?.dataset.upload;
   const oldVideo = key === routeKey ? document.querySelector('#reel-video') : null;
   const wasPlaying = oldVideo && !oldVideo.paused;
   const oldTime = oldVideo?.currentTime;
   const openCaptions = new Set(key === routeKey ? [...document.querySelectorAll('details[data-caption-section][open]')].map(item => item.dataset.captionSection) : []);
-  app.innerHTML = `<a class="back" href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg> ALL PROJECTS</a><div class="project-heading"><div><div class="eyebrow"><span class="eyebrow-dot"></span>${p.kind === 'reels' ? 'Combined reel' : p.kind === 'videos' ? 'YouTube video' : 'Single-video edit'}</div><h1>${escape(p.title)}</h1><div class="path">${escape(p.path)}/</div></div><div class="heading-actions"><button class="secondary button-icon" id="open-folder"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Open project folder</button><button class="secondary button-icon" id="copy-path"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy folder path</button><span id="folder-status" role="status"></span></div></div><nav class="tabs" aria-label="Project sections">${tabs.map(t => `<a class="${tab === t ? 'active' : ''}"${tab === t ? ' aria-current="page"' : ''} href="${href(p, t)}">${t[0].toUpperCase() + t.slice(1)}</a>`).join('')}</nav><div id="content">${content(p, tab)}</div>`;
+  const kindLabel = libraryKind(p) === 'reels' ? 'Reel' : p.kind === 'videos' ? 'YouTube video' : 'Single-video edit';
+  app.innerHTML = `<div class="project-detail">
+    <div class="project-topline"><a class="back" href="#">← All projects</a>
+      <div class="heading-actions"><button class="secondary button-icon" id="open-folder" title="Open project folder"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span>Open folder</span></button><button class="secondary button-icon" id="copy-path" title="${escape(p.path)}/"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>Copy folder path</span></button></div></div>
+    <div class="project-heading"><div class="project-meta">
+      <span>${kindLabel}</span>${aiBadge(p)}${p.updated ? `<span class="project-date">Updated ${date(p.updated)}</span>` : ''}
+    </div><h1>${escape(p.title)}</h1></div>
+    <p id="folder-status" role="status"></p>
+    <nav class="tabs" aria-label="Project sections">${tabs.map(t => `<a class="${tab === t ? 'active' : ''}"${tab === t ? ' aria-current="page"' : ''} href="${href(p, t)}">${t[0].toUpperCase() + t.slice(1)}</a>`).join('')}</nav>
+    <div id="content">${content(p, tab)}</div></div>`;
   const newVideo = document.querySelector('#reel-video');
   if (oldVideo && newVideo && oldVideo.getAttribute('src') === newVideo.getAttribute('src')) {
     newVideo.replaceWith(oldVideo);
     if (Number.isFinite(oldTime)) oldVideo.currentTime = oldTime;
     if (wasPlaying) oldVideo.play().catch(() => {});
   }
+  const player = document.querySelector('#reel-video');
+  if (player) {
+    const showSpecs = () => {
+      const parts = [];
+      if (player.videoWidth && player.videoHeight) {
+        const layout = player.closest('.overview-layout');
+        layout.dataset.format = player.videoHeight > player.videoWidth ? 'portrait' : 'landscape';
+        player.style.aspectRatio = `${player.videoWidth} / ${player.videoHeight}`;
+        parts.push(`${player.videoWidth} × ${player.videoHeight}`);
+      }
+      if (Number.isFinite(player.duration)) {
+        const seconds = Math.floor(player.duration);
+        parts.push(`${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`);
+      }
+      document.querySelector('#video-specs').textContent = parts.join(' · ');
+    };
+    player.onloadedmetadata = player.onemptied = () => { if (player.isConnected) showSpecs(); };
+    showSpecs();
+  }
   document.querySelectorAll('details[data-caption-section]').forEach(item => { item.open = openCaptions.has(item.dataset.captionSection); });
   routeKey = key; signature = nextSignature;
+  document.querySelectorAll('[data-upload]').forEach(input => {
+    input.addEventListener('change', () => saveUpload(p, input));
+    if (input.dataset.upload === focusedUpload) input.focus({ preventScroll: true });
+  });
   document.querySelectorAll('[data-review]').forEach(button=>button.addEventListener('click',async()=>{
     button.disabled=true;
     try {
@@ -314,7 +453,10 @@ function renderProject(p, tab) {
   document.querySelector('#video-select')?.addEventListener('change', e => {
     selectedVideos.set(`${p.kind}/${p.id}`, e.target.value);
     const f = p.exports.find(f => f.path === e.target.value);
-    document.querySelector('#reel-video').src = f.url;
+    const preview = f.path === p.primary?.path && p.creativePlan?.sliceFrames?.[0]?.url;
+    if (preview) player.poster = preview;
+    else player.removeAttribute('poster');
+    player.src = f.url;
     document.querySelector('#video-reveal').dataset.revealFile = f.path;
   });
   document.querySelectorAll('[data-caption]').forEach(button => button.addEventListener('click', () => {
@@ -325,6 +467,14 @@ function renderProject(p, tab) {
 }
 
 function render() {
+  if (location.hash === '#guide') {
+    if (routeKey !== 'guide') {
+      app.replaceChildren(document.querySelector('#studio-guide').content.cloneNode(true));
+      routeKey = 'guide';
+      app.querySelector('h1').focus();
+    }
+    return;
+  }
   let kind, id, tab;
   try { [kind, id, tab = 'overview'] = decodeURIComponent(location.hash.slice(1)).split('/'); }
   catch { kind = 'invalid'; }
@@ -335,16 +485,22 @@ function render() {
 }
 
 async function refresh() {
+  const revision = uploadRevision;
   try {
     const response = await fetch('/api/projects');
     if (!response.ok) throw Error('Unavailable');
-    projects = await response.json(); loaded = true;
-    connection.textContent = 'Up to date'; connection.className = '';
+    const latest = await response.json();
+    if (revision !== uploadRevision || savingUploads.size) return;
+    projects = latest; loaded = true;
+    connection.hidden = true;
+    connection.textContent = '';
     render();
   } catch {
+    connection.hidden = false;
     connection.textContent = 'Disconnected · retrying'; connection.className = 'error';
-    if (!loaded) app.innerHTML = '<div class="empty">Cannot read projects. Check the dashboard terminal. Retrying automatically…</div>';
+    if (!loaded && location.hash !== '#guide') app.innerHTML = '<div class="empty">Cannot read projects. Check the dashboard terminal. Retrying automatically…</div>';
   } finally { setTimeout(refresh, 5000); }
 }
 window.addEventListener('hashchange', render);
+if (location.hash === '#guide') render();
 refresh();

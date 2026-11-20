@@ -27,20 +27,22 @@ are intentionally not accepted. The server stays on this device.
 ## Your library
 
 The dashboard opens on **Reels**. Choose **Videos** or **Edits** to browse those projects,
-or search within the selected type. Export packages with videos but no workflow plan also appear.
+or search within the selected type. Export packages with videos but no workflow plan also appear. Choose **AI** at the top to see fully AI-generated projects across all three types. Search works within this filter.
+
+The **AI** badge uses the boolean `fully_ai_generated` in `export.json`, `Provenance.json`, or `plan.json`, in that order. Set it to `true` when the complete video is AI-generated. Use `false` for mixed or recorded productions. The dashboard also recognizes the older `ai-reels` kind and discovers existing packages under `outputs/ai-reels/`.
 Data refreshes every five seconds. Search, selected tabs,
 export selection, and playing videos are preserved during refresh.
 
 Each project has five sections:
 
-- **Overview:** recorded or latest available export, cover, social copy, and saved workflow records.
+- **Overview:** recorded or latest available export, cover, social copy, and an upload checklist for TikTok, Instagram and YouTube. Check a platform after posting, or uncheck it to mark it pending again. The **Needs upload** filter shows projects across all types with at least one unchecked platform.
 - **Plan:** sandboxed HTML plans and frame reviews, plus saved JSON plans where available.
 - **Previews:** actual recorded preview frames, or discovered preview images when no record exists.
 - **Exports:** video variants and covers to reveal in their folders, plus social captions to copy or download.
 - **Files:** original recordings and supporting plans, media, and review records.
 
 Use **Open project folder** to open the project folder on the computer running the server.
-**Show video in folder** and **Show cover in folder** open the selected media's own location,
+**Show in folder** beneath the video or cover opens that file’s location,
 so you can copy the original file directly. On macOS, Finder selects the exact file; Windows
 and Linux open its containing folder. Choosing another video export updates its file-location
 button. The Exports tab offers the same action for every listed video and cover.
