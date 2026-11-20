@@ -45,6 +45,18 @@ function renderCards() {
   };
   const filtered = projects.filter(p => matchesFilter(p) && `${p.title} ${p.id}`.toLowerCase().includes(search.toLowerCase()));
   document.querySelector('#project-count').textContent = `${filtered.length} of ${projects.length} project${projects.length === 1 ? '' : 's'}`;
+  const emptyState = document.querySelector('#library-empty');
+  emptyState.hidden = filtered.length > 0;
+  if (!filtered.length) {
+    const messages = {
+      reels: 'No reels yet', videos: 'No videos yet', edits: 'No edits yet',
+      ai: 'No AI-generated projects yet', 'needs-upload': 'All uploads are checked off',
+    };
+    const title = !projects.length ? 'No projects yet' : search ? 'No matching projects' : messages[filter];
+    const heading = emptyState.querySelector('h2');
+    if (heading.textContent !== title) heading.textContent = title;
+    emptyState.querySelector('a').hidden = projects.length > 0 && (Boolean(search) || !['reels', 'videos', 'edits'].includes(filter));
+  }
   document.querySelector('#cards').innerHTML = filtered.map(p => {
     const poster = p.cover || p.previews[0];
     const statusBadge = (p.status && p.status !== 'export available') ? badge(p.status) : '';
@@ -52,7 +64,7 @@ function renderCards() {
     const tags = statusBadge + warnBadge;
     const tagsHtml = tags ? `<div class="tag-list">${tags}</div>` : '';
     return `<a class="card" href="${href(p)}" data-kind="${libraryKind(p)}"><div class="poster">${poster ? `<img loading="lazy" src="${escape(poster.url)}" alt="${escape(p.title)}${p.cover ? ' cover' : ' preview'}">` : `<span class="placeholder">${escape(p.title.slice(0, 2).toLowerCase())}.</span>`}${aiBadge(p)}<span class="poster-kind">${libraryKind(p) === 'reels' ? 'REEL' : p.kind === 'videos' ? 'YOUTUBE VIDEO' : 'SINGLE-VIDEO EDIT'}</span></div><div class="card-body">${tagsHtml}<h2>${escape(p.title)}</h2><div class="card-meta"><span class="meta-exports"><svg class="meta-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg> ${p.exports.length ? `${p.exports.length} export${p.exports.length === 1 ? '' : 's'}` : 'In progress'}</span><span class="card-posted" title="Uploads recorded">${postedCount(p)}/3 posted</span></div></div></a>`;
-  }).join('') || `<div class="empty">${projects.length ? 'No projects match your search or filter.' : 'No projects yet. <a href="#guide">Read the studio guide</a> to start your first project.'}</div>`;
+  }).join('');
 }
 
 function renderHome() {
@@ -63,7 +75,11 @@ function renderHome() {
         <div class="filters" role="group" aria-label="Project filters">${[['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits'], ['ai', 'AI'], ['needs-upload', 'Needs upload']].map(([value, label]) => `<button class="filter" data-filter="${value}"${value === 'ai' ? ' aria-label="Fully AI-generated videos" title="Fully AI-generated videos"' : ''} aria-pressed="${filter === value}">${label}</button>`).join('')}</div>
         <div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div>
       </div></div>
-      <div id="cards" class="grid"></div>`;
+      <div id="cards" class="grid"></div>
+      <section id="library-empty" class="library-empty" hidden>
+        <h2></h2>
+        <a href="#guide">How to start a project</a>
+      </section>`;
     document.querySelector('#search').addEventListener('input', e => { search = e.target.value; renderCards(); });
     document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
       filter = button.dataset.filter;

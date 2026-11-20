@@ -206,6 +206,19 @@ main {
 .library-heading { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; }
 .library-heading h1 { margin: 0; }
 .library-heading .count { color: var(--muted); font-size: 13px; }
+.library-empty {
+  padding: clamp(48px, 11vh, 112px) 16px;
+  text-align: center;
+}
+.library-empty h2 { margin: 0; font-size: 20px; font-weight: 650; }
+.library-empty a {
+  display: inline-block;
+  padding: 12px 4px;
+  color: var(--muted);
+  font-size: 14px;
+  text-underline-offset: 4px;
+}
+.library-empty a[hidden] { display: none; }
 
 .eyebrow, .section-label {
   color: var(--accent);
