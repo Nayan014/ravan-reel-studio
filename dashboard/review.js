@@ -12,6 +12,7 @@ let state = null, displayed = '', sending = false, connected = false;
 const storagePrefix = `reel-feedback:${kind}/${id}:`;
 const key = (scope, target) => `${storagePrefix}${state.request.id}:${scope}:${target}`;
 const draft = (scope, target) => { try { return localStorage.getItem(key(scope, target)) || ''; } catch { return ''; } };
+const approvedScenes = new Set();
 
 // Audio and video playback mutual exclusion
 document.addEventListener('play', event => {
@@ -50,7 +51,10 @@ function feedback(scope, target = '', scene = '', label = '') {
     <div class="target-feedback" data-scope="${scope}" data-target="${esc(target)}" data-scene="${esc(scene)}">
       <label>Feedback · ${esc(targetLabel)}</label>
       <textarea aria-label="Feedback on ${scope} ${esc(target)}" maxlength="8000" rows="3" placeholder="Describe what to change here…">${esc(draft(scope, target))}</textarea>
-      <span class="saved-draft"></span>
+      <div class="feedback-btn-row">
+        <button type="button" class="single-feedback-btn secondary" data-scope="${scope}" data-target="${esc(target)}" data-scene="${esc(scene)}">Submit feedback</button>
+        <span class="saved-draft"></span>
+      </div>
       ${badgeHtml}
     </div>
   `;
@@ -78,7 +82,7 @@ function effectCell(scene) {
   const selectedId = scene.effects?.effects?.[0]?.id ? String(scene.effects.effects[0].id) : (scene.effects?.status === 'none' ? 'none' : '');
   const activeEffect = effects.find(e => e.id === selectedId);
 
-  // Group effects by category (e.g. "Vibha Effects", "Techno Ravan Effects")
+  // Group effects by category
   const categories = {};
   for (const e of effects) {
     const cat = e.category || 'Vibha Effects';
@@ -131,30 +135,94 @@ function effectCell(scene) {
   `;
 }
 
+function updateStepper(stage, isExported) {
+  const s1 = $('step-1'), s2 = $('step-2'), s3 = $('step-3');
+  const l1 = $('line-1'), l2 = $('line-2');
+  if (!s1 || !s2 || !s3) return;
+
+  [s1, s2, s3].forEach(el => el.classList.remove('active', 'completed'));
+  if (l1) l1.classList.remove('completed');
+  if (l2) l2.classList.remove('completed');
+
+  if (isExported || stage === 'exported') {
+    s1.classList.add('completed');
+    s1.querySelector('.step-num').textContent = '✓';
+    if (l1) l1.classList.add('completed');
+    s2.classList.add('completed');
+    s2.querySelector('.step-num').textContent = '✓';
+    if (l2) l2.classList.add('completed');
+    s3.classList.add('active', 'completed');
+    s3.querySelector('.step-num').textContent = '3';
+    if ($('sticky-step-badge')) $('sticky-step-badge').textContent = 'Step 3: Final release';
+  } else if (stage === 'frames') {
+    s1.classList.add('completed');
+    s1.querySelector('.step-num').textContent = '✓';
+    if (l1) l1.classList.add('completed');
+    s2.classList.add('active');
+    s2.querySelector('.step-num').textContent = '2';
+    s3.querySelector('.step-num').textContent = '3';
+    if ($('sticky-step-badge')) $('sticky-step-badge').textContent = 'Step 2: Final plan';
+  } else {
+    s1.classList.add('active');
+    s1.querySelector('.step-num').textContent = '1';
+    s2.querySelector('.step-num').textContent = '2';
+    s3.querySelector('.step-num').textContent = '3';
+    if ($('sticky-step-badge')) $('sticky-step-badge').textContent = 'Step 1: Initial plan';
+  }
+}
+
+function updateSceneApprovalButtons() {
+  const total = state?.request?.scenes?.length || 0;
+  const count = approvedScenes.size;
+  document.querySelectorAll('.scene-approve-btn').forEach(btn => {
+    const sc = btn.dataset.scene;
+    if (approvedScenes.has(sc)) {
+      btn.classList.add('approved');
+      btn.textContent = `✓ Scene ${sc} Approved`;
+    } else {
+      btn.classList.remove('approved');
+      btn.textContent = `Approve Scene ${sc}`;
+    }
+  });
+
+  const statusEl = $('sticky-status-text');
+  if (statusEl) {
+    if (count === total && total > 0) {
+      statusEl.textContent = `All ${total} scenes approved! Ready to submit.`;
+    } else if (count > 0) {
+      statusEl.textContent = `${count} of ${total} scenes approved`;
+    } else {
+      statusEl.textContent = state?.request?.stage === 'frames' ? 'Reviewing final frames & effects' : 'Reviewing initial plan';
+    }
+  }
+}
+
 function controls() {
   const blocked = sending || !connected || !state || state.stale;
   const textareas = [...document.querySelectorAll('.target-feedback textarea')];
   const hasFeedbackText = textareas.some(t => t.value.trim().length > 0);
-  const isPlan = state?.request?.stage === 'plan';
+  const stage = state?.request?.stage;
+  const isPlan = stage === 'plan' || stage === 'script';
 
   if ($('submit-all-feedback')) {
-    if (isPlan) {
-      $('submit-all-feedback').style.display = 'none';
-    } else {
-      $('submit-all-feedback').style.display = '';
-      $('submit-all-feedback').disabled = Boolean(blocked || !hasFeedbackText);
-    }
+    $('submit-all-feedback').disabled = Boolean(blocked || !hasFeedbackText);
+  }
+  if ($('sticky-submit-feedback')) {
+    $('sticky-submit-feedback').disabled = Boolean(blocked || !hasFeedbackText);
   }
 
-  if (isPlan) {
-    $('approve').textContent = hasFeedbackText ? 'Submit feedback and generate previews' : 'Approve plan and generate previews';
-  } else if (state?.request?.stage === 'frames') {
-    $('approve').textContent = 'Approve current frames and audio';
-  } else if (state?.request?.stage === 'script') {
-    $('approve').textContent = 'Approve script';
+  const approveText = isPlan
+    ? (hasFeedbackText ? 'Submit feedback & update plan' : 'Approve initial plan')
+    : (stage === 'frames' ? (hasFeedbackText ? 'Submit feedback & update frames' : 'Approve final plan') : 'Approve current plan');
+
+  if ($('approve')) {
+    $('approve').textContent = approveText;
+    $('approve').disabled = Boolean(blocked);
   }
-  const pendingReading = state?.request?.stage !== 'script' && state?.request?.scenes.some(s => s.audition);
-  $('approve').disabled = Boolean(blocked || (pendingReading && !hasFeedbackText));
+  if ($('sticky-approve')) {
+    $('sticky-approve').textContent = approveText;
+    $('sticky-approve').disabled = Boolean(blocked);
+  }
 
   document.querySelectorAll('[data-music],[data-reading]').forEach(button => {
     button.disabled = Boolean(blocked);
@@ -162,137 +230,142 @@ function controls() {
   document.querySelectorAll('.effect-dropdown, input[name="project-look"]').forEach(select => {
     select.disabled = Boolean(blocked);
   });
-  if ($('music-select')) {
-    $('music-select').disabled = Boolean(blocked);
-  }
-  if ($('apply-music-btn')) {
-    const val = $('music-select')?.value;
-    const current = state?.request?.audio?.music || 'none';
-    $('apply-music-btn').disabled = Boolean(blocked || val === current);
-  }
-}
-
-function audioPanel(r) {
-  if (!r.audio) return '';
-  const tracks = state.catalogue.filter(t => t.kind === 'music' && (t.popularity?.scope === 'recording' || t.id === r.audio.music));
-  const sfxTracks = state.catalogue.filter(t => t.kind === 'sfx' && t.popularity?.scope === 'recording');
-  const selectedTrackId = r.audio.music || 'none';
-  const recommendedTrackId = r.audio.recommended_music || (tracks[0]?.id || '');
-
-  const musicOptions = [
-    `<option value="none" ${selectedTrackId === 'none' ? 'selected' : ''}>No background music</option>`,
-    ...tracks.map(t => {
-      const isRec = t.id === recommendedTrackId;
-      const label = `${t.title}${isRec ? ' (Recommended)' : ''} · ${t.moods.join(', ')} · ${t.duration.toFixed(0)}s`;
-      return `<option value="${esc(t.id)}" ${t.id === selectedTrackId ? 'selected' : ''}>${esc(label)}</option>`;
-    })
-  ].join('');
-
-  const sfxOptions = sfxTracks.map(t => {
-    return `<option value="${esc(t.id)}">${esc(t.title)} (${esc(t.moods.join(', '))} · ${t.duration.toFixed(2)}s)</option>`;
-  }).join('');
-
-  const cues = (r.audio.sfx || []).map(c => {
-    const t = state.catalogue.find(t => t.id === c.sound);
-    return t ? `<span class="sound-cue-pill">Scene ${esc(c.scene)}: ${esc(t.title)}</span>` : '';
-  }).filter(Boolean).join('');
-
-  const activeTrack = tracks.find(t => t.id === selectedTrackId);
-
-  return `
-    <h2>Music and sound</h2>
-    <div class="audio-controls-grid">
-      <div class="audio-selector-card">
-        <label for="music-select"><strong>Background music</strong></label>
-        <div class="audio-dropdown-row">
-          <select id="music-select" class="audio-dropdown">
-            ${musicOptions}
-          </select>
-          <button type="button" id="apply-music-btn" class="audio-apply-btn" data-music="${esc(selectedTrackId)}" disabled>
-            Selected
-          </button>
-        </div>
-        <div id="music-preview-box" class="audio-preview-box">
-          ${activeTrack ? `
-            <audio id="music-audio-player" controls preload="none" src="/audio/${encodeURIComponent(activeTrack.id)}" aria-label="Play ${esc(activeTrack.title)}"></audio>
-            <p class="audio-meta"><strong>${esc(activeTrack.title)}</strong> · ${esc(activeTrack.moods.join(' · '))} · ${activeTrack.duration.toFixed(1)}s · <small>${esc(activeTrack.author)} · ${esc(activeTrack.license)}</small></p>
-          ` : `
-            <p class="muted">No background music selected.</p>
-          `}
-        </div>
-      </div>
-
-      ${r.audio.mixSample ? `
-        <div class="audio-mix-card">
-          <label><strong>${r.audio.fullMix ? 'Full audio mix' : 'Archived audio sample'}</strong></label>
-          <audio controls preload="metadata" src="${esc(r.audio.mixSample)}" aria-label="Selected music mixed with voice"></audio>
-          ${r.audio.fullMix ? r.scenes.map(scene => `<div><label>Scene ${esc(scene.id)} · ${Number(scene.timeline[0]).toFixed(1)}–${Number(scene.timeline[1]).toFixed(1)}s</label><audio controls preload="none" aria-label="Mix for scene ${esc(scene.id)}" src="${esc(r.audio.mixSample)}#t=${Number(scene.timeline[0])},${Number(scene.timeline[1])}"></audio></div>`).join('') : ''}
-          <p class="audio-meta">${r.audio.fullMix ? 'Play any scene to hear its speech, music and sound effects.' : 'Generate fresh frames to review the full mix.'}</p>
-        </div>
-      ` : ''}
-    </div>
-
-    ${cues ? `
-      <div class="sound-cues-bar">
-        <strong>Suggested scene sound cues:</strong> ${cues}
-      </div>
-    ` : ''}
-
-    <details class="sfx-library-details">
-      <summary>Audition sound effects (${sfxTracks.length} sounds)</summary>
-      <div class="sfx-audition-box">
-        <select id="sfx-select" class="audio-dropdown">
-          <option value="" disabled selected>Choose a sound effect to audition…</option>
-          ${sfxOptions}
-        </select>
-        <audio id="sfx-audio-player" controls preload="none" style="display:none; width: 100%;"></audio>
-      </div>
-    </details>
-  `;
 }
 
 function readings(scene) {
   if (!scene.audition) return scene.voice === 'kokoro' ? '<small>Selected Kokoro narration</small>' : '';
-  return ['A','B'].map(key => `<div><audio controls preload="none" src="${esc(scene.audition.takes[key])}" aria-label="Scene ${esc(scene.id)} reading ${key}"></audio>
+  return ['A', 'B'].map(key => `<div><audio controls preload="none" src="${esc(scene.audition.takes[key])}" aria-label="Scene ${esc(scene.id)} reading ${key}"></audio>
     <button type="button" data-reading="${key}" data-scene="${esc(scene.id)}" data-audition="${esc(scene.audition.id)}">Use reading ${key}</button></div>`).join('');
+}
+
+function renderFinalPlanScenes(r) {
+  if (!r.scenes?.length) return '';
+  return `
+    <h2>Scene-by-scene final plan & frames</h2>
+    <p class="review-note">Check the dialogue and actual frame with applied effect for each scene. Approve each scene or submit feedback.</p>
+    <div class="final-plan-cards">
+      ${r.scenes.map(s => {
+        const sceneFrames = r.frames.filter(f => f.scene === s.id);
+        const keyFrame = sceneFrames[Math.floor(sceneFrames.length / 2)] || sceneFrames[0] || null;
+        let effectTitle = 'Standard framing';
+        if (s.effects?.effects?.[0]?.id) {
+          const ef = state.effectsCatalogue?.find(e => e.id === String(s.effects.effects[0].id));
+          effectTitle = `#${s.effects.effects[0].id} · ${ef?.name || 'Vibha effect'}`;
+        } else if (s.finish) {
+          effectTitle = s.finish;
+        }
+
+        const priorFeedback = (state?.submissions || []).filter(sub => sub.scene === s.id && sub.action === 'feedback');
+        const isApproved = approvedScenes.has(s.id);
+
+        return `
+          <article class="final-scene-card" data-scene="${esc(s.id)}">
+            <div class="final-scene-header">
+              <div>
+                <span class="scene-badge">SCENE ${esc(s.id)}</span>
+                <span class="scene-timing-badge">${s.timeline ? s.timeline.map(n => Number(n).toFixed(2)).join('–') + 's' : ''}</span>
+              </div>
+              <button type="button" class="scene-approve-btn ${isApproved ? 'approved' : ''}" data-scene="${esc(s.id)}">
+                ${isApproved ? '✓ Scene ' + esc(s.id) + ' Approved' : 'Approve Scene ' + esc(s.id)}
+              </button>
+            </div>
+
+            <div class="final-scene-body">
+              <div class="final-scene-meta">
+                <div class="dialogue-box">
+                  <label class="meta-label">Spoken dialogue:</label>
+                  <p class="final-dialogue-text">"${esc(s.text)}"</p>
+                </div>
+                <div class="effect-box">
+                  <label class="meta-label">Applied visual effect:</label>
+                  <p class="final-effect-text"><strong>${esc(effectTitle)}</strong></p>
+                </div>
+                ${priorFeedback.length ? `
+                  <div class="scene-history-box">
+                    <label class="meta-label">Feedback addressed from earlier revision:</label>
+                    ${priorFeedback.map(item => `
+                      <div class="history-item">
+                        <span class="history-status">${esc(item.status || 'handled')}</span>
+                        <p>${esc(item.text)}</p>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : ''}
+              </div>
+
+              <div class="final-scene-preview">
+                <label class="meta-label">Actual preview frame with effect:</label>
+                ${keyFrame ? `
+                  <a href="${esc(keyFrame.url)}" target="_blank" rel="noreferrer" title="Click to view full size">
+                    <img class="final-preview-img" src="${esc(keyFrame.url)}" alt="Actual frame for scene ${esc(s.id)} with effect">
+                  </a>
+                  <span class="preview-caption">1 keyframe shown · click to view full size</span>
+                ` : `
+                  <p class="muted">Actual frame generating…</p>
+                `}
+              </div>
+            </div>
+
+            <div class="final-scene-feedback-wrap">
+              ${feedback('scene', s.id, s.id, `Scene ${s.id}`)}
+            </div>
+          </article>
+        `;
+      }).join('')}
+    </div>
+  `;
 }
 
 function render() {
   const r = state.request;
   $('title').textContent = r.title;
-  $('stage').textContent = r.stage === 'frames' ? 'ACTUAL FRAMES AND AUDIO' : r.stage === 'script' ? 'SCRIPT AND SHOOTING PLAN' : 'PRODUCTION PLAN';
+  $('stage').textContent = r.stage === 'frames' ? 'FINAL PLAN & ACTUAL FRAMES' : r.stage === 'script' ? 'SCRIPT AND SHOOTING PLAN' : 'INITIAL PRODUCTION PLAN';
   $('revision').textContent = `Revision ${r.id.slice(0, 8)} · ${new Date(r.createdAt).toLocaleString()}`;
   $('native-studio').hidden = !state.studioAvailable;
-  $('approve').textContent = r.stage === 'frames' ? 'Approve current frames and audio' : r.stage === 'script' ? 'Approve script' : 'Approve plan and visual choices';
+
+  updateStepper(r.stage, r.isExported);
+
   if (displayed !== r.id) {
     const quality = r.outputProfile;
     $('quality').innerHTML = quality ? `<div class="spec-tags-row"><span class="spec-tag">${quality.width > quality.height ? 'Landscape' : 'Portrait'}</span><span class="spec-tag accent">${Math.min(quality.width, quality.height) === 2160 ? '4K UHD' : Math.min(quality.width, quality.height) === 1080 ? '1080p HD' : ''}</span><span class="spec-tag">${quality.width}×${quality.height}</span><span class="spec-tag">${quality.fps} FPS</span></div>` : 'Output quality will be confirmed from the recordings.';
-    $('crop').textContent = quality ? 'Framing follows the reviewed crop or fit choice. Changing aspect ratio can crop the picture or add padding. The actual frames below show the result.' : '';
-    $('script').innerHTML = `<h2>Full script</h2><div class="script-card">${r.scenes.map(s => `<p class="script-line"><strong class="script-scene-num">Scene ${esc(s.id)}</strong> <span class="script-text">${esc(s.text)}</span></p>`).join('')}</div>${feedback('script')}${r.referenceStyle ? `<aside><h3>Reference style · ${esc(r.referenceStyle.name)}</h3><p>${esc(r.referenceStyle.summary)}</p><p>Style notes guide the proposed scene treatments. Review their actual appearance in the frames below.</p></aside>` : ''}`;
-    $('project-lighting').innerHTML = projectLights(r);
-    $('scene-summary').innerHTML = r.scenes.length ? `<h2>Scene-by-scene production plan</h2><div class="table-scroll"><table><thead><tr><th class="col-time">Scene / timing</th><th class="col-dialogue">Dialogue</th><th class="col-footage">Footage / shooting notes</th><th class="col-captions">Spoken captions</th><th class="col-effects">Effects</th></tr></thead><tbody>${r.scenes.map(s => `<tr><td><strong class="scene-id">Scene ${esc(s.id)}</strong><span class="scene-timing-badge">${s.timeline ? s.timeline.map(n => Number(n).toFixed(2)).join('–') + 's' : 'Record after approval'}</span></td><td><p class="scene-dialogue-text">${esc(s.text)}</p>${readings(s)}${feedback('scene', s.id, s.id)}</td><td><strong class="footage-name">${esc(s.source)}</strong>${s.shootingNote ? `<p class="shooting-note">${esc(s.shootingNote)}</p>` : ''}${s.sourceFrame ? `<img class="source-frame" src="${esc(s.sourceFrame)}" alt="Original scene ${esc(s.id)} before effects">` : ''}</td><td>${s.captions?.length ? `<div class="caption-pages-wrap">${s.captions.map(c => `<span class="caption-pill">${esc(c)}</span>`).join('')}</div>` : '<span class="muted">Pending speech verification</span>'}</td><td>${effectCell(s)}</td></tr>`).join('')}</tbody></table></div>` : '';
-    $('document').innerHTML = r.document ? `<details ${!r.scenes.length ? 'open' : ''}><summary>Original HTML plan and visual references</summary><iframe title="Production plan with visual references" class="review-document" sandbox="" src="${esc(media(r.document))}?revision=${r.fingerprint}"></iframe></details>` : '';
-    $('lighting-comparison').innerHTML = r.comparison
-      ? `<p>Original on the left · Studio lighting on the right</p><video controls playsinline preload="metadata" style="width:100%;max-height:65vh" aria-label="Lighting comparison with recorded audio" src="${esc(r.comparison)}"></video>` : '';
-    if (r.comparison) {
-      $('script').innerHTML = feedback('script', '', '', 'studio lighting');
-      $('crop').textContent = 'The stills show the lighting at export resolution. Play the motion sample to check your face and the room as you move.';
+    // Crop notice removed as requested
+    $('crop').textContent = '';
+
+    if (r.stage === 'frames') {
+      // Step 2: Final plan with 1 key actual preview frame per scene, dialogue and effect
+      $('script').innerHTML = feedback('script', '', '', 'overall final plan');
+      $('project-lighting').innerHTML = '';
+      $('scene-summary').innerHTML = renderFinalPlanScenes(r);
+      $('frames-panel').hidden = true;
+      if ($('audio')) $('audio').hidden = true;
+      if ($('final-plan-history')) $('final-plan-history').hidden = false;
+    } else {
+      // Step 1: Initial plan with full script and production plan table
+      $('script').innerHTML = `<h2>Full script</h2><div class="script-card">${r.scenes.map(s => `<p class="script-line"><strong class="script-scene-num">Scene ${esc(s.id)}</strong> <span class="script-text">${esc(s.text)}</span></p>`).join('')}</div>${feedback('script')}${r.referenceStyle ? `<aside><h3>Reference style · ${esc(r.referenceStyle.name)}</h3><p>${esc(r.referenceStyle.summary)}</p><p>Style notes guide the proposed scene treatments. Review their actual appearance in the frames below.</p></aside>` : ''}`;
+      $('project-lighting').innerHTML = projectLights(r);
+      $('scene-summary').innerHTML = r.scenes.length ? `<h2>Scene-by-scene production plan</h2><div class="table-scroll"><table><thead><tr><th class="col-time">Scene / timing</th><th class="col-dialogue">Dialogue</th><th class="col-footage">Footage / shooting notes</th><th class="col-captions">Spoken captions</th><th class="col-effects">Effects</th></tr></thead><tbody>${r.scenes.map(s => `<tr><td><strong class="scene-id">Scene ${esc(s.id)}</strong><span class="scene-timing-badge">${s.timeline ? s.timeline.map(n => Number(n).toFixed(2)).join('–') + 's' : 'Record after approval'}</span><div style="margin-top:10px;"><button type="button" class="scene-approve-btn ${approvedScenes.has(s.id) ? 'approved' : ''}" data-scene="${esc(s.id)}">${approvedScenes.has(s.id) ? '✓ Scene ' + esc(s.id) + ' Approved' : 'Approve Scene ' + esc(s.id)}</button></div></td><td><p class="scene-dialogue-text">${esc(s.text)}</p>${readings(s)}${feedback('scene', s.id, s.id)}</td><td><strong class="footage-name">${esc(s.source)}</strong>${s.shootingNote ? `<p class="shooting-note">${esc(s.shootingNote)}</p>` : ''}${s.sourceFrame ? `<img class="source-frame" src="${esc(s.sourceFrame)}" alt="Original scene ${esc(s.id)} before effects">` : ''}</td><td>${s.captions?.length ? `<div class="caption-pages-wrap">${s.captions.map(c => `<span class="caption-pill">${esc(c)}</span>`).join('')}</div>` : '<span class="muted">Pending speech verification</span>'}</td><td>${effectCell(s)}</td></tr>`).join('')}</tbody></table></div>` : '';
+      $('frames-panel').hidden = true;
+      if ($('audio')) $('audio').hidden = true;
+      if ($('final-plan-history')) $('final-plan-history').hidden = true;
     }
-    $('frames').innerHTML = r.frames.map(f => `<figure><a href="${esc(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${esc(f.url)}" alt="Actual preview ${esc(f.id)}"></a><figcaption>${f.scene ? 'Scene ' + esc(f.scene) : esc(f.name)}${f.time !== null ? ' · ' + Number(f.time).toFixed(2) + 's' : ''}</figcaption>${feedback('frame', f.id, f.scene)}</figure>`).join('');
-    $('audio').innerHTML = r.audioReview ? `<h2>Source voice and Nafay effects</h2><p>Review sample from ${Number(r.audioReview.start).toFixed(2)}s in the edited timeline.</p><audio controls preload="metadata" src="${esc(r.audioReview.url)}" aria-label="${esc(r.audioReview.label)}"></audio>` : audioPanel(r);
+
+    if (r.comparison) {
+      $('lighting-comparison').innerHTML = `<p>Original on the left · Studio lighting on the right</p><video controls playsinline preload="metadata" style="width:100%;max-height:65vh" aria-label="Lighting comparison with recorded audio" src="${esc(r.comparison)}"></video>`;
+      $('frames-panel').hidden = false;
+    }
+
     displayed = r.id;
   }
+
   const pending = state.submissions.filter(s => s.status === 'pending');
-  $('review-status').textContent = state.stale ? 'Content changed. The agent must publish a fresh review before approval. Your drafts are retained.' : pending.length ? `${pending.length} submission(s) saved for the editing agent. You can submit feedback on other scenes and frames independently.` : 'Review the current script, scenes and frames. Submit feedback or approve below.';
-  $('history').innerHTML = state.submissions.slice().reverse().map(s => `<article class="feedback-event"><strong>${s.action === 'approve' ? 'Approval' : esc(s.scope || 'scene') + ' ' + esc(s.frame || s.scene || 'full script')}</strong><p>${esc(s.text)}</p><small>${s.status === 'pending' ? 'Pending' : esc(s.result)}${s.requestId !== r.id ? ' · earlier revision' : ''}</small></article>`).join('') || '<p>No submissions yet.</p>';
-  const archived = [];
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k.startsWith(storagePrefix) && !k.startsWith(storagePrefix + r.id + ':') && localStorage.getItem(k)?.trim()) archived.push([k, localStorage.getItem(k)]);
-    }
-  } catch {}
-  $('draft-history').innerHTML = archived.map(([k, v]) => `<article><small>${esc(k.slice(storagePrefix.length))}</small><p>${esc(v)}</p></article>`).join('') || '<p>No earlier drafts.</p>';
+  const statusMsg = state.stale ? 'Content changed. Publish a fresh review before approval.' : pending.length ? `${pending.length} feedback item(s) submitted for the editing agent.` : 'Review the current script, scenes and preview frames. Submit feedback or approve this plan.';
+  $('review-status').textContent = statusMsg;
+
+  if ($('history')) {
+    $('history').innerHTML = state.submissions.slice().reverse().map(s => `<article class="feedback-event"><strong>${s.action === 'approve' ? 'Approval' : esc(s.scope || 'scene') + ' ' + esc(s.frame || s.scene || 'full script')}</strong><p>${esc(s.text)}</p><small>${s.status === 'pending' ? 'Pending' : esc(s.result)}${s.requestId !== r.id ? ' · earlier revision' : ''}</small></article>`).join('') || '<p>No submissions yet.</p>';
+  }
+
+  updateSceneApprovalButtons();
   controls();
 }
 
@@ -335,57 +408,15 @@ document.addEventListener('input', event => {
 });
 
 document.addEventListener('change', async event => {
-  const musicSelect = event.target.closest('#music-select');
-  if (musicSelect) {
-    const val = musicSelect.value;
-    const tracks = state?.catalogue?.filter(t => t.kind === 'music') || [];
-    const active = tracks.find(t => t.id === val);
-    const box = $('music-preview-box');
-    const applyBtn = $('apply-music-btn');
-    if (box) {
-      if (active) {
-        box.innerHTML = `
-          <audio id="music-audio-player" controls preload="none" src="/audio/${encodeURIComponent(active.id)}" aria-label="Play ${esc(active.title)}"></audio>
-          <p class="audio-meta"><strong>${esc(active.title)}</strong> · ${esc(active.moods.join(' · '))} · ${active.duration.toFixed(1)}s · <small>${esc(active.author)} · ${esc(active.license)}</small></p>
-        `;
-      } else {
-        box.innerHTML = `<p class="muted">No background music selected.</p>`;
-      }
-    }
-    if (applyBtn) {
-      const currentMusic = state?.request?.audio?.music || 'none';
-      applyBtn.dataset.music = val;
-      if (val === currentMusic) {
-        applyBtn.disabled = true;
-        applyBtn.textContent = 'Selected';
-      } else {
-        applyBtn.disabled = false;
-        applyBtn.textContent = 'Apply to reel';
-      }
-    }
-    return;
-  }
-
-  const sfxSelect = event.target.closest('#sfx-select');
-  if (sfxSelect) {
-    const player = $('sfx-audio-player');
-    if (player && sfxSelect.value) {
-      player.src = `/audio/${encodeURIComponent(sfxSelect.value)}`;
-      player.style.display = 'block';
-      player.play().catch(() => {});
-    }
-    return;
-  }
-
   if (event.target.name === 'project-look' && !sending) {
     sending = true;
     controls();
     const drafts = [...document.querySelectorAll('.target-feedback')].map(form => ({
-      ...form.dataset, text:form.querySelector('textarea').value
+      ...form.dataset, text: form.querySelector('textarea').value
     }));
     try {
-      const updated = await post('lighting', {requestId:state.request.id, look:event.target.value});
-      state = {...state, ...updated, stale:false};
+      const updated = await post('lighting', { requestId: state.request.id, look: event.target.value });
+      state = { ...state, ...updated, stale: false };
       for (const item of drafts) {
         if (item.text) localStorage.setItem(key(item.scope, item.target), item.text);
       }
@@ -415,7 +446,7 @@ document.addEventListener('change', async event => {
       scene,
       effectId
     });
-    state = {...state, ...updated};
+    state = { ...state, ...updated };
     displayed = '';
     render();
     $('review-status').textContent = 'Effect updated.';
@@ -428,27 +459,83 @@ document.addEventListener('change', async event => {
 });
 
 document.addEventListener('click', async event => {
-  const button = event.target.closest('[data-music],[data-reading]');
-  if (!button || sending) return;
-  sending = true;
-  controls();
-  $('review-status').textContent = 'Applying your audio selection…';
-  try {
-    if (button.dataset.reading) {
-      await post('voice', {requestId:state.request.id,scene:button.dataset.scene,auditionId:button.dataset.audition,take:button.dataset.reading});
-    } else await post('music', { requestId: state.request.id, track: button.dataset.music === 'none' ? null : button.dataset.music });
-    const response = await fetch(api);
-    state = await response.json();
-    displayed = '';
-    render();
-  } catch (error) {
-    $('review-status').textContent = error.message;
-  } finally {
-    sending = false;
+  // Single feedback button per scene/script/frame
+  const singleBtn = event.target.closest('.single-feedback-btn');
+  if (singleBtn && !sending) {
+    const scope = singleBtn.dataset.scope || 'scene';
+    const target = singleBtn.dataset.target || '';
+    const scene = singleBtn.dataset.scene || '';
+    const form = singleBtn.closest('.target-feedback');
+    const textarea = form?.querySelector('textarea');
+    const text = textarea?.value?.trim();
+    if (!text) return;
+
+    sending = true;
     controls();
+    singleBtn.disabled = true;
+    singleBtn.textContent = 'Submitting…';
+    $('review-status').textContent = `Submitting feedback for ${scope === 'script' ? 'script' : 'scene ' + scene}…`;
+    try {
+      const value = await post('submit', {
+        id: crypto.randomUUID(),
+        requestId: state.request.id,
+        action: 'feedback',
+        scope,
+        scene,
+        frame: scope === 'frame' ? target : '',
+        text
+      });
+      state.submissions.push(value);
+      try { localStorage.removeItem(key(scope, target)); } catch {}
+      if (textarea) textarea.value = '';
+      const savedSpan = form?.querySelector('.saved-draft');
+      if (savedSpan) savedSpan.textContent = '';
+      displayed = '';
+      render();
+      $('review-status').textContent = `Feedback submitted for ${scope === 'script' ? 'script' : 'scene ' + scene}.`;
+    } catch (error) {
+      $('review-status').textContent = error.message;
+    } finally {
+      sending = false;
+      controls();
+    }
+    return;
+  }
+
+  // Scene approve button
+  const approveBtn = event.target.closest('.scene-approve-btn');
+  if (approveBtn) {
+    const sceneId = approveBtn.dataset.scene;
+    if (approvedScenes.has(sceneId)) {
+      approvedScenes.delete(sceneId);
+    } else {
+      approvedScenes.add(sceneId);
+    }
+    updateSceneApprovalButtons();
+    return;
+  }
+
+  const voiceBtn = event.target.closest('[data-reading]');
+  if (voiceBtn && !sending) {
+    sending = true;
+    controls();
+    $('review-status').textContent = 'Applying your voice reading…';
+    try {
+      await post('voice', { requestId: state.request.id, scene: voiceBtn.dataset.scene, auditionId: voiceBtn.dataset.audition, take: voiceBtn.dataset.reading });
+      const response = await fetch(api);
+      state = await response.json();
+      displayed = '';
+      render();
+    } catch (error) {
+      $('review-status').textContent = error.message;
+    } finally {
+      sending = false;
+      controls();
+    }
   }
 });
 
+// Submit all feedback
 $('submit-all-feedback')?.addEventListener('click', async () => {
   if (sending || !state) return;
   const forms = [...document.querySelectorAll('.target-feedback')];
@@ -499,12 +586,18 @@ $('submit-all-feedback')?.addEventListener('click', async () => {
   }
 });
 
-$('approve').addEventListener('click', async () => {
+// Sticky submit feedback button
+$('sticky-submit-feedback')?.addEventListener('click', () => {
+  $('submit-all-feedback')?.click();
+});
+
+// Approve plan / final plan
+$('approve')?.addEventListener('click', async () => {
   if (sending || !state) return;
   sending = true;
   controls();
-  const isPlan = state?.request?.stage === 'plan';
-  $('review-status').textContent = isPlan ? 'Submitting plan & generating actual preview frames…' : 'Submitting approval…';
+  const isPlan = state?.request?.stage === 'plan' || state?.request?.stage === 'script';
+  $('review-status').textContent = isPlan ? 'Approving initial plan & generating actual preview frames…' : 'Submitting final plan approval…';
   try {
     const textareas = [...document.querySelectorAll('.target-feedback textarea')];
     const items = textareas.map(t => {
@@ -530,7 +623,7 @@ $('approve').addEventListener('click', async () => {
     });
     displayed = '';
     render();
-    $('review-status').textContent = isPlan ? 'Plan approved! Generating actual preview frames and audio mix...' : (state.request.stage === 'frames' ? 'Frames and audio approved.' : 'Script approved.');
+    $('review-status').textContent = isPlan ? 'Initial plan approved! Generating actual preview frames and effects...' : 'Final plan approved! Ready for export.';
   } catch (error) {
     $('review-status').textContent = error.message;
   } finally {
@@ -539,7 +632,12 @@ $('approve').addEventListener('click', async () => {
   }
 });
 
-$('launch-studio').addEventListener('click', async () => {
+// Sticky approve button
+$('sticky-approve')?.addEventListener('click', () => {
+  $('approve')?.click();
+});
+
+$('launch-studio')?.addEventListener('click', async () => {
   const button = $('launch-studio');
   button.disabled = true;
   try {
@@ -554,5 +652,5 @@ $('launch-studio').addEventListener('click', async () => {
   }
 });
 
-if (kind !== 'plans') $('back-link').href = `/#${kind}/${encodeURIComponent(id)}/plan`;
+if (kind !== 'plans' && $('back-link')) $('back-link').href = `/#${kind}/${encodeURIComponent(id)}/plan`;
 refresh();

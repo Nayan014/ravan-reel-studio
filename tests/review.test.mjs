@@ -19,6 +19,25 @@ function fixture(t){
  return {root,put,prepare:(stage='plan')=>prepareReview(root,{kind:'reels',id:'demo',stage,document:'outputs/reels/demo/review.html'})};
 }
 
+test('prepareReview with fresh flag resets submissions and review HTML contains steppers and sticky header', t => {
+ const { root, prepare } = fixture(t);
+ const r = prepare().request;
+ const id = randomUUID();
+ submitReview(root, 'reels', 'demo', { id, requestId: r.id, action: 'feedback', scene: '01', text: 'Old feedback.' });
+ const before = readReview(root, 'reels', 'demo');
+ assert.equal(before.submissions.length, 1);
+
+ const freshReview = prepareReview(root, { kind: 'reels', id: 'demo', stage: 'plan', document: 'outputs/reels/demo/review.html', fresh: true });
+ assert.equal(freshReview.submissions.length, 0);
+
+ const html = readFileSync(new URL('../dashboard/review.html', import.meta.url), 'utf8');
+ assert.match(html, /class="plan-stepper"/);
+ assert.match(html, /id="sticky-bar"/);
+ assert.match(html, /id="sticky-submit-feedback"/);
+ assert.match(html, /id="sticky-approve"/);
+ assert.doesNotMatch(html, /Drafts from earlier revisions/);
+});
+
 test('feedback is bound to a scene/revision and is consumed by a bounded wait',async t=>{
  const {root,prepare}=fixture(t),r=prepare().request;
  assert.equal((await waitForSubmission(root,'reels','demo',0)).status,'no_submission');

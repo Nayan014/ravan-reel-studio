@@ -8,7 +8,14 @@ For reel scripts, storyboards and production plans, first read `docs/REEL_PLAN_F
 
 For social posting copy, including requests paired with a cover image, read `docs/SOCIAL_COPY.md`. Default to Instagram, YouTube title/description, TikTok and LinkedIn. Use natural creator-specific writing with no em dashes in authored posting copy.
 
-Read `docs/WORKFLOW_REVIEW.md` for all workflow questions, choices and approvals. Use native choice buttons when available. Never ask about visual effect choices in chat. Open plans through the interactive review page so users can view dummy reference cards, select visual effects directly from the review interface, submit script, scene and frame feedback, and approve the exact review revision. Preserve actual-frame approval gates.
+Read `docs/WORKFLOW_REVIEW.md` for all workflow questions, choices and approvals. Use native choice buttons when available. Never ask about visual effect choices in chat. When footage is provided for a plan, always start a fresh project (`--fresh`) so that folders with the same name never pick up old work or feedback; only resume when the creator explicitly selects "Resume a project".
+
+The interactive review follows a 3-step lifecycle:
+1. **Initial plan**: Creator reviews script and scenes, selects effects from dummy reference cards, approves scenes individually or submits scene feedback directly, and submits via sticky header.
+2. **Final plan**: Once initial plan is approved, preview frames with effects are generated. Creator reviews dialogue, applied effect, 1 key actual preview frame per scene (no redundant frame flood), feedback history addressed, approves scenes, and submits via sticky header.
+3. **Final release**: Video render and export after final plan approval.
+
+Open plans through the interactive review page and preserve actual-frame approval gates.
 
 ## Available skills
 

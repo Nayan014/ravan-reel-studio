@@ -72,9 +72,10 @@ function context(root, kind, id, stage, document) {
     try { const path = mediaPath(root, name); files.push([name, hash(readFileSync(path))]); return parse(path); }
     catch { return null; }
   };
-  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[], referenceStyle=null, audioReview=null, comparison=null, projectLighting=null, renderer=null;
+  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[], referenceStyle=null, audioReview=null, comparison=null, projectLighting=null, renderer=null, isExported = false;
   if (kind !== 'plans') {
     const base = `outputs/${kind}/${id}`;
+    isExported = existsSync(join(root, base, 'export')) || existsSync(join(root, base, 'export.json'));
     const plan = add(`${base}/plan.json`), session = add(`${base}/session.json`);
     renderer=plan?.renderer||null;
     if (['reels', 'videos'].includes(kind) && Array.isArray(plan?.shots) && renderer !== 'nafay')
@@ -237,19 +238,19 @@ function context(root, kind, id, stage, document) {
     files.push(['draft-text-layers',hash(JSON.stringify(design))]);
     if (!scenes.length) scenes=[{id:'01',text:'Draft text design'}];
   }
-  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio,referenceStyle,audioReview,comparison,projectLighting,renderer, fingerprint: hash(JSON.stringify([stage, files])) };
+  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio,referenceStyle,audioReview,comparison,projectLighting,renderer, isExported: Boolean(isExported), fingerprint: hash(JSON.stringify([stage, files])) };
 }
 
-export function prepareReview(root, { kind, id, stage = 'plan', document = null }) {
+export function prepareReview(root, { kind, id, stage = 'plan', document = null, fresh = false }) {
   const path = location(root, kind, id);
   if (!['script','plan', 'frames'].includes(stage)) throw new ReviewError('Choose script, plan or frames review.');
   const snapshot = context(root, kind, id, stage, document);
   let old = null;
-  if (existsSync(path)) old = parse(path);
-  if (old?.request.fingerprint === snapshot.fingerprint && old.request.document === document) return old;
+  if (!fresh && existsSync(path)) old = parse(path);
+  if (!fresh && old?.request.fingerprint === snapshot.fingerprint && old.request.document === document) return old;
   const state = {
     request: { id: randomUUID(), kind, project: id, stage, document, createdAt: new Date().toISOString(), ...snapshot },
-    submissions: old?.submissions || [],
+    submissions: fresh ? [] : (old?.submissions || []),
     ...(kind==='plans'?{design:old?.design||{}}:{}),
   };
   save(path, state);

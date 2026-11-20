@@ -24,11 +24,12 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       kind: { type: 'string' }, id: { type: 'string' }, stage: { type: 'string', default: 'plan' },
       document: { type: 'string' }, event: { type: 'string' }, message: { type: 'string' },
       seconds: { type: 'string', default: '45' }, port: { type: 'string', default: process.env.DASHBOARD_PORT || '4173' },
+      fresh: { type: 'boolean', default: false },
     } });
     const root = fileURLToPath(new URL('../', import.meta.url)), { kind, id } = values;
     let result;
     if (positionals[0] === 'prepare') {
-      const state = prepareReview(root, { kind, id, stage: values.stage, document: values.document || null });
+      const state = prepareReview(root, { kind, id, stage: values.stage, document: values.document || null, fresh: Boolean(values.fresh) });
       result = { ...state.request, url: `http://127.0.0.1:${values.port}/review/${kind}/${id}` };
     } else if (positionals[0] === 'status') result = readReview(root, kind, id);
     else if (positionals[0] === 'wait') result = await waitForSubmission(root, kind, id, Number(values.seconds));

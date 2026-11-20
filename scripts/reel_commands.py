@@ -31,9 +31,16 @@ def upgrade(folder,plan,settings=None):
     quality(folder,plan)
 
 
-def draft(rw,slug,file):
+def draft(rw,slug,file,fresh=False):
     data=read_json(Path(file));folder=rw.project(slug)
-    if folder.exists(): raise ValueError('Project already exists. Resume or attach takes instead.')
+    if folder.exists():
+        if fresh:
+            shutil.rmtree(folder)
+        else:
+            raise ValueError('Project already exists. Pass --fresh to start a clean new project, or resume or attach takes instead.')
+    review_path = rw.STUDIO / 'outputs/.workflow/reviews' / rw.PROJECT_KIND / f'{slug}.json'
+    if review_path.is_file():
+        review_path.unlink()
     shots=data.get('shots',[])
     if not shots or not data.get('title'): raise ValueError('Draft needs a title and shots with expected_say.')
     plan={'version':1,'pipeline_version':2,'renderer':'hyperframes','caption_engine':'hyperframes','phase':'draft',

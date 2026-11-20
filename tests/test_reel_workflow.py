@@ -1,5 +1,6 @@
 import copy
 import json
+import shutil
 from pathlib import Path
 import sys
 import tempfile
@@ -151,5 +152,34 @@ class CombinedReelTests(unittest.TestCase):
         self.plan['renderer']='hyperframes';rw.write_json(self.folder/'plan.json',self.plan)
         with patch.object(rw,'project',return_value=self.folder):
             with self.assertRaisesRegex(ValueError,'Hyperframes'): rw.render('test')
+
+    @patch('reel_commands.inspect_source', return_value={'width': 1080, 'height': 1920, 'fps': '30/1', 'duration': 2, 'has_audio': True})
+    def test_init_fresh_wipes_previous_project_and_reviews(self, mock_inspect):
+        slug = 'test-fresh-reel'
+        dest = rw.project(slug)
+        if dest.exists(): shutil.rmtree(dest)
+        review_dir = rw.STUDIO / 'outputs/.workflow/reviews' / rw.PROJECT_KIND
+        review_dir.mkdir(parents=True, exist_ok=True)
+        review_file = review_dir / f'{slug}.json'
+        review_file.write_text('{"old":"review"}')
+
+        input_dir = rw.STUDIO / 'inputs' / 'test-fresh-dir'
+        input_dir.mkdir(parents=True, exist_ok=True)
+        (input_dir / '1.mp4').write_bytes(b'fake')
+        try:
+            rw.init(slug, 'test-fresh-dir', 'Test Fresh', fresh=True)
+            self.assertTrue(dest.exists())
+            self.assertFalse(review_file.exists())
+            (dest / 'sentinel.txt').write_text('old work')
+            review_file.write_text('{"second":"review"}')
+            with self.assertRaisesRegex(ValueError, 'Pass --fresh'):
+                rw.init(slug, 'test-fresh-dir', 'Test Fresh', fresh=False)
+            rw.init(slug, 'test-fresh-dir', 'Test Fresh', fresh=True)
+            self.assertFalse((dest / 'sentinel.txt').exists())
+            self.assertFalse(review_file.exists())
+        finally:
+            if dest.exists(): shutil.rmtree(dest)
+            if review_file.exists(): review_file.unlink()
+            if input_dir.exists(): shutil.rmtree(input_dir)
 
 if __name__=='__main__': unittest.main()
