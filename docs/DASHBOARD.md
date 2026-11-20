@@ -42,7 +42,7 @@ Each project has five sections:
 - **Files:** original recordings and supporting plans, media, and review records.
 
 Use **Open project folder** to open the project folder on the computer running the server.
-**Show video in folder** and **Show cover in folder** open the selected media's own location,
+**Show in folder** beneath the video or cover opens that file’s location,
 so you can copy the original file directly. On macOS, Finder selects the exact file; Windows
 and Linux open its containing folder. Choosing another video export updates its file-location
 button. The Exports tab offers the same action for every listed video and cover.

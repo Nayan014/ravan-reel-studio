@@ -12,6 +12,12 @@ let projects = [], search = '', filter = 'reels', routeKey = '', signature = '',
 const uploadLabels = { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube' };
 let uploadRevision = 0;
 const savingUploads = new Map();
+const postedCount = p => Object.keys(uploadLabels).filter(platform => p.uploads?.[platform]).length;
+const platformMarks = {
+  tiktok: '<path fill="currentColor" d="M15.5 3c.4 2.3 1.8 3.8 4.5 4.2v3.1a9 9 0 0 1-4.5-1.5v6.4a6 6 0 1 1-6.8-6v3.2a2.8 2.8 0 1 0 3.5 2.8V3z"/>',
+  instagram: '<g fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></g><circle cx="17.4" cy="6.7" r="1" fill="currentColor"/>',
+  youtube: '<path fill="currentColor" d="M22 8s-.2-2-1.1-2.8c-.8-.9-2.1-.9-2.6-1C14.8 4 12 4 12 4s-2.8 0-6.3.2c-.5.1-1.8.1-2.6 1C2.2 6 2 8 2 8s-.2 1.8-.2 4 .2 4 .2 4 .2 2 1.1 2.8c.8.9 2.1.9 2.6 1 3.5.2 6.3.2 6.3.2s2.8 0 6.3-.2c.5-.1 1.8-.1 2.6-1C21.8 18 22 16 22 16s.2-1.8.2-4S22 8 22 8Zm-12.2 7.5v-7l6 3.5z"/>',
+};
 const selectedVideos = new Map();
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const date = value => value ? new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
@@ -38,20 +44,26 @@ function renderCards() {
     return filter === 'ai' ? p.fullyAiGenerated : libraryKind(p) === filter;
   };
   const filtered = projects.filter(p => matchesFilter(p) && `${p.title} ${p.id}`.toLowerCase().includes(search.toLowerCase()));
-  document.querySelector('#project-count').textContent = `${filtered.length} OF ${projects.length} PROJECT${projects.length === 1 ? '' : 'S'}`;
+  document.querySelector('#project-count').textContent = `${filtered.length} of ${projects.length} project${projects.length === 1 ? '' : 's'}`;
   document.querySelector('#cards').innerHTML = filtered.map(p => {
     const poster = p.cover || p.previews[0];
     const statusBadge = (p.status && p.status !== 'export available') ? badge(p.status) : '';
     const warnBadge = p.warnings.length ? '<span class="badge warn">Missing files</span>' : '';
     const tags = statusBadge + warnBadge;
     const tagsHtml = tags ? `<div class="tag-list">${tags}</div>` : '';
-    return `<a class="card" href="${href(p)}" data-kind="${libraryKind(p)}"><div class="poster">${poster ? `<img loading="lazy" src="${escape(poster.url)}" alt="${escape(p.title)}${p.cover ? ' cover' : ' preview'}">` : `<span class="placeholder">${escape(p.title.slice(0, 2).toLowerCase())}.</span>`}${aiBadge(p)}<span class="poster-kind">${libraryKind(p) === 'reels' ? 'REEL' : p.kind === 'videos' ? 'YOUTUBE VIDEO' : 'SINGLE-VIDEO EDIT'}</span></div><div class="card-body">${tagsHtml}<h2>${escape(p.title)}</h2><div class="card-meta"><span class="meta-exports"><svg class="meta-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg> ${p.exports.length ? `${p.exports.length} export${p.exports.length === 1 ? '' : 's'}` : 'In progress'}</span><span class="meta-date">${date(p.updated)}</span></div></div></a>`;
+    return `<a class="card" href="${href(p)}" data-kind="${libraryKind(p)}"><div class="poster">${poster ? `<img loading="lazy" src="${escape(poster.url)}" alt="${escape(p.title)}${p.cover ? ' cover' : ' preview'}">` : `<span class="placeholder">${escape(p.title.slice(0, 2).toLowerCase())}.</span>`}${aiBadge(p)}<span class="poster-kind">${libraryKind(p) === 'reels' ? 'REEL' : p.kind === 'videos' ? 'YOUTUBE VIDEO' : 'SINGLE-VIDEO EDIT'}</span></div><div class="card-body">${tagsHtml}<h2>${escape(p.title)}</h2><div class="card-meta"><span class="meta-exports"><svg class="meta-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg> ${p.exports.length ? `${p.exports.length} export${p.exports.length === 1 ? '' : 's'}` : 'In progress'}</span><span class="card-posted" title="Uploads recorded">${postedCount(p)}/3 posted</span></div></div></a>`;
   }).join('') || `<div class="empty">${projects.length ? 'No projects match your search or filter.' : 'No projects yet. <a href="#guide">Read the studio guide</a> to start your first project.'}</div>`;
 }
 
 function renderHome() {
   if (routeKey !== 'home') {
-    app.innerHTML = `<div class="hero-section"><div class="eyebrow"><span class="eyebrow-dot"></span>Your local studio</div><h1>Your studio. One place.</h1></div><div class="toolbar"><div class="library-controls"><div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div><div class="filters" role="group" aria-label="Project filters">${[['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits'], ['ai', 'AI'], ['needs-upload', 'Needs upload']].map(([value, label]) => `<button class="filter" data-filter="${value}"${value === 'ai' ? ' aria-label="Fully AI-generated videos" title="Fully AI-generated videos"' : ''} aria-pressed="${filter === value}">${label}</button>`).join('')}</div></div><span class="count" id="project-count"></span></div><div id="cards" class="grid"></div>`;
+    app.innerHTML = `
+      <div class="library-heading"><h1>Project library</h1><span class="count" id="project-count"></span></div>
+      <div class="toolbar"><div class="library-controls">
+        <div class="filters" role="group" aria-label="Project filters">${[['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits'], ['ai', 'AI'], ['needs-upload', 'Needs upload']].map(([value, label]) => `<button class="filter" data-filter="${value}"${value === 'ai' ? ' aria-label="Fully AI-generated videos" title="Fully AI-generated videos"' : ''} aria-pressed="${filter === value}">${label}</button>`).join('')}</div>
+        <div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div>
+      </div></div>
+      <div id="cards" class="grid"></div>`;
     document.querySelector('#search').addEventListener('input', e => { search = e.target.value; renderCards(); });
     document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
       filter = button.dataset.filter;
@@ -68,12 +80,17 @@ function uploadChecklist(p) {
     const pending = savingUploads.get(`${p.path}/${platform}`);
     const checked = (pending ?? p.uploads?.[platform]) ? ' checked' : '';
     const disabled = pending !== undefined ? ' disabled' : '';
-    return `<label class="upload-row"><input type="checkbox" data-upload="${platform}"${checked}${disabled}> ${label}</label>`;
+    return `<label class="upload-row">
+      <span class="platform-mark ${platform}" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24">${platformMarks[platform]}</svg></span>
+      <span class="platform-name">${label}</span>
+      <input type="checkbox" role="switch" data-upload="${platform}" aria-label="${label} uploaded"${checked}${disabled}>
+    </label>`;
   });
   return `<section class="panel upload-panel" aria-labelledby="upload-title">
     <div class="panel-title"><h2 id="upload-title">Upload checklist</h2>
-      <span class="upload-count">${Object.keys(uploadLabels).filter(platform => p.uploads?.[platform]).length} of 3 posted</span>
+      <span class="upload-count">${postedCount(p)}/3 posted</span>
     </div>
+    <div class="upload-progress" aria-hidden="true">${Object.keys(uploadLabels).map((_, i) => `<i class="${i < postedCount(p) ? 'done' : ''}"></i>`).join('')}</div>
     ${rows.join('')}
     <p class="upload-message" role="status"></p>
   </section>`;
@@ -114,27 +131,28 @@ async function saveUpload(p, input) {
 function mediaPanel(p) {
   const key = `${p.kind}/${p.id}`, selected = selectedVideos.get(key);
   const current = p.exports.find(f => f.path === selected) || p.primary;
+  const preview = current?.path === p.primary?.path ? p.creativePlan?.sliceFrames?.[0]?.url : null;
   const picker = p.exports.length > 1 ? `
     <label class="export-picker" for="video-select">Video version
       <select id="video-select">${p.exports.map(f => `<option value="${escape(f.path)}"${f.path === current?.path ? ' selected' : ''}>${escape(f.name)}</option>`).join('')}</select>
     </label>` : '';
   return `<section class="panel media-panel">
-    <div class="panel-title"><h2>Video preview</h2><span class="media-specs" id="video-specs"></span></div>
-    ${current ? `<div class="video-wrap"><video id="reel-video" aria-label="${escape(p.title)}" controls playsinline preload="metadata"${p.cover ? ` poster="${escape(p.cover.url)}"` : ''} src="${escape(current.url)}"></video></div>
-      <div class="media-footer">${picker || `<span class="media-filename">${escape(current.name.split('/').pop())}</span>`}
-        ${revealButton(current, 'Show video in folder', {id: 'video-reveal'})}</div>` : empty('No exported video yet.')}
+    <div class="panel-title"><h2>${libraryKind(p) === 'reels' ? 'Reel preview' : 'Video preview'}</h2></div>
+    ${current ? `<div class="video-wrap"><video id="reel-video" aria-label="${escape(p.title)}" controls playsinline preload="metadata"${preview ? ` poster="${escape(preview)}"` : ''} src="${escape(current.url)}"></video></div>
+      <div class="media-footer"><span class="media-specs" id="video-specs"></span>${picker || `<span class="media-filename">${escape(current.name.split('/').pop())}</span>`}
+        ${revealButton(current, 'Show in folder', {id: 'video-reveal'})}</div>` : empty('No exported video yet.')}
   </section>`;
 }
 
 function coverPanel(p) {
   const cover = p.cover;
   return `<section class="panel cover-panel">
+    <div class="panel-title"><h2>Cover image</h2></div>
     ${cover ? `<a class="cover-link" href="${escape(cover.url)}" target="_blank" rel="noreferrer" aria-label="View full cover for ${escape(p.title)}">
-      <img src="${escape(cover.url)}" alt="${escape(p.title)} cover"></a>` : ''}
-    <div><h2>Cover image</h2>
-      ${cover ? `<p class="asset-info">${escape(cover.name.split('/').pop())} · ${bytes(cover.size)}</p>
-        ${revealButton(cover, 'Show cover in folder')}` : empty('No cover image yet.')}
-    </div></section>`;
+      <img src="${escape(cover.url)}" alt="${escape(p.title)} cover"></a>
+      <div class="media-footer"><span class="asset-info">${escape(cover.name.split('/').pop())} · ${bytes(cover.size)}</span>
+        ${revealButton(cover, 'Show in folder')}</div>` : empty('No cover image yet.')}
+    </section>`;
 }
 
 function captionsPanel(p) {
@@ -319,8 +337,8 @@ function planPanel(p) {
 }
 
 function content(p, tab) {
-  if (tab === 'overview') return `<div class="overview-layout">${mediaPanel(p)}
-    <div class="project-sidebar">${uploadChecklist(p)}${coverPanel(p)}${captionsPanel(p)}</div></div>`;
+  if (tab === 'overview') return `<div class="overview-layout" data-format="${libraryKind(p) === 'reels' || p.projectType === 'reel' ? 'portrait' : 'landscape'}">
+    ${mediaPanel(p)}${coverPanel(p)}<div class="project-sidebar">${uploadChecklist(p)}${captionsPanel(p)}</div></div>`;
   if (tab === 'plan') return planPanel(p);
   if (tab === 'previews') return `<section class="panel"><div class="panel-title"><div><h2>Previews</h2></div>${p.kind === 'ai-reels' ? '' : '<button data-review="frames">Review & approve frames ↗</button>'}</div>${p.previews.length ? `<div class="frame-grid">${p.previews.map(f => `<figure><a href="${escape(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}"></a><figcaption>${escape(f.name)} <a href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓</a></figcaption></figure>`).join('')}</div>` : empty('No preview frames yet. Generate them in your AI chat before approving an export.')}</section>`;
   if (tab === 'exports') return `<section class="panel"><h2>Videos</h2>${fileList(p.exports, true)}</section><section class="panel"><h2>Covers</h2>${fileList(p.covers, true)}</section>${captionsPanel(p)}`;
@@ -366,7 +384,12 @@ function renderProject(p, tab) {
   if (player) {
     const showSpecs = () => {
       const parts = [];
-      if (player.videoWidth && player.videoHeight) parts.push(`${player.videoWidth} × ${player.videoHeight}`);
+      if (player.videoWidth && player.videoHeight) {
+        const layout = player.closest('.overview-layout');
+        layout.dataset.format = player.videoHeight > player.videoWidth ? 'portrait' : 'landscape';
+        player.style.aspectRatio = `${player.videoWidth} / ${player.videoHeight}`;
+        parts.push(`${player.videoWidth} × ${player.videoHeight}`);
+      }
       if (Number.isFinite(player.duration)) {
         const seconds = Math.floor(player.duration);
         parts.push(`${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`);
@@ -414,7 +437,10 @@ function renderProject(p, tab) {
   document.querySelector('#video-select')?.addEventListener('change', e => {
     selectedVideos.set(`${p.kind}/${p.id}`, e.target.value);
     const f = p.exports.find(f => f.path === e.target.value);
-    document.querySelector('#reel-video').src = f.url;
+    const preview = f.path === p.primary?.path && p.creativePlan?.sliceFrames?.[0]?.url;
+    if (preview) player.poster = preview;
+    else player.removeAttribute('poster');
+    player.src = f.url;
     document.querySelector('#video-reveal').dataset.revealFile = f.path;
   });
   document.querySelectorAll('[data-caption]').forEach(button => button.addEventListener('click', () => {
