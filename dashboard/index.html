@@ -17,6 +17,9 @@
           <svg class="icon-theme icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
           <svg class="icon-theme icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
         </button>
+        <a class="header-action-btn" href="/#guide" aria-label="Studio guide" title="Studio guide">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg>
+        </a>
         <button id="open-settings-btn" class="header-action-btn icon-btn" type="button" aria-label="Studio Settings" title="Studio Settings">
           <svg class="icon-gear" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
@@ -26,6 +29,30 @@
     </div>
   </header>
   <main id="app"><p class="muted">Loading your projects…</p></main>
+  <template id="studio-guide">
+    <article class="studio-guide">
+      <a class="back" href="#">← Back to projects</a>
+      <h1 tabindex="-1">Studio guide</h1>
+      <section>
+        <h2>Start a project</h2>
+        <p>In your AI chat, choose a command for the video you want to make.</p>
+        <ul>
+          <li><code>/wf-reel-plan</code> Plan a portrait reel from an idea or existing footage.</li>
+          <li><code>/wf-video-plan</code> Plan a landscape YouTube video.</li>
+          <li><code>/wf-video</code> Edit a single recording.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Find and review your work</h2>
+        <p>Projects appear in the library automatically. Search by name or choose a filter. <strong>AI</strong> shows fully AI-generated videos across project types.</p>
+        <p>Open a project to see its <strong>Plan</strong>. In <strong>Previews</strong>, review the actual frames and audio when available, then submit feedback or approve that version.</p>
+      </section>
+      <section>
+        <h2>Get your finished video</h2>
+        <p>Watch the video in <strong>Overview</strong>. Open <strong>Exports</strong> to find the video and cover, or copy a caption for the platform you use.</p>
+      </section>
+    </article>
+  </template>
   <dialog id="settings-dialog" class="settings-dialog"></dialog>
   <footer>
     <span>CREATE IN YOUR AI CHAT ↔ REVIEW HERE</span>

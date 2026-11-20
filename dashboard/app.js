@@ -36,15 +36,15 @@ function renderCards() {
     const poster = p.cover || p.previews[0];
     const statusBadge = (p.status && p.status !== 'export available') ? badge(p.status) : '';
     const warnBadge = p.warnings.length ? '<span class="badge warn">Missing files</span>' : '';
-    const tags = aiBadge(p) + statusBadge + warnBadge;
+    const tags = statusBadge + warnBadge;
     const tagsHtml = tags ? `<div class="tag-list">${tags}</div>` : '';
-    return `<a class="card" href="${href(p)}" data-kind="${libraryKind(p)}"><div class="poster">${poster ? `<img loading="lazy" src="${escape(poster.url)}" alt="${escape(p.title)}${p.cover ? ' cover' : ' preview'}">` : `<span class="placeholder">${escape(p.title.slice(0, 2).toLowerCase())}.</span>`}<span class="poster-kind">${libraryKind(p) === 'reels' ? 'REEL' : p.kind === 'videos' ? 'YOUTUBE VIDEO' : 'SINGLE-VIDEO EDIT'}</span></div><div class="card-body">${tagsHtml}<h2>${escape(p.title)}</h2><div class="card-meta"><span class="meta-exports"><svg class="meta-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg> ${p.exports.length ? `${p.exports.length} export${p.exports.length === 1 ? '' : 's'}` : 'In progress'}</span><span class="meta-date">${date(p.updated)}</span></div></div></a>`;
-  }).join('') || `<div class="empty">${projects.length ? 'No projects match your search or filter.' : 'Your library is ready. Create a reel with /wf-reel or edit a video with /wf-video in your AI chat. Finished work and previews will appear here.'}</div>`;
+    return `<a class="card" href="${href(p)}" data-kind="${libraryKind(p)}"><div class="poster">${poster ? `<img loading="lazy" src="${escape(poster.url)}" alt="${escape(p.title)}${p.cover ? ' cover' : ' preview'}">` : `<span class="placeholder">${escape(p.title.slice(0, 2).toLowerCase())}.</span>`}${aiBadge(p)}<span class="poster-kind">${libraryKind(p) === 'reels' ? 'REEL' : p.kind === 'videos' ? 'YOUTUBE VIDEO' : 'SINGLE-VIDEO EDIT'}</span></div><div class="card-body">${tagsHtml}<h2>${escape(p.title)}</h2><div class="card-meta"><span class="meta-exports"><svg class="meta-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg> ${p.exports.length ? `${p.exports.length} export${p.exports.length === 1 ? '' : 's'}` : 'In progress'}</span><span class="meta-date">${date(p.updated)}</span></div></div></a>`;
+  }).join('') || `<div class="empty">${projects.length ? 'No projects match your search or filter.' : 'No projects yet. <a href="#guide">Read the studio guide</a> to start your first project.'}</div>`;
 }
 
 function renderHome() {
   if (routeKey !== 'home') {
-    app.innerHTML = `<div class="hero-section"><div class="eyebrow"><span class="eyebrow-dot"></span>Your local studio</div><h1>Your studio. One place.</h1><p class="description">Your footage, your ideas, your finished work. Browse reels, YouTube videos and edits, review the details, and find everything you need to share.</p></div><div class="toolbar"><div class="library-controls"><div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div><div class="filters" role="group" aria-label="Project filters">${[['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits'], ['ai', 'AI']].map(([value, label]) => `<button class="filter" data-filter="${value}"${value === 'ai' ? ' aria-label="Fully AI-generated videos" title="Fully AI-generated videos"' : ''} aria-pressed="${filter === value}">${label}</button>`).join('')}</div></div><span class="count" id="project-count"></span></div><div id="cards" class="grid"></div><div class="notice"><div class="notice-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div><div class="notice-body"><strong>Your next project starts in your AI chat.</strong><p>Use <code>/wf-reel-plan</code> for a reel, <code>/wf-video-plan</code> for YouTube, or <code>/wf-video</code> for a quick single-video edit. Plans, previews, and exports appear here automatically.</p></div></div>`;
+    app.innerHTML = `<div class="hero-section"><div class="eyebrow"><span class="eyebrow-dot"></span>Your local studio</div><h1>Your studio. One place.</h1></div><div class="toolbar"><div class="library-controls"><div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div><div class="filters" role="group" aria-label="Project filters">${[['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits'], ['ai', 'AI']].map(([value, label]) => `<button class="filter" data-filter="${value}"${value === 'ai' ? ' aria-label="Fully AI-generated videos" title="Fully AI-generated videos"' : ''} aria-pressed="${filter === value}">${label}</button>`).join('')}</div></div><span class="count" id="project-count"></span></div><div id="cards" class="grid"></div>`;
     document.querySelector('#search').addEventListener('input', e => { search = e.target.value; renderCards(); });
     document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
       filter = button.dataset.filter;
@@ -328,6 +328,14 @@ function renderProject(p, tab) {
 }
 
 function render() {
+  if (location.hash === '#guide') {
+    if (routeKey !== 'guide') {
+      app.replaceChildren(document.querySelector('#studio-guide').content.cloneNode(true));
+      routeKey = 'guide';
+      app.querySelector('h1').focus();
+    }
+    return;
+  }
   let kind, id, tab;
   try { [kind, id, tab = 'overview'] = decodeURIComponent(location.hash.slice(1)).split('/'); }
   catch { kind = 'invalid'; }
@@ -346,8 +354,9 @@ async function refresh() {
     render();
   } catch {
     connection.textContent = 'Disconnected · retrying'; connection.className = 'error';
-    if (!loaded) app.innerHTML = '<div class="empty">Cannot read projects. Check the dashboard terminal. Retrying automatically…</div>';
+    if (!loaded && location.hash !== '#guide') app.innerHTML = '<div class="empty">Cannot read projects. Check the dashboard terminal. Retrying automatically…</div>';
   } finally { setTimeout(refresh, 5000); }
 }
 window.addEventListener('hashchange', render);
+if (location.hash === '#guide') render();
 refresh();
