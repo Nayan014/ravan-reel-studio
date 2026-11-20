@@ -95,6 +95,31 @@ test('discovers reels, Hyperframes, export packages and edits without changing w
   assert.equal(all.find(p => p.id === 'package').primary.name, 'Creative_Final.mp4');
 });
 
+test('upload checks persist independently by platform and project, and can be cleared', async t => {
+  const { root, put } = fixture(t);
+  for (const kind of ['reels', 'ai-reels', 'videos', 'edits']) put(`outputs/${kind}/same/export/video.mp4`, 'video');
+  const base = await serverFixture(t, root);
+  const headers = {origin: base, 'x-dashboard-action': 'track-upload'};
+  const set = (path, method = 'PUT', h = headers) => fetch(base + '/api/projects/' + path, {method, headers: h});
+  const endpoint = 'ai-reels/same/uploads/';
+  const initial = listProjects(root);
+  assert.ok(initial.every(p => !Object.values(p.uploads).some(Boolean)));
+  const platforms = ['tiktok', 'instagram', 'youtube'];
+  const responses = await Promise.all(platforms.map(platform => set(endpoint + platform)));
+  assert.ok(responses.every(response => response.status === 204));
+  assert.equal((await set(endpoint + 'youtube')).status, 204);
+  const projects = await fetch(base + '/api/projects').then(r => r.json());
+  assert.deepEqual(projects.find(p => p.kind === 'ai-reels').uploads, {tiktok: true, instagram: true, youtube: true});
+  assert.ok(projects.filter(p => p.kind !== 'ai-reels').every(p => !Object.values(p.uploads).some(Boolean)));
+  assert.equal((await set(endpoint + 'youtube', 'DELETE', {})).status, 403);
+  assert.equal((await set(endpoint + 'youtube', 'DELETE', {...headers, origin: 'https://example.com'})).status, 403);
+  assert.equal((await set(endpoint + 'linkedin')).status, 404);
+  assert.equal((await set('reels/missing/uploads/tiktok')).status, 404);
+  assert.equal((await set(endpoint + 'youtube', 'DELETE')).status, 204);
+  assert.equal((await set(endpoint + 'youtube', 'DELETE')).status, 204);
+  assert.deepEqual(listProjects(root).find(p => p.kind === 'ai-reels').uploads, {tiktok: true, instagram: true, youtube: false});
+});
+
 test('AI labels use whole-video provenance and legacy AI reels have playable media', async t => {
   const { root, put } = fixture(t);
   put('outputs/ai-reels/legacy/export/final.mp4', 'video');

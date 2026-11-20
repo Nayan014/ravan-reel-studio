@@ -35,7 +35,7 @@ export selection, and playing videos are preserved during refresh.
 
 Each project has five sections:
 
-- **Overview:** recorded or latest available export, cover, social copy, and saved workflow records.
+- **Overview:** recorded or latest available export, cover, social copy, and an upload checklist for TikTok, Instagram and YouTube. Check a platform after posting, or uncheck it to mark it pending again. The **Needs upload** filter shows projects across all types with at least one unchecked platform.
 - **Plan:** sandboxed HTML plans and frame reviews, plus saved JSON plans where available.
 - **Previews:** actual recorded preview frames, or discovered preview images when no record exists.
 - **Exports:** video variants and covers to reveal in their folders, plus social captions to copy or download.

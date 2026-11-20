@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { basename, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 export const mediaTypes = {
@@ -11,6 +11,24 @@ export const mediaTypes = {
   '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.pdf': 'application/pdf',
 };
 const projectKinds = ['reels', 'ai-reels', 'videos', 'edits'];
+export const uploadPlatforms = ['tiktok', 'instagram', 'youtube'];
+const uploadMarker = (folder, platform) => join(folder, `.uploaded-${platform}`);
+
+// Each platform has its own marker so independent dashboard sessions can update it atomically.
+export function setUploaded(root, project, platform, uploaded) {
+  if (!uploadPlatforms.includes(platform)) throw Error('Unknown platform');
+  const folder = join(root, project.path);
+  if (realpathSync(folder) !== folder || !statSync(folder).isDirectory()) throw Error('Invalid project folder');
+  const marker = uploadMarker(folder, platform);
+  try {
+    if (uploaded) writeFileSync(marker, '', {flag: 'wx'});
+    else unlinkSync(marker);
+  } catch (error) {
+    if (!uploaded && error.code === 'ENOENT') return;
+    if (uploaded && error.code === 'EEXIST' && lstatSync(marker).isFile()) return;
+    throw error;
+  }
+}
 const video = /\.(mp4|mov|m4v|webm|mkv|avi)$/i;
 const image = /\.(png|jpe?g|webp|gif|svg)$/i;
 const ignored = new Set(['node_modules', '__pycache__', 'voicestudio', 'models']);
@@ -225,6 +243,9 @@ function projectData(root, kind, id) {
   };
 
   return {
+    uploads: Object.fromEntries(uploadPlatforms.map(platform => [
+      platform, lstatSync(uploadMarker(folder, platform), {throwIfNoEntry: false})?.isFile() === true,
+    ])),
     id, kind, fullyAiGenerated, projectType: plan?.project_type || (kind === 'videos' ? 'video' : kind === 'edits' ? 'edit' : 'reel'), title, path: local, updated: all[0]?.modified || statSync(folder).mtime.toISOString(),
     status: session?.stage ? String(session.stage).replace(/_/g, ' ') : primary ? 'export available' : plan ? 'planning' : 'files available',
     renderer: typeof plan?.renderer === 'string' ? plan.renderer : kind === 'edits' ? 'Vibha effects' : plan ? 'remotion' : null,

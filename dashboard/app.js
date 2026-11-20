@@ -9,6 +9,9 @@ const app = document.querySelector('#app');
 const connection = document.querySelector('#connection');
 const tabs = ['overview', 'plan', 'previews', 'exports', 'files'];
 let projects = [], search = '', filter = 'reels', routeKey = '', signature = '', loaded = false;
+const uploadLabels = { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube' };
+let uploadRevision = 0;
+const savingUploads = new Map();
 const selectedVideos = new Map();
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const date = value => value ? new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
@@ -30,7 +33,11 @@ function fileList(files, reveal = false) {
 }
 
 function renderCards() {
-  const filtered = projects.filter(p => (filter === 'ai' ? p.fullyAiGenerated : libraryKind(p) === filter) && `${p.title} ${p.id}`.toLowerCase().includes(search.toLowerCase()));
+  const matchesFilter = p => {
+    if (filter === 'needs-upload') return Object.keys(uploadLabels).some(platform => !p.uploads?.[platform]);
+    return filter === 'ai' ? p.fullyAiGenerated : libraryKind(p) === filter;
+  };
+  const filtered = projects.filter(p => matchesFilter(p) && `${p.title} ${p.id}`.toLowerCase().includes(search.toLowerCase()));
   document.querySelector('#project-count').textContent = `${filtered.length} OF ${projects.length} PROJECT${projects.length === 1 ? '' : 'S'}`;
   document.querySelector('#cards').innerHTML = filtered.map(p => {
     const poster = p.cover || p.previews[0];
@@ -44,7 +51,7 @@ function renderCards() {
 
 function renderHome() {
   if (routeKey !== 'home') {
-    app.innerHTML = `<div class="hero-section"><div class="eyebrow"><span class="eyebrow-dot"></span>Your local studio</div><h1>Your studio. One place.</h1></div><div class="toolbar"><div class="library-controls"><div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div><div class="filters" role="group" aria-label="Project filters">${[['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits'], ['ai', 'AI']].map(([value, label]) => `<button class="filter" data-filter="${value}"${value === 'ai' ? ' aria-label="Fully AI-generated videos" title="Fully AI-generated videos"' : ''} aria-pressed="${filter === value}">${label}</button>`).join('')}</div></div><span class="count" id="project-count"></span></div><div id="cards" class="grid"></div>`;
+    app.innerHTML = `<div class="hero-section"><div class="eyebrow"><span class="eyebrow-dot"></span>Your local studio</div><h1>Your studio. One place.</h1></div><div class="toolbar"><div class="library-controls"><div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div><div class="filters" role="group" aria-label="Project filters">${[['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits'], ['ai', 'AI'], ['needs-upload', 'Needs upload']].map(([value, label]) => `<button class="filter" data-filter="${value}"${value === 'ai' ? ' aria-label="Fully AI-generated videos" title="Fully AI-generated videos"' : ''} aria-pressed="${filter === value}">${label}</button>`).join('')}</div></div><span class="count" id="project-count"></span></div><div id="cards" class="grid"></div>`;
     document.querySelector('#search').addEventListener('input', e => { search = e.target.value; renderCards(); });
     document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
       filter = button.dataset.filter;
@@ -56,8 +63,51 @@ function renderHome() {
   renderCards();
 }
 
-function savedStatus(p) {
-  return `<section class="panel status-panel"><div class="section-label">SAVED PROJECT STATUS</div><div class="tag-list">${aiBadge(p)}${badge(p.status)}${p.renderer ? badge(p.renderer) : ''}</div><p class="next-action">Approvals and checks below are saved records. Their validity for the current files has not been rechecked.</p>${p.records.map(r => `<details><summary>${escape(r.label)}</summary><pre>${escape(JSON.stringify(r.data, null, 2))}</pre></details>`).join('')}${p.warnings.length ? `<div class="warnings" role="status">${p.warnings.map(w => `<p>${escape(w)}</p>`).join('')}</div>` : ''}<p class="intro-note">Create and revise with your editing agent. Submit feedback and approvals in the interactive review.</p></section>`;
+function uploadChecklist(p) {
+  const rows = Object.entries(uploadLabels).map(([platform, label]) => {
+    const pending = savingUploads.get(`${p.path}/${platform}`);
+    const checked = (pending ?? p.uploads?.[platform]) ? ' checked' : '';
+    const disabled = pending !== undefined ? ' disabled' : '';
+    return `<label class="upload-row"><input type="checkbox" data-upload="${platform}"${checked}${disabled}> ${label}</label>`;
+  });
+  return `<section class="panel upload-panel" aria-labelledby="upload-title">
+    <h2 id="upload-title">Upload checklist</h2>
+    <p class="muted">Check each platform after you upload.</p>
+    ${rows.join('')}
+    <p class="upload-message" role="status"></p>
+  </section>`;
+}
+
+async function saveUpload(p, input) {
+  const platform = input.dataset.upload;
+  const checked = input.checked;
+  const marker = `${p.path}/${platform}`;
+  const panel = input.closest('.upload-panel');
+  let errorMessage = '';
+  savingUploads.set(marker, checked);
+  uploadRevision++;
+  input.disabled = true;
+  panel.querySelector('.upload-message').textContent = '';
+  try {
+    const response = await fetch(`/api/projects/${p.kind}/${encodeURIComponent(p.id)}/uploads/${platform}`, {
+      method: checked ? 'PUT' : 'DELETE', headers: { 'X-Dashboard-Action': 'track-upload' },
+    });
+    if (!response.ok) throw Error();
+    const current = projects.find(project => project.path === p.path);
+    if (current) current.uploads = { ...current.uploads, [platform]: checked };
+  } catch {
+    errorMessage = `Couldn’t save ${uploadLabels[platform]}. Try again.`;
+  } finally {
+    savingUploads.delete(marker);
+    uploadRevision++;
+    render();
+    if (routeKey === `${p.kind}/${p.id}/overview`) {
+      const checkbox = document.querySelector(`[data-upload="${platform}"]`);
+      checkbox.disabled = false;
+      checkbox.checked = errorMessage ? !checked : checked;
+      if (errorMessage) document.querySelector('.upload-message').textContent = errorMessage;
+    }
+  }
 }
 
 function mediaPanel(p) {
@@ -251,7 +301,7 @@ function planPanel(p) {
 }
 
 function content(p, tab) {
-  if (tab === 'overview') return `<div class="overview-layout">${mediaPanel(p)}<section class="panel cover-panel"><div class="panel-title"><div><div class="section-label">YOUR THUMBNAIL</div><h2>Cover image</h2></div></div>${p.cover ? `<a class="cover-link" href="${escape(p.cover.url)}" target="_blank" rel="noreferrer"><img class="cover overview-cover" src="${escape(p.cover.url)}" alt="${escape(p.title)} cover"></a>${revealButton(p.cover, 'Show cover in folder', { className: 'cover-action' })}` : empty('No cover yet. Existing cover images will appear here when added to the project.')}</section><aside class="project-sidebar">${savedStatus(p)}</aside>${captionsPanel(p)}</div>`;
+  if (tab === 'overview') return `<div class="overview-layout">${mediaPanel(p)}<section class="panel cover-panel"><div class="panel-title"><div><div class="section-label">YOUR THUMBNAIL</div><h2>Cover image</h2></div></div>${p.cover ? `<a class="cover-link" href="${escape(p.cover.url)}" target="_blank" rel="noreferrer"><img class="cover overview-cover" src="${escape(p.cover.url)}" alt="${escape(p.title)} cover"></a>${revealButton(p.cover, 'Show cover in folder', { className: 'cover-action' })}` : empty('No cover yet. Existing cover images will appear here when added to the project.')}</section><aside class="project-sidebar">${uploadChecklist(p)}</aside>${captionsPanel(p)}</div>`;
   if (tab === 'plan') return planPanel(p);
   if (tab === 'previews') return `<section class="panel"><div class="panel-title"><div><div class="section-label">ACTUAL REVIEW FRAMES</div><h2>Previews</h2></div>${p.kind === 'ai-reels' ? '' : '<button data-review="frames">Review & approve frames ↗</button>'}</div>${p.previews.length ? `<div class="frame-grid">${p.previews.map(f => `<figure><a href="${escape(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}"></a><figcaption>${escape(f.name)} <a href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓</a></figcaption></figure>`).join('')}</div>` : empty('No preview frames yet. Generate them in your AI chat before approving an export.')}</section>`;
   if (tab === 'exports') return `<section class="panel"><div class="section-label">SAVED ON THIS DEVICE</div><h2>Videos</h2>${fileList(p.exports, true)}</section><section class="panel"><h2>Covers</h2>${fileList(p.covers, true)}</section>${captionsPanel(p)}`;
@@ -272,6 +322,7 @@ function renderProject(p, tab) {
   const key = `${p.kind}/${p.id}/${tab}`;
   const nextSignature = JSON.stringify(p);
   if (key === routeKey && signature === nextSignature) return;
+  const focusedUpload = key === routeKey && document.activeElement?.dataset.upload;
   const oldVideo = key === routeKey ? document.querySelector('#reel-video') : null;
   const wasPlaying = oldVideo && !oldVideo.paused;
   const oldTime = oldVideo?.currentTime;
@@ -285,6 +336,10 @@ function renderProject(p, tab) {
   }
   document.querySelectorAll('details[data-caption-section]').forEach(item => { item.open = openCaptions.has(item.dataset.captionSection); });
   routeKey = key; signature = nextSignature;
+  document.querySelectorAll('[data-upload]').forEach(input => {
+    input.addEventListener('change', () => saveUpload(p, input));
+    if (input.dataset.upload === focusedUpload) input.focus({ preventScroll: true });
+  });
   document.querySelectorAll('[data-review]').forEach(button=>button.addEventListener('click',async()=>{
     button.disabled=true;
     try {
@@ -346,10 +401,13 @@ function render() {
 }
 
 async function refresh() {
+  const revision = uploadRevision;
   try {
     const response = await fetch('/api/projects');
     if (!response.ok) throw Error('Unavailable');
-    projects = await response.json(); loaded = true;
+    const latest = await response.json();
+    if (revision !== uploadRevision || savingUploads.size) return;
+    projects = latest; loaded = true;
     connection.textContent = 'Up to date'; connection.className = '';
     render();
   } catch {

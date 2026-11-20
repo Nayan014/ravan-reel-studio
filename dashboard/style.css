@@ -387,6 +387,7 @@ p { line-height: 1.6; }
 /* Segmented Filter Pills */
 .filters {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   padding: 4px;
   border: 1px solid var(--line);
@@ -395,6 +396,7 @@ p { line-height: 1.6; }
 }
 
 .filter {
+  white-space: nowrap;
   appearance: none;
   background: transparent;
   color: var(--muted);
@@ -825,6 +827,19 @@ button.secondary:hover, .button.secondary:hover {
   margin-bottom: 20px;
   box-shadow: var(--shadow);
 }
+
+.upload-panel h2 { margin-bottom: 6px; }
+.upload-panel p { margin: 0 0 12px; }
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+.upload-row input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+.upload-message:empty { display: none; }
 
 .panel-title {
   display: flex;
