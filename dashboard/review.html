@@ -24,16 +24,57 @@
     </div>
   </header>
   <main class="review-main">
-    <a class="back" id="back-link" href="/">← YOUR LIBRARY</a>
+    <div class="review-top-bar">
+      <a class="back" id="back-link" href="/">← YOUR LIBRARY</a>
+      <nav class="plan-stepper" aria-label="Workflow progress steps">
+        <div class="step-item" id="step-1" data-step="1">
+          <span class="step-num">1</span>
+          <span class="step-label">Initial plan</span>
+        </div>
+        <div class="step-line" id="line-1"></div>
+        <div class="step-item" id="step-2" data-step="2">
+          <span class="step-num">2</span>
+          <span class="step-label">Final plan</span>
+        </div>
+        <div class="step-line" id="line-2"></div>
+        <div class="step-item" id="step-3" data-step="3">
+          <span class="step-num">3</span>
+          <span class="step-label">Final release</span>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Sticky action header for one-click feedback and approval -->
+    <div class="sticky-action-bar" id="sticky-bar">
+      <div class="sticky-bar-left">
+        <span class="sticky-step-badge" id="sticky-step-badge">Step 1: Initial plan</span>
+        <span class="sticky-status-text" id="sticky-status-text">Connecting…</span>
+      </div>
+      <div class="sticky-bar-right">
+        <button id="sticky-submit-feedback" type="button" class="secondary" disabled>Submit feedback</button>
+        <button id="sticky-approve" type="button" class="primary" disabled>Approve plan</button>
+      </div>
+    </div>
+
     <div class="eyebrow" id="stage">PLAN REVIEW</div>
     <h1 id="title">Loading your review…</h1>
     <p id="revision" class="muted"></p>
     <div id="native-studio" class="notice" hidden><strong>Edit authored Hyperframes elements</strong><p>Open the full Studio to select existing scene elements and edit their text and styles. Changes require fresh actual-frame review.</p><button id="launch-studio" type="button">Launch Hyperframes Studio ↗</button><a id="studio-link" class="button secondary" hidden target="_blank" rel="noreferrer">Open full visual editor ↗</a><span id="studio-status" role="status"></span></div>
     <div class="notice"><strong id="quality"></strong><p id="crop"></p></div>
-    <section class="panel review-content" aria-label="Script and production plan"><div id="script"></div><div id="project-lighting"></div><div id="scene-summary"></div><div id="document"></div></section>
-    <section class="panel"><h2>Actual preview frames</h2><div id="lighting-comparison"></div><div id="frames" class="frame-grid"></div></section>
-    <section class="panel" id="audio"></section>
-    <section class="panel approval-panel"><div class="action-buttons-bar"><button id="submit-all-feedback" type="button" class="secondary" disabled>Submit feedback</button><button id="approve" type="button" disabled>Approve current review</button></div><p id="review-status" role="status">Connecting…</p><p class="review-note">Review the current script, scenes and preview frames. Submit feedback or approve this plan.</p><details><summary>Feedback history</summary><div id="history"></div></details><details><summary>Drafts from earlier revisions</summary><div id="draft-history"></div></details></section>
+    <section class="panel review-content" aria-label="Script and production plan"><div id="status-banner"></div><div id="script"></div><div id="project-lighting"></div><div id="scene-summary"></div><div id="document"></div></section>
+    <section class="panel" id="frames-panel" hidden><h2>Actual preview frames</h2><div id="lighting-comparison"></div><div id="frames" class="frame-grid"></div></section>
+    <section class="panel" id="audio" hidden></section>
+    <section class="panel approval-panel">
+      <div class="action-buttons-bar">
+        <button id="submit-all-feedback" type="button" class="secondary" disabled>Submit feedback</button>
+        <button id="approve" type="button" class="primary" disabled>Approve plan</button>
+      </div>
+      <p id="review-status" role="status">Connecting…</p>
+      <p class="review-note" id="review-note-text">Review the current script, scenes and preview frames. Submit feedback or approve this plan.</p>
+      <div id="final-plan-history" hidden>
+        <details open class="history-details"><summary>Feedback history addressed in this revision</summary><div id="history"></div></details>
+      </div>
+    </section>
   </main>
   <dialog id="settings-dialog" class="settings-dialog"></dialog>
 </body>

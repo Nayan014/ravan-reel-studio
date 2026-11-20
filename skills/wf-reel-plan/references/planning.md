@@ -8,8 +8,8 @@ Offer four clickable choices: **I have an idea**, **Suggest ideas**, **I have fo
 
 - **Idea:** ask for topic and intended length. Keep the creator's language/channel preferences. For YouTube, build an opening hook, ordered sections and a conclusion, with manageable recording takes and clear shooting cues. Reels use a concise hook and short takes.
 - **Suggestions:** offer exactly three ideas, each with a hook and angle, based on channel context. Research current factual claims using primary sources. Let the creator select an idea and intended length.
-- **Footage:** ask for a folder name or path. A bare name resolves inside `inputs/`; `inputs/name` is studio-relative. Run `init --kind KIND --project SLUG --folder FOLDER --title TITLE`, then follow the production reference. A single continuous recording may have any filename; multiple takes use unique numbered filenames. Base the production plan on actual transcribed speech. This route skips idea selection and writing a pre-recording script. After speech analysis and scene mapping, use the optional reference-style step in the production reference.
-- **Resume:** show saved projects only from `outputs/KIND/`. Run `status --kind KIND --project SLUG`, read pending feedback, and continue its recorded phase. Drafts await script review or attached takes; recorded projects continue through production. Do not restart or overwrite a saved project.
+- **Footage:** ask for a folder name or path. A bare name resolves inside `inputs/`; `inputs/name` is studio-relative. Every footage folder selection starts a **fresh** plan for that footage. Do NOT reuse old state, old feedback, or stale reviews if a folder or project with the same name was used in the past. Always run `init --kind KIND --project SLUG --folder FOLDER --title TITLE --fresh` so it starts completely clean from the new recordings. A single continuous recording may have any filename; multiple takes use unique numbered filenames. Base the production plan on actual transcribed speech. This route skips idea selection and writing a pre-recording script. After speech analysis and scene mapping, use the optional reference-style step in the production reference.
+- **Resume:** show saved projects only from `outputs/KIND/`. ONLY resume an existing project when the creator explicitly selects **Resume a project**. When the creator selects footage or provides a folder, treat it as a new plan, never a resume. Run `status --kind KIND --project SLUG`, read pending feedback, and continue its recorded phase. Drafts await script review or attached takes; recorded projects continue through production. Do not restart or overwrite a saved project.
 
 ## Idea to recorded production
 
@@ -26,7 +26,14 @@ After importing footage, `analyze --kind KIND --project SLUG` caches the source 
 
 All helper commands require `--kind KIND` when working on YouTube. Choose `profile --kind KIND --project SLUG --width W --height H --fps RATE` when matching sources cannot select a profile. For mismatched orientations, discuss crop versus fit, set `framing` to `crop` or `fit` on each shot, and review the actual result. Portrait reels default to crop; YouTube defaults to a centred crop unless the creator selects fit. Fit preserves the whole picture with padding. Confirm the proposed framing before actual-frame approval.
 
-Keep feedback linked to script, scene or actual frame and to its review revision. Use Hyperframes Studio for direct visual edits. Keep cached speech, effect clips and valid previews where their inputs are unchanged. Process saved feedback on resume. Wait at most once for 45 seconds when presenting a review, then yield and collect submissions on resume.
+Keep feedback linked to script, scene or actual frame and to its review revision. Use Hyperframes Studio for direct visual edits. Keep cached speech, effect clips and valid previews where their inputs are unchanged.
+
+The review page guides the creator through 3 clear steps:
+1. **Initial plan**: Script, scene breakdown, dummy reference cards for visual choices, per-scene Approve button, per-scene Feedback button with submit, and sticky action bar on top.
+2. **Final plan**: Once initial plan is approved, preview frames with applied effects are generated. Each scene shows dialogue, applied effect, 1 key actual preview frame, previous feedback history addressed, per-scene Approve button, and per-scene Feedback button.
+3. **Final release**: Final export and ready-to-share media.
+
+Present the review URL to the creator and run `node scripts/review.mjs wait --kind KIND --id SLUG` (or run it in the background if background commands/tasks are available). When the creator submits feedback or approves in the browser, the command finishes and wakes the agent automatically to improve the plan or generate the 2nd approval, without requiring the user to type in chat. Process saved feedback on resume.
 
 ## Skip answered questions and reuse reference decisions
 

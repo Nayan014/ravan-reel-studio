@@ -15,26 +15,38 @@ node scripts/review.mjs prepare --kind edits --id SESSION --stage frames
 
 Standalone older HTML plans remain supported with `--kind plans --id DRAFT --document docs/your-plan.html --stage plan`. New script-first projects use saved reel drafts and `--stage script`.
 
-The page shows the full script first, one chronological scene table, actual frames, audio choices and a single approval button. Feedback belongs to the script, a scene, or a specific actual frame and review revision. Users may submit several independent comments. Drafts stay in local browser storage per target/revision; older drafts remain recoverable. Five-second refresh preserves active inputs and audio playback while the revision is unchanged.
+## 3-step interactive review lifecycle
 
-There are no custom canvas, colour, size or drag controls. For direct editing, **Launch Hyperframes Studio** opens authored HTML elements in the bundled editor. Composition changes invalidate review; regenerate actual frames. The Studio stays open for editing; stop it from its composition folder with the local wrapper's `preview --stop` when finished. Legacy authored text-layer data remains render-compatible; the removed review editing endpoint is unavailable.
+The interactive review interface (`/review/<kind>/<slug>`) structures review into three clean sequential stages:
 
-The audio catalogue includes five music tracks and 23 effects with stable IDs and source credits. New selections require CC0 and a dated popularity count for the recording. Choose music or silence, audition narration A/B in the plan, and play the full mix or each scene in frame review. Selection changes the revision. Approved exports encode that exact WAV. Music-only changes can reuse valid visual stills.
+1. **Step 1: Initial plan** (`--stage plan` or `--stage script`):
+   - Shows full script first, one chronological scene table, and dummy reference cards for proposed visual effects.
+   - Sticky header action bar always visible at the top: shows current step, status, "Submit feedback" and "Approve initial plan" buttons.
+   - Per-scene **Approve** button (e.g. `Approve Scene 01`) and per-scene **Submit feedback** button. When feedback is submitted for a scene, it immediately displays down below that scene.
+   - No audio clutter, sound effect auditions, or raw draft history dumps.
 
-## Process submissions
+2. **Step 2: Final plan & preview frames** (`--stage frames`):
+   - Triggered when the initial plan is approved. The agent renders actual preview frames with chosen effects applied.
+   - Scene-by-scene focused cards: each scene presents its dialogue, applied visual effect, **1 key actual preview frame** showing the effect in action (no flood of redundant frames), and the history of feedback addressed for that scene from earlier revisions.
+   - Per-scene **Approve** button and per-scene **Submit feedback** button.
+   - Sticky header action bar always visible at the top with "Submit feedback" and "Approve final plan".
 
-During an active review, wait once for at most 45 seconds:
+3. **Step 3: Final release**:
+   - Triggered when final plan frames are approved. Renders the full video export, generates the cover, and prepares posting copy.
+
+## Process submissions and reactive wait
+
+During an active review, wait for user submissions:
 
 ```bash
-node scripts/review.mjs wait --kind reels --id SLUG --seconds 45
+node scripts/review.mjs wait --kind reels --id SLUG
 ```
 
-If no submission arrives, report the URL/pending state and yield. Do not automatically retry or create a detached listener. On resume use `status --kind reels --id SLUG`; read earlier pending feedback as well as current events. Feedback is processed by the active agent or on resume; the dashboard does not run AI autonomously.
+In agent environments supporting background commands (like Antigravity), launch the wait command in the background so the agent reactively wakes up as soon as the creator clicks "Submit feedback" or "Approve plan" in the browser, without requiring the creator to type a chat message. On resume or submission, use `status --kind KIND --project SLUG` to read events.
 
-- **Feedback:** use `scope`, `scene`, `frame`, `requestId` and fingerprint to identify its exact target. Apply changes, regenerate the affected HTML/frames/audio, and acknowledge every handled comment. Earlier-revision feedback can remain useful; never silently drop it.
-- **Script approval:** preserve the approved script, call `approve-script` with the actual approval text, then collect/attach numbered takes. This approves no visuals or unseen frames.
-- **Plan approval:** continue visual preview preparation. It does not authorize final rendering.
-- **Frame/audio approval:** verify the current request is not stale and its `previewId` matches current actual frames. Call the reel/edit helper's `approve` with the submission's exact text, then the normal render command. Existing legacy Hyperframes projects keep their recorded export process.
+- **Feedback:** use `scope`, `scene`, `frame`, `requestId` to identify its exact target. Apply changes, regenerate the affected HTML/frames, and acknowledge every handled comment.
+- **Initial plan approval:** automatically advances to Step 2 (generates preview frames with effects applied and presents the final plan review).
+- **Final plan approval:** verifies `previewId` matches current actual frames, calls `approve`, and renders the final video export.
 - **Stale approval:** never carry it to changed content. Publish a fresh review and collect fresh approval.
 
 After handling a submission:

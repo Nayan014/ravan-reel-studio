@@ -117,12 +117,19 @@ def input_folder(folder):
     return source
 
 
-def init(slug, folder, title, script_html=None):
+def init(slug, folder, title, script_html=None, fresh=False):
     source=input_folder(folder)
     if not source.is_relative_to((STUDIO/'inputs').resolve()) or (not source.is_dir() and not source.is_file()):
         raise ValueError('Choose a reel folder or video file inside this studio inputs folder.')
     dest=project(slug)
-    if dest.exists(): raise ValueError('Project already exists. Use status to resume it.')
+    if dest.exists():
+        if fresh:
+            shutil.rmtree(dest)
+        else:
+            raise ValueError('Project already exists. Pass --fresh to start a clean new project from this footage, or use status to resume.')
+    review_path = STUDIO / 'outputs/.workflow/reviews' / PROJECT_KIND / f'{slug}.json'
+    if review_path.is_file():
+        review_path.unlink()
     if source.is_file():
         if source.suffix.lower() not in VIDEO_TYPES:
             raise ValueError('Recording file must be a supported video type.')
@@ -555,6 +562,10 @@ def make_html(folder,plan,output=None,images=None):
             fx = f'<p><b>Shot lighting override · {esc(name)}</b></p>' + fx
         if shot.get('reference_note'):
             fx+=f'<p><b>Reference treatment:</b> {esc(str(shot["reference_note"]))}</p>'
+        if shot.get('remotion') and shot['remotion'].get('scene'):
+            graphic=shot['remotion']
+            mg=f'<b>{esc(graphic["scene"])}</b>'+''.join(f'<p>{esc(line)}</p>' for line in option_text(graphic.get('props',{})))
+            fx+=f'<p>{mg}</p>'
         state='' if shot.get('text_confirmed') else '<small>Expected / unverified speech</small>'
         cells=[f'<b>{esc(ident)}</b><p>{timing}</p>',f'<p class="spoken">{esc(say)}</p>'+state,source,cc,fx]
         labels=['Scene / timing','What I say','Picture / source','CC on screen','Effects']
@@ -624,10 +635,10 @@ def doctor():
 def main():
     parser=argparse.ArgumentParser(description=__doc__); sub=parser.add_subparsers(dest='cmd',required=True)
     sub.add_parser('list'); sub.add_parser('doctor')
-    p=sub.add_parser('init');p.add_argument('--project',required=True);p.add_argument('--folder',required=True);p.add_argument('--title',required=True);p.add_argument('--script-html')
+    p=sub.add_parser('init');p.add_argument('--project',required=True);p.add_argument('--folder',required=True);p.add_argument('--title',required=True);p.add_argument('--script-html');p.add_argument('--fresh',action='store_true',help='Start a clean project, removing any prior outputs and review history for this slug')
     for name in ['draft','attach','quality','profile','audio','approve-script']:
         p=sub.add_parser(name);p.add_argument('--project',required=True)
-        if name=='draft': p.add_argument('--file',required=True)
+        if name=='draft': p.add_argument('--file',required=True);p.add_argument('--fresh',action='store_true',help='Start clean, removing prior draft and reviews')
         if name=='attach': p.add_argument('--folder',required=True);p.add_argument('--mapping')
         if name=='audio': p.add_argument('--track',required=True)
         if name=='profile':
@@ -649,14 +660,14 @@ def main():
     PROJECT_KIND=args.kind
     if args.cmd=='list': result={'folders':inputs()}
     elif args.cmd=='doctor': result=doctor()
-    elif args.cmd=='init': result=init(args.project,args.folder,args.title,args.script_html)
+    elif args.cmd=='init': result=init(args.project,args.folder,args.title,args.script_html,fresh=args.fresh)
     elif args.cmd=='analyze': result=analyze(args.project)
     elif args.cmd=='preview': result=preview(args.project)
     elif args.cmd=='approve': result=approve(args.project,args.preview_id,args.message)
     elif args.cmd=='render': result=render(args.project)
     elif args.cmd=='draft':
         import reel_commands
-        result=reel_commands.draft(sys.modules[__name__],args.project,args.file)
+        result=reel_commands.draft(sys.modules[__name__],args.project,args.file,fresh=args.fresh)
     elif args.cmd=='attach':
         import reel_commands
         result=reel_commands.attach(sys.modules[__name__],args.project,args.folder,args.mapping)
