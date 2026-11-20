@@ -2452,7 +2452,7 @@ def main():
     if not stills:
         enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(fr), '-i', '-',
                                 '-i', src, '-map', '0:v', '-map', '1:a:0?', '-c:v', 'libx264', '-crf', '17', '-preset', 'medium', '-pix_fmt', 'yuv420p',
-                                '-c:a', 'aac', '-b:a', '192k', '-af', 'apad', '-t', str(dur), '-shortest', '-movflags', '+faststart', dst], stdin=subprocess.PIPE)
+                                '-c:a', 'aac', '-b:a', '192k', '-af', 'apad', '-shortest', '-movflags', '+faststart', dst], stdin=subprocess.PIPE)
     print('Pass 2: adding the effects...', flush=True)
     sc = W / aw; total = int(dur * fps)
     for i, frame in enumerate(read_frames(src, W, H, fr)):

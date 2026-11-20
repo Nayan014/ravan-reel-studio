@@ -33,9 +33,16 @@ test('prepareReview with fresh flag resets submissions and review HTML contains 
  const html = readFileSync(new URL('../dashboard/review.html', import.meta.url), 'utf8');
  assert.match(html, /class="plan-stepper"/);
  assert.match(html, /id="sticky-bar"/);
+ assert.match(html, /id="status-banner"/);
  assert.match(html, /id="sticky-submit-feedback"/);
  assert.match(html, /id="sticky-approve"/);
  assert.doesNotMatch(html, /Drafts from earlier revisions/);
+
+ const js = readFileSync(new URL('../dashboard/review.js', import.meta.url), 'utf8');
+ assert.match(js, /updateStepper\(r\.stage, isExported, isApproved\)/);
+ assert.match(js, /approval-working-banner/);
+ assert.match(js, /btn-processing/);
+ assert.match(js, /btn-spinner/);
 });
 
 test('feedback is bound to a scene/revision and is consumed by a bounded wait',async t=>{

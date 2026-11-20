@@ -72,10 +72,31 @@ function context(root, kind, id, stage, document) {
     try { const path = mediaPath(root, name); files.push([name, hash(readFileSync(path))]); return parse(path); }
     catch { return null; }
   };
-  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[], referenceStyle=null, audioReview=null, comparison=null, projectLighting=null, renderer=null, isExported = false;
+  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[], referenceStyle=null, audioReview=null, comparison=null, projectLighting=null, renderer=null, isExported = false, exportInfo = null;
   if (kind !== 'plans') {
     const base = `outputs/${kind}/${id}`;
-    isExported = existsSync(join(root, base, 'export')) || existsSync(join(root, base, 'export.json'));
+    const exportJsonExists = existsSync(join(root, base, 'export.json'));
+    const exportDirExists = existsSync(join(root, base, 'export'));
+    const hasMp4 = exportDirExists && readdirSync(join(root, base, 'export')).some(f => f.endsWith('.mp4'));
+    isExported = exportJsonExists || hasMp4;
+    if (exportJsonExists) {
+      try {
+        const raw = JSON.parse(readFileSync(join(root, base, 'export.json'), 'utf8'));
+        const mp4Path = raw.file ? (isAbsolute(raw.file) ? slash(relative(root, raw.file)) : raw.file.startsWith('outputs/') ? raw.file : `${base}/${raw.file}`) : null;
+        exportInfo = {
+          ...raw,
+          videoUrl: mp4Path ? mediaUrl(mp4Path) : null
+        };
+      } catch {}
+    } else if (hasMp4) {
+      const mp4 = readdirSync(join(root, base, 'export')).find(f => f.endsWith('.mp4'));
+      if (mp4) {
+        exportInfo = {
+          videoUrl: mediaUrl(`${base}/export/${mp4}`),
+          file: `${base}/export/${mp4}`
+        };
+      }
+    }
     const plan = add(`${base}/plan.json`), session = add(`${base}/session.json`);
     renderer=plan?.renderer||null;
     if (['reels', 'videos'].includes(kind) && Array.isArray(plan?.shots) && renderer !== 'nafay')
@@ -238,7 +259,7 @@ function context(root, kind, id, stage, document) {
     files.push(['draft-text-layers',hash(JSON.stringify(design))]);
     if (!scenes.length) scenes=[{id:'01',text:'Draft text design'}];
   }
-  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio,referenceStyle,audioReview,comparison,projectLighting,renderer, isExported: Boolean(isExported), fingerprint: hash(JSON.stringify([stage, files])) };
+  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio,referenceStyle,audioReview,comparison,projectLighting,renderer, isExported: Boolean(isExported), exportInfo, fingerprint: hash(JSON.stringify([stage, files])) };
 }
 
 export function prepareReview(root, { kind, id, stage = 'plan', document = null, fresh = false }) {

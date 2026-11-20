@@ -562,6 +562,10 @@ def make_html(folder,plan,output=None,images=None):
             fx = f'<p><b>Shot lighting override · {esc(name)}</b></p>' + fx
         if shot.get('reference_note'):
             fx+=f'<p><b>Reference treatment:</b> {esc(str(shot["reference_note"]))}</p>'
+        if shot.get('remotion') and shot['remotion'].get('scene'):
+            graphic=shot['remotion']
+            mg=f'<b>{esc(graphic["scene"])}</b>'+''.join(f'<p>{esc(line)}</p>' for line in option_text(graphic.get('props',{})))
+            fx+=f'<p>{mg}</p>'
         state='' if shot.get('text_confirmed') else '<small>Expected / unverified speech</small>'
         cells=[f'<b>{esc(ident)}</b><p>{timing}</p>',f'<p class="spoken">{esc(say)}</p>'+state,source,cc,fx]
         labels=['Scene / timing','What I say','Picture / source','CC on screen','Effects']

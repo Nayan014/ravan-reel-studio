@@ -117,7 +117,7 @@ class CombinedReelTests(unittest.TestCase):
         output=rw.make_html(self.folder,self.plan)
         content=output.read_text()
         self.assertEqual(content.count('<table>'),1)
-        for value in ['Take 01','What I say','CC on screen','Vibha effect','Remotion graphic','Build with AI.']:
+        for value in ['Take 01','What I say','CC on screen','Effects','Build with AI.']:
             self.assertIn(value,content)
     def test_generated_review_can_be_reimported_as_script(self):
         output=rw.make_html(self.folder,self.plan)

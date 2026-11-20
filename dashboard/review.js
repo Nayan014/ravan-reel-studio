@@ -135,43 +135,80 @@ function effectCell(scene) {
   `;
 }
 
-function updateStepper(stage, isExported) {
+function updateStepper(stage, isExported, isApproved) {
   const s1 = $('step-1'), s2 = $('step-2'), s3 = $('step-3');
   const l1 = $('line-1'), l2 = $('line-2');
   if (!s1 || !s2 || !s3) return;
 
-  [s1, s2, s3].forEach(el => el.classList.remove('active', 'completed'));
-  if (l1) l1.classList.remove('completed');
-  if (l2) l2.classList.remove('completed');
+  [s1, s2, s3].forEach(el => el.classList.remove('active', 'completed', 'loading'));
+  if (l1) l1.classList.remove('completed', 'loading');
+  if (l2) l2.classList.remove('completed', 'loading');
 
   if (isExported || stage === 'exported') {
     s1.classList.add('completed');
     s1.querySelector('.step-num').textContent = '✓';
+    s1.querySelector('.step-label').textContent = 'Initial plan';
     if (l1) l1.classList.add('completed');
     s2.classList.add('completed');
     s2.querySelector('.step-num').textContent = '✓';
+    s2.querySelector('.step-label').textContent = 'Final plan';
     if (l2) l2.classList.add('completed');
     s3.classList.add('active', 'completed');
-    s3.querySelector('.step-num').textContent = '3';
+    s3.querySelector('.step-num').textContent = '✓';
+    s3.querySelector('.step-label').textContent = 'Final release';
     if ($('sticky-step-badge')) $('sticky-step-badge').textContent = 'Step 3: Final release';
   } else if (stage === 'frames') {
     s1.classList.add('completed');
     s1.querySelector('.step-num').textContent = '✓';
+    s1.querySelector('.step-label').textContent = 'Initial plan';
     if (l1) l1.classList.add('completed');
-    s2.classList.add('active');
-    s2.querySelector('.step-num').textContent = '2';
-    s3.querySelector('.step-num').textContent = '3';
-    if ($('sticky-step-badge')) $('sticky-step-badge').textContent = 'Step 2: Final plan';
+
+    if (isApproved) {
+      s2.classList.add('completed');
+      s2.querySelector('.step-num').textContent = '✓';
+      s2.querySelector('.step-label').textContent = 'Final plan';
+      if (l2) l2.classList.add('completed', 'loading');
+      s3.classList.add('active', 'loading');
+      s3.querySelector('.step-num').innerHTML = '<span class="step-spinner"></span>';
+      s3.querySelector('.step-label').textContent = 'Rendering release…';
+      if ($('sticky-step-badge')) $('sticky-step-badge').textContent = 'Step 3: Rendering export';
+    } else {
+      s2.classList.add('active');
+      s2.querySelector('.step-num').textContent = '2';
+      s2.querySelector('.step-label').textContent = 'Final plan';
+      s3.querySelector('.step-num').textContent = '3';
+      s3.querySelector('.step-label').textContent = 'Final release';
+      if ($('sticky-step-badge')) $('sticky-step-badge').textContent = 'Step 2: Final plan';
+    }
   } else {
-    s1.classList.add('active');
-    s1.querySelector('.step-num').textContent = '1';
-    s2.querySelector('.step-num').textContent = '2';
-    s3.querySelector('.step-num').textContent = '3';
-    if ($('sticky-step-badge')) $('sticky-step-badge').textContent = 'Step 1: Initial plan';
+    // stage === 'plan' or 'script'
+    if (isApproved) {
+      s1.classList.add('completed');
+      s1.querySelector('.step-num').textContent = '✓';
+      s1.querySelector('.step-label').textContent = 'Initial plan';
+      if (l1) l1.classList.add('completed', 'loading');
+      s2.classList.add('active', 'loading');
+      s2.querySelector('.step-num').innerHTML = '<span class="step-spinner"></span>';
+      s2.querySelector('.step-label').textContent = 'Generating previews…';
+      s3.querySelector('.step-num').textContent = '3';
+      s3.querySelector('.step-label').textContent = 'Final release';
+      if ($('sticky-step-badge')) $('sticky-step-badge').textContent = 'Step 2: Generating previews';
+    } else {
+      s1.classList.add('active');
+      s1.querySelector('.step-num').textContent = '1';
+      s1.querySelector('.step-label').textContent = 'Initial plan';
+      s2.querySelector('.step-num').textContent = '2';
+      s2.querySelector('.step-label').textContent = 'Final plan';
+      s3.querySelector('.step-num').textContent = '3';
+      s3.querySelector('.step-label').textContent = 'Final release';
+      if ($('sticky-step-badge')) $('sticky-step-badge').textContent = 'Step 1: Initial plan';
+    }
   }
 }
 
 function updateSceneApprovalButtons() {
+  const isApproved = Boolean(state?.submissions?.some(s => s.action === 'approve' && s.requestId === state.request?.id));
+  const isExported = Boolean(state?.request?.isExported || state?.request?.stage === 'exported');
   const total = state?.request?.scenes?.length || 0;
   const count = approvedScenes.size;
   document.querySelectorAll('.scene-approve-btn').forEach(btn => {
@@ -187,7 +224,15 @@ function updateSceneApprovalButtons() {
 
   const statusEl = $('sticky-status-text');
   if (statusEl) {
-    if (count === total && total > 0) {
+    if (isExported) {
+      statusEl.textContent = '✓ Final release exported and ready!';
+    } else if (isApproved) {
+      if (state?.request?.stage === 'frames') {
+        statusEl.textContent = '✓ Final plan approved! Rendering 4K release export...';
+      } else {
+        statusEl.textContent = '✓ Initial plan approved. Agent is generating preview frames & effects...';
+      }
+    } else if (count === total && total > 0) {
       statusEl.textContent = `All ${total} scenes approved! Ready to submit.`;
     } else if (count > 0) {
       statusEl.textContent = `${count} of ${total} scenes approved`;
@@ -198,10 +243,12 @@ function updateSceneApprovalButtons() {
 }
 
 function controls() {
-  const blocked = sending || !connected || !state || state.stale;
+  const stage = state?.request?.stage;
+  const isExported = Boolean(state?.request?.isExported || stage === 'exported');
+  const isApproved = Boolean(state?.submissions?.some(s => s.action === 'approve' && s.requestId === state.request?.id));
+  const blocked = sending || !connected || !state || state.stale || isApproved || isExported;
   const textareas = [...document.querySelectorAll('.target-feedback textarea')];
   const hasFeedbackText = textareas.some(t => t.value.trim().length > 0);
-  const stage = state?.request?.stage;
   const isPlan = stage === 'plan' || stage === 'script';
 
   if ($('submit-all-feedback')) {
@@ -211,24 +258,44 @@ function controls() {
     $('sticky-submit-feedback').disabled = Boolean(blocked || !hasFeedbackText);
   }
 
-  const approveText = isPlan
-    ? (hasFeedbackText ? 'Submit feedback & update plan' : 'Approve initial plan')
-    : (stage === 'frames' ? (hasFeedbackText ? 'Submit feedback & update frames' : 'Approve final plan') : 'Approve current plan');
+  let approveText = '';
+  if (isExported) {
+    approveText = '✓ Release Exported';
+  } else if (isApproved) {
+    if (isPlan) {
+      approveText = '✓ Plan Approved · Generating Previews…';
+    } else {
+      approveText = '✓ Final Plan Approved · Rendering…';
+    }
+  } else if (isPlan) {
+    approveText = hasFeedbackText ? 'Submit feedback & update plan' : 'Approve initial plan';
+  } else if (stage === 'frames') {
+    approveText = hasFeedbackText ? 'Submit feedback & update frames' : 'Approve final plan';
+  } else {
+    approveText = 'Approve current plan';
+  }
 
-  if ($('approve')) {
-    $('approve').textContent = approveText;
-    $('approve').disabled = Boolean(blocked);
-  }
-  if ($('sticky-approve')) {
-    $('sticky-approve').textContent = approveText;
-    $('sticky-approve').disabled = Boolean(blocked);
-  }
+  const approveButtons = [$('approve'), $('sticky-approve')].filter(Boolean);
+  approveButtons.forEach(btn => {
+    if (isApproved && !isExported) {
+      btn.innerHTML = `<span class="btn-spinner"></span> ${esc(approveText)}`;
+      btn.disabled = true;
+      btn.classList.add('btn-processing');
+    } else {
+      btn.textContent = approveText;
+      btn.disabled = Boolean(blocked || isApproved || isExported);
+      btn.classList.remove('btn-processing');
+    }
+  });
 
   document.querySelectorAll('[data-music],[data-reading]').forEach(button => {
     button.disabled = Boolean(blocked);
   });
   document.querySelectorAll('.effect-dropdown, input[name="project-look"]').forEach(select => {
     select.disabled = Boolean(blocked);
+  });
+  document.querySelectorAll('.single-feedback-btn').forEach(btn => {
+    btn.disabled = Boolean(isApproved || isExported || sending);
   });
 }
 
@@ -318,12 +385,56 @@ function renderFinalPlanScenes(r) {
 
 function render() {
   const r = state.request;
+  const isApproved = Boolean(state.submissions?.some(s => s.action === 'approve' && s.requestId === r.id));
+  const isExported = Boolean(r.isExported || r.stage === 'exported');
+
   $('title').textContent = r.title;
-  $('stage').textContent = r.stage === 'frames' ? 'FINAL PLAN & ACTUAL FRAMES' : r.stage === 'script' ? 'SCRIPT AND SHOOTING PLAN' : 'INITIAL PRODUCTION PLAN';
+  $('stage').textContent = isExported ? 'STEP 3: FINAL RELEASE' : r.stage === 'frames' ? 'FINAL PLAN & ACTUAL FRAMES' : r.stage === 'script' ? 'SCRIPT AND SHOOTING PLAN' : 'INITIAL PRODUCTION PLAN';
   $('revision').textContent = `Revision ${r.id.slice(0, 8)} · ${new Date(r.createdAt).toLocaleString()}`;
   $('native-studio').hidden = !state.studioAvailable;
 
-  updateStepper(r.stage, r.isExported);
+  updateStepper(r.stage, isExported, isApproved);
+
+  const bannerEl = $('status-banner');
+  if (bannerEl) {
+    if (isExported) {
+      bannerEl.innerHTML = `
+        <div class="final-release-box">
+          <div class="release-header-row">
+            <div>
+              <span class="release-status-badge">✓ STEP 3: FINAL RELEASE READY</span>
+              <h2>Exported 4K Video</h2>
+              <p class="release-desc">All approved scenes, dialogue, captions, and visual effects have been baked into the final release.</p>
+            </div>
+            ${r.exportInfo?.videoUrl ? `<a href="${esc(r.exportInfo.videoUrl)}" download class="button primary release-download-btn">⬇ Download Final Video</a>` : ''}
+          </div>
+          ${r.exportInfo?.videoUrl ? `
+            <div class="release-video-wrapper">
+              <video controls playsinline preload="metadata" class="final-release-video" src="${esc(r.exportInfo.videoUrl)}"></video>
+            </div>
+          ` : ''}
+          <div class="release-meta-bar">
+            <span class="spec-tag accent">4K UHD</span>
+            <span class="spec-tag">${r.outputProfile?.width || 2160}×${r.outputProfile?.height || 3840}</span>
+            <span class="spec-tag">${r.outputProfile?.fps || '60'} FPS</span>
+            ${r.exportInfo?.duration ? `<span class="spec-tag">${Number(r.exportInfo.duration).toFixed(2)}s duration</span>` : ''}
+          </div>
+        </div>
+      `;
+    } else if (isApproved) {
+      bannerEl.innerHTML = `
+        <div class="approval-working-banner">
+          <span class="banner-spinner"></span>
+          <div>
+            <strong>${r.stage === 'frames' ? 'Final plan approved · Rendering in progress' : 'Initial plan approved · Generating previews'}</strong>
+            <p>${r.stage === 'frames' ? 'The editing agent is rendering the final 4K video export and packaging assets. This page updates automatically.' : 'The editing agent is generating actual preview frames with your applied effects. This page updates automatically.'}</p>
+          </div>
+        </div>
+      `;
+    } else {
+      bannerEl.innerHTML = '';
+    }
+  }
 
   if (displayed !== r.id) {
     const quality = r.outputProfile;
@@ -358,7 +469,20 @@ function render() {
   }
 
   const pending = state.submissions.filter(s => s.status === 'pending');
-  const statusMsg = state.stale ? 'Content changed. Publish a fresh review before approval.' : pending.length ? `${pending.length} feedback item(s) submitted for the editing agent.` : 'Review the current script, scenes and preview frames. Submit feedback or approve this plan.';
+  let statusMsg = '';
+  if (state.stale) {
+    statusMsg = 'Content changed. Publish a fresh review before approval.';
+  } else if (isExported) {
+    statusMsg = '✓ Final release exported and ready. You can watch the full video above.';
+  } else if (isApproved) {
+    statusMsg = r.stage === 'frames'
+      ? '✓ Final plan approved! Rendering 4K release export. This page updates automatically.'
+      : '✓ Initial plan approved! Generating actual preview frames and effects. This page updates automatically.';
+  } else if (pending.length) {
+    statusMsg = `${pending.length} feedback item(s) submitted for the editing agent.`;
+  } else {
+    statusMsg = 'Review the current script, scenes and preview frames. Submit feedback or approve this plan.';
+  }
   $('review-status').textContent = statusMsg;
 
   if ($('history')) {
