@@ -71,8 +71,9 @@ function uploadChecklist(p) {
     return `<label class="upload-row"><input type="checkbox" data-upload="${platform}"${checked}${disabled}> ${label}</label>`;
   });
   return `<section class="panel upload-panel" aria-labelledby="upload-title">
-    <h2 id="upload-title">Upload checklist</h2>
-    <p class="muted">Check each platform after you upload.</p>
+    <div class="panel-title"><h2 id="upload-title">Upload checklist</h2>
+      <span class="upload-count">${Object.keys(uploadLabels).filter(platform => p.uploads?.[platform]).length} of 3 posted</span>
+    </div>
     ${rows.join('')}
     <p class="upload-message" role="status"></p>
   </section>`;
@@ -113,7 +114,27 @@ async function saveUpload(p, input) {
 function mediaPanel(p) {
   const key = `${p.kind}/${p.id}`, selected = selectedVideos.get(key);
   const current = p.exports.find(f => f.path === selected) || p.primary;
-  return `<section class="panel media-panel"><div class="panel-title"><div><div class="section-label">YOUR REEL</div><h2>Video</h2></div>${current ? revealButton(current, 'Show video in folder', { id: 'video-reveal' }) : ''}</div>${current ? `<div class="video-wrap"><video id="reel-video" controls playsinline preload="metadata"${p.cover ? ` poster="${escape(p.cover.url)}"` : ''} src="${escape(current.url)}"></video></div>${p.exports.length > 1 ? `<label class="export-label" for="video-select">Available exports</label><select id="video-select">${p.exports.map(f => `<option value="${escape(f.path)}"${f.path === current.path ? ' selected' : ''}>${escape(f.name)}</option>`).join('')}</select>` : `<p class="media-filename">${escape(current.name)}</p>`}` : empty('No exported video yet. Review your plan and previews below.')}</section>`;
+  const picker = p.exports.length > 1 ? `
+    <label class="export-picker" for="video-select">Video version
+      <select id="video-select">${p.exports.map(f => `<option value="${escape(f.path)}"${f.path === current?.path ? ' selected' : ''}>${escape(f.name)}</option>`).join('')}</select>
+    </label>` : '';
+  return `<section class="panel media-panel">
+    <div class="panel-title"><h2>Video preview</h2><span class="media-specs" id="video-specs"></span></div>
+    ${current ? `<div class="video-wrap"><video id="reel-video" aria-label="${escape(p.title)}" controls playsinline preload="metadata"${p.cover ? ` poster="${escape(p.cover.url)}"` : ''} src="${escape(current.url)}"></video></div>
+      <div class="media-footer">${picker || `<span class="media-filename">${escape(current.name.split('/').pop())}</span>`}
+        ${revealButton(current, 'Show video in folder', {id: 'video-reveal'})}</div>` : empty('No exported video yet.')}
+  </section>`;
+}
+
+function coverPanel(p) {
+  const cover = p.cover;
+  return `<section class="panel cover-panel">
+    ${cover ? `<a class="cover-link" href="${escape(cover.url)}" target="_blank" rel="noreferrer" aria-label="View full cover for ${escape(p.title)}">
+      <img src="${escape(cover.url)}" alt="${escape(p.title)} cover"></a>` : ''}
+    <div><h2>Cover image</h2>
+      ${cover ? `<p class="asset-info">${escape(cover.name.split('/').pop())} · ${bytes(cover.size)}</p>
+        ${revealButton(cover, 'Show cover in folder')}` : empty('No cover image yet.')}
+    </div></section>`;
 }
 
 function captionsPanel(p) {
@@ -124,7 +145,7 @@ function captionsPanel(p) {
     }).join('')}</div>`).join('');
     return `<div class="caption-source"><p class="muted">${fileLink(f)}</p>${sections}</div>`;
   }).join('');
-  return `<section class="panel caption-panel"><div class="panel-title"><div><div class="section-label">READY TO SHARE</div><h2>Social captions</h2></div></div>${sources || empty('No social captions yet. Add caption.txt, captions.md, or Social_Copy.md to this project when your copy is ready.')}</section>`;
+  return `<section class="panel caption-panel"><div class="panel-title"><h2>Social captions</h2></div>${sources || empty('No social captions yet. Add caption.txt, captions.md, or Social_Copy.md to this project when your copy is ready.')}</section>`;
 }
 
 function planPanel(p) {
@@ -134,10 +155,7 @@ function planPanel(p) {
 
   return `<section class="panel plan-panel">
     <div class="panel-title">
-      <div>
-        <div class="section-label">THE CREATIVE BLUEPRINT</div>
-        <h2>Creative Plan & Confirmations</h2>
-      </div>
+      <h2>Creative plan</h2>
       ${p.kind === 'ai-reels' ? '' : '<button class="button primary" data-review="plan">Review plan in full ↗</button>'}
     </div>
     <p class="muted">
@@ -301,13 +319,14 @@ function planPanel(p) {
 }
 
 function content(p, tab) {
-  if (tab === 'overview') return `<div class="overview-layout">${mediaPanel(p)}<section class="panel cover-panel"><div class="panel-title"><div><div class="section-label">YOUR THUMBNAIL</div><h2>Cover image</h2></div></div>${p.cover ? `<a class="cover-link" href="${escape(p.cover.url)}" target="_blank" rel="noreferrer"><img class="cover overview-cover" src="${escape(p.cover.url)}" alt="${escape(p.title)} cover"></a>${revealButton(p.cover, 'Show cover in folder', { className: 'cover-action' })}` : empty('No cover yet. Existing cover images will appear here when added to the project.')}</section><aside class="project-sidebar">${uploadChecklist(p)}</aside>${captionsPanel(p)}</div>`;
+  if (tab === 'overview') return `<div class="overview-layout">${mediaPanel(p)}
+    <div class="project-sidebar">${uploadChecklist(p)}${coverPanel(p)}${captionsPanel(p)}</div></div>`;
   if (tab === 'plan') return planPanel(p);
-  if (tab === 'previews') return `<section class="panel"><div class="panel-title"><div><div class="section-label">ACTUAL REVIEW FRAMES</div><h2>Previews</h2></div>${p.kind === 'ai-reels' ? '' : '<button data-review="frames">Review & approve frames ↗</button>'}</div>${p.previews.length ? `<div class="frame-grid">${p.previews.map(f => `<figure><a href="${escape(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}"></a><figcaption>${escape(f.name)} <a href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓</a></figcaption></figure>`).join('')}</div>` : empty('No preview frames yet. Generate them in your AI chat before approving an export.')}</section>`;
-  if (tab === 'exports') return `<section class="panel"><div class="section-label">SAVED ON THIS DEVICE</div><h2>Videos</h2>${fileList(p.exports, true)}</section><section class="panel"><h2>Covers</h2>${fileList(p.covers, true)}</section>${captionsPanel(p)}`;
+  if (tab === 'previews') return `<section class="panel"><div class="panel-title"><div><h2>Previews</h2></div>${p.kind === 'ai-reels' ? '' : '<button data-review="frames">Review & approve frames ↗</button>'}</div>${p.previews.length ? `<div class="frame-grid">${p.previews.map(f => `<figure><a href="${escape(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}"></a><figcaption>${escape(f.name)} <a href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓</a></figcaption></figure>`).join('')}</div>` : empty('No preview frames yet. Generate them in your AI chat before approving an export.')}</section>`;
+  if (tab === 'exports') return `<section class="panel"><h2>Videos</h2>${fileList(p.exports, true)}</section><section class="panel"><h2>Covers</h2>${fileList(p.covers, true)}</section>${captionsPanel(p)}`;
   const originals = p.files.filter(f => f.name.startsWith('raw/') || f.path === p.source?.path);
   const supporting = p.files.filter(f => !originals.includes(f));
-  return `<section class="panel"><div class="section-label">YOUR ORIGINAL RECORDINGS</div><h2>Original footage</h2>${fileList(originals)}</section><section class="panel"><h2>Supporting files</h2><p class="muted">Plans, assets, saved checks, and exports. Runtime caches and composition source folders are omitted.</p>${fileList(supporting)}</section>`;
+  return `<section class="panel"><h2>Original footage</h2>${fileList(originals)}</section><section class="panel"><h2>Supporting files</h2><p class="muted">Plans, assets, saved checks, and exports. Runtime caches and composition source folders are omitted.</p>${fileList(supporting)}</section>`;
 }
 
 async function copy(button, text, html = '') {
@@ -327,12 +346,35 @@ function renderProject(p, tab) {
   const wasPlaying = oldVideo && !oldVideo.paused;
   const oldTime = oldVideo?.currentTime;
   const openCaptions = new Set(key === routeKey ? [...document.querySelectorAll('details[data-caption-section][open]')].map(item => item.dataset.captionSection) : []);
-  app.innerHTML = `<a class="back" href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg> ALL PROJECTS</a><div class="project-heading"><div><div class="eyebrow"><span class="eyebrow-dot"></span>${libraryKind(p) === 'reels' ? 'Combined reel' : p.kind === 'videos' ? 'YouTube video' : 'Single-video edit'}</div><h1>${escape(p.title)}</h1><div class="path">${escape(p.path)}/</div></div><div class="heading-actions"><button class="secondary button-icon" id="open-folder"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Open project folder</button><button class="secondary button-icon" id="copy-path"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy folder path</button><span id="folder-status" role="status"></span></div></div><nav class="tabs" aria-label="Project sections">${tabs.map(t => `<a class="${tab === t ? 'active' : ''}"${tab === t ? ' aria-current="page"' : ''} href="${href(p, t)}">${t[0].toUpperCase() + t.slice(1)}</a>`).join('')}</nav><div id="content">${content(p, tab)}</div>`;
+  const kindLabel = libraryKind(p) === 'reels' ? 'Reel' : p.kind === 'videos' ? 'YouTube video' : 'Single-video edit';
+  app.innerHTML = `<div class="project-detail">
+    <div class="project-topline"><a class="back" href="#">← All projects</a>
+      <div class="heading-actions"><button class="secondary button-icon" id="open-folder" title="Open project folder"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span>Open folder</span></button><button class="secondary button-icon" id="copy-path" title="${escape(p.path)}/"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg><span>Copy folder path</span></button></div></div>
+    <div class="project-heading"><div class="project-meta">
+      <span>${kindLabel}</span>${aiBadge(p)}${p.updated ? `<span class="project-date">Updated ${date(p.updated)}</span>` : ''}
+    </div><h1>${escape(p.title)}</h1></div>
+    <p id="folder-status" role="status"></p>
+    <nav class="tabs" aria-label="Project sections">${tabs.map(t => `<a class="${tab === t ? 'active' : ''}"${tab === t ? ' aria-current="page"' : ''} href="${href(p, t)}">${t[0].toUpperCase() + t.slice(1)}</a>`).join('')}</nav>
+    <div id="content">${content(p, tab)}</div></div>`;
   const newVideo = document.querySelector('#reel-video');
   if (oldVideo && newVideo && oldVideo.getAttribute('src') === newVideo.getAttribute('src')) {
     newVideo.replaceWith(oldVideo);
     if (Number.isFinite(oldTime)) oldVideo.currentTime = oldTime;
     if (wasPlaying) oldVideo.play().catch(() => {});
+  }
+  const player = document.querySelector('#reel-video');
+  if (player) {
+    const showSpecs = () => {
+      const parts = [];
+      if (player.videoWidth && player.videoHeight) parts.push(`${player.videoWidth} × ${player.videoHeight}`);
+      if (Number.isFinite(player.duration)) {
+        const seconds = Math.floor(player.duration);
+        parts.push(`${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`);
+      }
+      document.querySelector('#video-specs').textContent = parts.join(' · ');
+    };
+    player.onloadedmetadata = player.onemptied = () => { if (player.isConnected) showSpecs(); };
+    showSpecs();
   }
   document.querySelectorAll('details[data-caption-section]').forEach(item => { item.open = openCaptions.has(item.dataset.captionSection); });
   routeKey = key; signature = nextSignature;
