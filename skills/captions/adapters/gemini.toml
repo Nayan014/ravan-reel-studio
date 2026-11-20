@@ -1,0 +1,9 @@
+description = "Write or revise multi-platform social captions and posting copy."
+prompt = """
+Read AGENTS.md in this workspace, then canonical skills/captions/SKILL.md.
+Author or revise social captions for the specified video project or topic following the Techno Ravan style standard (Instagram, YouTube Title/Description, TikTok, LinkedIn) with zero em dashes.
+
+User arguments:
+
+{{args}}
+"""

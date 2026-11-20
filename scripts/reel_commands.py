@@ -25,8 +25,8 @@ def quality(folder, plan):
     return result
 
 
-def upgrade(folder,plan):
-    plan.update(pipeline_version=2, renderer='hyperframes', caption_engine='hyperframes', phase='recorded',audio=defaults())
+def upgrade(folder,plan,settings=None):
+    plan.update(pipeline_version=2, renderer='hyperframes', caption_engine='hyperframes', phase='recorded',audio=defaults(settings))
     for shot in plan['shots']: shot['remotion']={'status':'none'}
     quality(folder,plan)
 
@@ -39,7 +39,7 @@ def draft(rw,slug,file):
     plan={'version':1,'pipeline_version':2,'renderer':'hyperframes','caption_engine':'hyperframes','phase':'draft',
           'project_type':'video' if rw.PROJECT_KIND=='videos' else 'reel','target_duration':data.get('target_duration'),'sections':data.get('sections',[]),
           'slug':slug,'title':data['title'],'idea':data.get('idea',''),'channel':data.get('channel','Techno Ravan'),
-          'language':data.get('language','en'),'style':'flat','palette':'clay','visual_selection':None,'audio':defaults(),'shots':[]}
+          'language':data.get('language','en'),'style':'flat','palette':'clay','visual_selection':None,'audio':defaults(rw.load_settings()),'shots':[]}
     for i,item in enumerate(shots):
         if not isinstance(item.get('expected_say'),str) or not item['expected_say'].strip(): raise ValueError('Each scene needs the intended spoken script.')
         plan['shots'].append({'id':f'{i+1:02d}','expected_say':item['expected_say'],'say':'','words':[],
@@ -65,7 +65,7 @@ def mapped_scenes(items, files, shots, infos):
         if not all(isinstance(n,(int,float)) and not isinstance(n,bool) and math.isfinite(n) for n in clip) or not 0<=clip[0]<clip[1]<=infos[name]['duration']:
             raise ValueError('Scene clip boundaries must be inside the source recording.')
         row=copy.deepcopy(shot)
-        for key in ['analysis_signature','source_frame']:
+        for key in ['analysis_signature','source_frame','narration','audition','voice_mode']:
             row.pop(key,None)
         row.update(source=name,source_sha256=digest(files[name]),source_span=clip,clip=clip,
                    say='',words=[],caption_pages=[],text_confirmed=False)
@@ -81,10 +81,15 @@ def attach(rw,slug,source,mapping_file=None):
     if approval.get('script')!=[s['expected_say'] for s in plan['shots']]:
         raise ValueError('Approve the current script before attaching recordings.')
     source=rw.input_folder(source)
-    files={f.name:f for f in source.iterdir() if f.is_file() and not f.is_symlink() and f.suffix.lower() in rw.VIDEO_TYPES}
+    if source.is_file():
+        if source.suffix.lower() not in rw.VIDEO_TYPES:
+            raise ValueError('Recording file must be a supported video type.')
+        files={source.name: source}
+    else:
+        files={f.name:f for f in source.iterdir() if f.is_file() and not f.is_symlink() and f.suffix.lower() in rw.VIDEO_TYPES}
     infos={name:probe(path) for name,path in files.items()}
-    if not files or not all(i['has_audio'] for i in infos.values()):
-        raise ValueError('Every recording needs source audio.')
+    if not files:
+        raise ValueError('No supported footage found.')
     if mapping_file:
         items=read_json(Path(mapping_file))['scenes']
     else:
@@ -169,35 +174,53 @@ def analyze(rw,slug):
     folder,plan=rw.plan_at(slug)
     if plan.get('phase')=='draft': raise ValueError('Attach the numbered recordings first.')
     out=folder/'working/analysis';out.mkdir(exist_ok=True);jobs=[]
+    silent_ids=set()
     for shot in plan['shots']:
         src=folder/'raw'/shot['source'];sha=digest(src)
         if sha!=shot['source_sha256']: raise ValueError('Original footage changed; re-import it before analysis.')
+        if shot.get('narration'):
+            continue
+        if not probe(src)['has_audio']:
+            silent_ids.add(shot['id'])
+            continue
         wav=out/f'{sha}.wav'
         if not wav.exists(): run(['ffmpeg','-y','-v','error','-i',src,'-vn','-ac','1','-ar','16000',wav])
-        job={'wav':str(wav),'cache':str(out/f'{sha}.speech.json'),'source':str(src),'source_sha256':sha}
+        job={'wav':str(wav),'cache':str(out/f'{sha}.speech.json'),'source':str(src),'source_sha256':sha,'allow_empty':True}
         if job not in jobs: jobs.append(job)
     manifest=out/'batch.json';write_json(manifest,{'jobs':jobs,'language':plan.get('language','en'),'model':plan.get('speech_model')})
-    run([runtime(),Path(__file__).with_name('speech_batch.py'),manifest],out/'batch.log')
+    if jobs: run([runtime(),Path(__file__).with_name('speech_batch.py'),manifest],out/'batch.log')
     uncertain=[];changed=False
     for shot in plan['shots']:
-        cache=read_json(out/f'{shot["source_sha256"]}.speech.json')
         span=shot.get('source_span',[0,probe(folder/'raw'/shot['source'])['duration']])
-        words=[dict(w,s=max(w['s'],span[0]),e=min(w['e'],span[1])) for w in cache['words'] if span[0]<=(w['s']+w['e'])/2<span[1]]
-        if not words: raise ValueError(f'No speech detected in scene {shot["id"]}. Listen to the original.')
-        start=max(span[0],float(words[0]['s'])-.12);end=min(span[1],float(words[-1]['e'])+.18)
-        text=' '.join(w['w'] for w in words)
-        signature=[cache['signature'],span]
-        shot_changed=shot.get('analysis_signature')!=signature
-        if shot_changed:
-            changed=True
-            shot.update(clip=[start,end],say=text,words=[{'text':w['w'],'start':max(0,w['s']-start),'end':w['e']-start} for w in words],
-                        caption_pages=[' '.join(text.split()[i:i+6]) for i in range(0,len(text.split()),6)] if plan.get('project_type')=='video' else rw.pages(text),text_confirmed=False,analysis_signature=signature)
-        for w in words:
-            if w.get('probability') is not None and w['probability']<.5: uncertain.append({'scene':shot['id'],'start':w['s'],'end':w['e'],'text':w['w']})
+        start,end=shot['clip']
+        shot_changed=False
+        if not shot.get('narration'):
+            cache = {} if shot['id'] in silent_ids else read_json(out/f'{shot["source_sha256"]}.speech.json')
+            words=[dict(w,s=max(w['s'],span[0]),e=min(w['e'],span[1])) for w in cache.get('words',[]) if span[0]<=(w['s']+w['e'])/2<span[1]]
+            if words:
+                start=max(span[0],float(words[0]['s'])-.12);end=min(span[1],float(words[-1]['e'])+.18)
+                text=' '.join(w['w'] for w in words)
+                signature=[cache['signature'],span]
+                shot_changed=shot.get('analysis_signature')!=signature
+                if shot_changed:
+                    shot.pop('voice_mode',None)
+                    shot.update(clip=[start,end],say=text,words=[{'text':w['w'],'start':max(0,w['s']-start),'end':w['e']-start} for w in words],
+                                caption_pages=[' '.join(text.split()[i:i+6]) for i in range(0,len(text.split()),6)] if plan.get('project_type')=='video' else rw.pages(text),text_confirmed=False,analysis_signature=signature)
+                for w in words:
+                    if w.get('probability') is not None and w['probability']<.5: uncertain.append({'scene':shot['id'],'start':w['s'],'end':w['e'],'text':w['w']})
+            else:
+                silent_ids.add(shot['id'])
+                # An empty transcript alone cannot authorize muting audible source sound.
+                if shot.get('voice_mode') != 'silent':
+                    from narration import source_is_silent
+                    if source_is_silent(folder/'raw'/shot['source'],span):
+                        shot.update(voice_mode='silent',say='',words=[],caption_pages=[],text_confirmed=not shot.get('expected_say'))
+                        shot_changed=True
+            changed |= shot_changed
         frame=out/f'{shot["id"]}.jpg'
         if shot_changed or not frame.exists(): run(['ffmpeg','-y','-v','error','-ss',str((start+end)/2),'-i',folder/'raw'/shot['source'],'-vf','scale=540:-2','-frames:v','1',frame])
         shot['source_frame']=frame.relative_to(folder).as_posix()
     if changed: plan['visual_selection']=None
     write_json(folder/'plan.json',plan);rw.make_html(folder,plan)
-    return {'project':slug,'stage':'verify_transcript_and_choose_visuals','uncertain':uncertain,'details':str(out),
+    return {'project':slug,'stage':'verify_transcript_and_choose_visuals','uncertain':uncertain,'scenes_without_detected_speech':sorted(silent_ids),'details':str(out),
             'next':'Listen to uncertain segments. Never substitute the expected script for uncertain speech. Correct say, words and captions together; confirm text before previews.'}

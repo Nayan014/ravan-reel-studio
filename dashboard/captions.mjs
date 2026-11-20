@@ -42,7 +42,7 @@ export function captionRows(sections) {
 /** Small, non-nested emphasis markers; never interpret source HTML as markup. */
 export function formatCaption({ label, text }) {
   let html = '', plain = '', end = 0, styled = false;
-  const markers = /\*\*([^\n]+?)\*\*|\*([^*\n]+)\*|~~([^\n]+?)~~/g;
+  const markers = /\*\*([^\n]+?)\*\*|\*(?!\s)([^*\n]+?)(?<!\s)\*|~~([^\n]+?)~~/g;
   for (const match of text.matchAll(markers)) {
     const value = match[1] ?? match[2] ?? match[3];
     if (value !== value.trim() || text[match.index - 1] === '\\') continue;
@@ -61,11 +61,7 @@ export function formatCaption({ label, text }) {
     text: plain,
     html: rich ? html : escapeHtml(plain),
     clipboardHtml: rich && styled ? `<div>${html.replace(/\n/g, '<br>')}</div>` : '',
-    hint: linkedin
-      ? 'Copy formatted includes styled text. Check the result in your LinkedIn post composer after pasting; available styles can vary by account.'
-      : rich
-      ? 'YouTube descriptions support bold, italic and strikethrough. Check the result in YouTube Studio after pasting; use its formatting toolbar if styles are removed.'
-      : 'Copies as normal text. Paragraphs, bullet characters, hashtags and mentions are preserved.',
+    hint: '',
   };
 }
 

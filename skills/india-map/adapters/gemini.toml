@@ -1,0 +1,8 @@
+description = "Prepare maps using the Government of India's boundary depiction."
+prompt = """
+Read AGENTS.md and canonical skills/india-map/SKILL.md in this workspace.
+Follow its official-source, provenance, usage-rights and visual-review workflow for the requested map.
+User arguments:
+
+{{args}}
+"""

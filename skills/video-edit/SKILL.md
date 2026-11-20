@@ -9,7 +9,7 @@ For every question and approval, follow `../../docs/WORKFLOW_REVIEW.md`: use nat
 
 Use this workflow in the conversation with the user. The helper handles files and stages; you analyze the video, recommend suitable effects and show the images. It does not call a model service itself.
 
-When the user requests natural studio lighting, read `../../docs/STUDIO_LIGHTING.md`. It is opt-in, before graphics, and can accompany selected effects through the plan's `lighting` field. Show actual frames across the whole clip, not only the graphic windows. For lighting alone, use the direct effects route and its actual-frame review rather than choosing an unrelated numbered effect. Never reuse approval after changing the lighting or its calibrated screen regions.
+For a request to improve face lighting or balance a backlit room, use the [studio-lighting skill](../studio-lighting/SKILL.md) and the `adaptive-studio` preset. When the user requests natural studio lighting, read `../../docs/STUDIO_LIGHTING.md`. It is opt-in, before graphics, and can accompany selected effects through the plan's `lighting` field. Show actual frames across the whole clip, not only the graphic windows. For lighting alone, use the direct effects route and its actual-frame review rather than choosing an unrelated numbered effect. Never reuse approval after changing the lighting or its calibrated screen regions.
 
 The preferred project shortcut is `/wf video-edit`, routed by `../wf/SKILL.md`. `/video-edit` and `Start video edit` still invoke this same workflow.
 
@@ -64,6 +64,8 @@ Ask which image number or combination the user prefers and wait. They may choose
 
 ## 3 Show actual frames and the plan
 
+For an India/state map or regional/world map including India, follow `../india-map/SKILL.md` before preparing the map asset. Include the verified graphic in the existing actual-frame review.
+
 After the user's choice, run `choose CARD_NUMBER --session ID`, or `choose 49,5,6 --session ID` for multiple selected cards. Draft a plan containing each selected effect exactly once with its canonical `fx` and optional `look` from the catalogue's `config`. Put camera effects before overlapping graphics in the effects list. Reuse only those identifiers from the sample config; its example copy, timing, names and metrics are not the user's data.
 
 Use the actual clip's words and timing. If exact text or necessary assets are still missing, ask before previewing. Save the plan in the session folder, then run:
@@ -87,4 +89,4 @@ render --session ID
 
 Never manufacture an approval message or treat silence as approval. `approve` records the user's decision; it is not a command to call speculatively. Use the helper's `render` command rather than bypassing this stage with a direct `fx.py` MP4 command.
 
-The helper blocks a render without approval and rejects changed plans, sources, assets or preview frames. If it rejects stale approval, generate new preview frames and ask again. The output stays in this session's directory under `outputs/edits/`. Give the finished MP4 path and remind the user to watch the result before posting.
+The helper blocks a render without approval and rejects changed plans, sources, assets or preview frames. If it rejects stale approval, generate new preview frames and ask again. The output stays in this session's directory under `outputs/edits/`. After rendering, follow `../cover-image/SKILL.md` for the shared-style cover unless the user requested another cover or opted out. Give the finished MP4 path and remind the user to watch the result before posting.

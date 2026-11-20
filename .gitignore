@@ -48,5 +48,6 @@ docs/Intro_Reel_Shoot_Plan.pdf
 # Deliberate public media: one synthetic video and the credited bundled audio.
 !examples/demo/export/demo.mp4
 !tools/techno-reel/public/music/*.mp3
+!assets/audio/voices/*.mp3
 !tools/techno-reel/public/sfx/*.wav
 !tools/techno-reel/examples/example/audio/*.wav

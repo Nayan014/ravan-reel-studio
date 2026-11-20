@@ -26,6 +26,35 @@ async function serverFixture(t, root, options = {}) {
   return `http://127.0.0.1:${server.address().port}`;
 }
 
+test('audio settings stream the listed recordings and persist only valid selections', async t => {
+  const {root, put} = fixture(t);
+  put('settings.json', {channelName: 'My channel', defaultMusicMood: 'Quiet'});
+  const base = await serverFixture(t, root);
+  const settings = () => fetch(base + '/api/settings').then(r => r.json());
+  const save = data => fetch(base + '/api/settings', {method: 'POST', body: JSON.stringify(data),
+    headers: {origin: base, 'content-type': 'application/json', 'x-dashboard-action': 'settings'}});
+  assert.equal((await settings()).defaultNarrationVoice, 'af_heart');
+  const {music, voices} = await fetch(base + '/api/settings/audio-options').then(r => r.json());
+  assert.ok(music.some(row => row.id === 'none' && row.preview === null));
+  assert.ok(voices.some(row => row.id === 'am_michael'));
+  for (const choice of [...music, ...voices].filter(row => row.preview)) {
+    const response = await fetch(base + choice.preview, {headers: {range: 'bytes=0-255'}});
+    assert.equal(response.status, 206, choice.name);
+    assert.equal(response.headers.get('content-type'), 'audio/mpeg');
+    assert.equal((await response.arrayBuffer()).byteLength, 256);
+  }
+  assert.equal((await fetch(base + '/voice-preview/unknown')).status, 404);
+  assert.equal((await save({defaultMusicTrack: 'music-bubbles', defaultNarrationVoice: 'am_michael'})).status, 200);
+  for (const data of [{defaultMusicTrack: 'sfx-pop-1'}, {defaultMusicTrack: 'none', defaultNarrationVoice: 'system'}]) {
+    assert.equal((await save(data)).status, 400);
+  }
+  const saved = await settings();
+  assert.deepEqual([saved.defaultMusicTrack, saved.defaultNarrationVoice, saved.defaultMusicMood, saved.channelName],
+    ['music-bubbles', 'am_michael', 'Quiet', 'My channel']);
+  assert.equal((await save({defaultMusicTrack: 'none'})).status, 200);
+  assert.equal((await settings()).defaultMusicTrack, 'none');
+});
+
 test('discovers reels, Hyperframes, export packages and edits without changing working directory', t => {
   const { root, put } = fixture(t);
   put('outputs/reels/first/plan.json', { title: 'First reel', renderer: 'hyperframes' });
@@ -276,11 +305,13 @@ test('plain captions and titles retain paragraphs, bullets, hashtags and Unicode
 });
 
 test('LinkedIn offers styled text and a matching normal-text clipboard representation', () => {
-  const value = formatCaption({ label: 'LinkedIn', text: '**Building apps**\n\nA *new experiment* with AI.\n#BuildInPublic' });
+  const value = formatCaption({ label: 'LinkedIn', text: '**Building apps**\n\n• **Lead point:** description\n\nA *new experiment* with AI.\n#BuildInPublic' });
   assert.match(value.html, /<strong>Building apps<\/strong>/);
+  assert.match(value.html, /• <strong>Lead point:<\/strong> description/);
   assert.match(value.html, /<em>new experiment<\/em>/);
   assert.match(value.clipboardHtml, /<strong>Building apps<\/strong>/);
-  assert.equal(value.text, 'Building apps\n\nA new experiment with AI.\n#BuildInPublic');
+  assert.match(value.clipboardHtml, /<strong>Lead point:<\/strong>/);
+  assert.equal(value.text, 'Building apps\n\n• Lead point: description\n\nA new experiment with AI.\n#BuildInPublic');
 });
 
 test('caption rows pair Instagram/TikTok, then YouTube fields, then LinkedIn while retaining copy indices', () => {

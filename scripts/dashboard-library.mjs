@@ -132,11 +132,97 @@ function projectData(root, kind, id) {
     ['Saved self-review', selfReview], ['Export record', exported], ['Package provenance', provenance],
   ].filter(([, data]) => data).map(([label, data]) => ({ label, data }));
   const title = typeof plan?.title === 'string' ? plan.title : session?.source ? basename(String(session.source), extname(String(session.source))) : id.replace(/[-_]/g, ' ');
+
+  // Extract structured creative plan and confirmations for visual presentation
+  let speech = '';
+  let planRationale = '';
+  let plannedEffects = [];
+  let initialSelection = plan?.visual_selection || null;
+  const planConfirmed = Boolean(plan?.visual_selection || session?.chosen_id || session?.chosen_ids);
+
+  if (kind === 'edits' && session) {
+    if (session.chosen_ids || session.chosen_id) {
+      initialSelection = (session.chosen_ids || [session.chosen_id]).map(num => `Effect #${num}`).join(', ');
+    }
+    if (session.analysis) {
+      const analysisData = record(slash(relative(folder, resolve(root, session.analysis))));
+      if (analysisData?.spoken_text) speech = analysisData.spoken_text;
+    }
+    if (session.recommendations) {
+      const recData = record(slash(relative(folder, resolve(root, session.recommendations))));
+      if (recData?.summary) planRationale = recData.summary;
+      if (Array.isArray(recData?.recommendations)) {
+        plannedEffects = recData.recommendations.map(r => ({
+          id: r.id,
+          name: r.name || `Effect #${r.id}`,
+          reason: r.reason,
+          timing: r.suggested_timing,
+          previewUrl: r.sample ? mediaUrl(r.sample) : null,
+        }));
+      }
+    }
+    const planFile = session.plan ? record(slash(relative(folder, resolve(root, session.plan)))) : plan;
+    if (Array.isArray(planFile?.effects) && planFile.effects.length) {
+      plannedEffects = planFile.effects.map(e => ({
+        id: e.fx,
+        name: e.fx,
+        text: e.text || e.label || '',
+        timing: (e.start != null && e.end != null) ? `${Number(e.start).toFixed(2)}s - ${Number(e.end).toFixed(2)}s` : '',
+        reason: plannedEffects.find(r => r.name === e.fx || String(r.id) === String(e.fx))?.reason || '',
+      }));
+    }
+  } else if (plan?.shots) {
+    speech = plan.shots.map(s => s.say || s.expected_say).filter(Boolean).slice(0, 3).join(' ');
+    if (plan.shots.length > 3) speech += ' ...';
+    plannedEffects = plan.shots.map(s => {
+      const fxList = s.vibha?.effects?.map(e => e.id || e.fx) || [];
+      const scene = s.remotion?.scene;
+      return {
+        id: s.id,
+        name: scene || fxList.join(', ') || 'Standard shot',
+        say: s.say || s.expected_say || '',
+        timing: Array.isArray(s.clip) ? `${Number(s.clip[0]).toFixed(2)}s - ${Number(s.clip[1]).toFixed(2)}s` : '',
+        layout: s.layout || 'full',
+      };
+    });
+  }
+
+  const approvalRecord = session?.approval || approval || null;
+  const previewTimes = Array.isArray(session?.preview?.times) ? session.preview.times : [];
+  const sliceFrames = recordedFrames.map((f, idx) => ({
+    ...f,
+    time: previewTimes[idx] != null ? `${Number(previewTimes[idx]).toFixed(2)}s` : null,
+  }));
+
+  let feedbackSubmissions = [];
+  try {
+    const reviewPath = join(root, 'outputs', '.workflow', 'reviews', kind, `${id}.json`);
+    if (existsSync(reviewPath)) {
+      const reviewStore = JSON.parse(readFileSync(reviewPath, 'utf8'));
+      if (Array.isArray(reviewStore?.submissions)) {
+        feedbackSubmissions = reviewStore.submissions;
+      }
+    }
+  } catch {}
+
+  const creativePlan = {
+    speech,
+    planRationale,
+    plannedEffects,
+    initialSelection,
+    planConfirmed,
+    approval: approvalRecord,
+    approved: Boolean(approvalRecord),
+    previewId: approvalRecord?.preview_id || approvalRecord?.previewId || session?.preview?.id || preview?.inputs || null,
+    sliceFrames,
+    feedbackSubmissions,
+  };
+
   return {
     id, kind, projectType: plan?.project_type || (kind === 'videos' ? 'video' : kind === 'reels' ? 'reel' : 'edit'), title, path: local, updated: all[0]?.modified || statSync(folder).mtime.toISOString(),
     status: session?.stage ? String(session.stage).replace(/_/g, ' ') : primary ? 'export available' : plan ? 'planning' : 'files available',
     renderer: typeof plan?.renderer === 'string' ? plan.renderer : kind === 'edits' ? 'Vibha effects' : plan ? 'remotion' : null,
-    primary, cover, covers, exports, captions, plans, previews, source, files: all, records, warnings: [...new Set(warnings)],
+    primary, cover, covers, exports, captions, plans, previews, source, files: all, records, creativePlan, warnings: [...new Set(warnings)],
   };
 }
 

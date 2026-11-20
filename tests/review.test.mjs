@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,realpathSync,symlinkSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,dirname} from 'node:path';
-import {randomUUID} from 'node:crypto';
-import {prepareReview,readReview,submitReview,acknowledgeReview,suggestedReview} from '../scripts/review-store.mjs';
+import {createHash,randomUUID} from 'node:crypto';
+import {prepareReview,readReview,submitReview,acknowledgeReview,suggestedReview,selectLighting} from '../scripts/review-store.mjs';
 import {readVisual,saveVisual,validateLayers} from '../scripts/visual-editor.mjs';
 import {waitForSubmission} from '../scripts/review.mjs';
 import {createDashboard} from '../scripts/dashboard.mjs';
@@ -107,7 +107,7 @@ test('review HTTP actions require origin, JSON and custom header; no render or a
  assert.equal((await fetch(base+'/review/reels/demo')).status,200);
  assert.equal((await fetch(base+'/visual-editor.js')).status,404);
  assert.equal((await fetch(base+'/api/reviews/reels/demo/visual',{method:'POST',headers,body:'{}'})).status,405);
- assert.equal(state.catalogue.filter(t=>t.kind==='music').length,4);
+ assert.equal(state.catalogue.filter(t=>t.kind==='music').length,5);
  assert.equal((await fetch(base+'/audio/music-lofi',{headers:{range:'bytes=0-15'}})).status,206);
  assert.equal((await fetch(base+'/audio/not-a-track')).status,404);
  const html=await fetch(base+'/media/outputs/reels/demo/review.html');assert.match(html.headers.get('content-security-policy'),/sandbox;/);
@@ -157,4 +157,80 @@ test('dashboard opens draft script review and the explicitly recorded frame docu
  const review=suggestedReview(root,'reels','demo','frames');
  assert.equal(review.request.document,'outputs/reels/demo/previews/current/review.html');
  assert.equal(review.request.frames.length,1);
+});
+
+test('voice auditions are revision-bound and frame reviews use the full mix and scene boundaries',t=>{
+ const {root,put,prepare}=fixture(t);
+ const base='outputs/reels/demo';
+ const auditionId=randomUUID().replaceAll('-','');
+ const hash=data=>createHash('sha256').update(data).digest('hex');
+ const takes={};
+ for(const key of ['A','B']){
+   const file=`working/narration/${auditionId}/${key}.wav`;
+   put(`${base}/${file}`,key);
+   takes[key]={file,sha256:hash(key)};
+ }
+ const plan={title:'Narrated reel',pipeline_version:2,renderer:'hyperframes',shots:[
+   {id:'01',clip:[0,5]}, {id:'02',clip:[0,7],audition:{id:auditionId,takes}}
+ ],audio:{music:null,sfx:[]}};
+ put(base+'/plan.json',plan);
+ const first=prepare().request;
+ assert.equal(first.scenes[1].audition.takes.B,`/media/${base}/${takes.B.file}`);
+ assert.throws(()=>submitReview(root,'reels','demo',{id:randomUUID(),requestId:first.id,action:'approve'}),/Select a reading/);
+ put(base+'/'+takes.A.file,'changed');assert.equal(readReview(root,'reels','demo').stale,true);
+ delete plan.shots[1].audition;
+ const planPath=put(base+'/plan.json',plan);
+ const mix=put(base+'/working/audio/mix.wav','reviewed audio');
+ put(base+'/previews/01.png','frame');
+ put(base+'/preview.json',{id:'current',mix_version:2,review_plan_sha256:hash(readFileSync(planPath)),
+   mix_sample:mix,audio_files:[mix],files:[base+'/previews/01.png'],scene_audio_times:{'01':[0,5],'02':[5,12]}});
+ const frames=prepare('frames').request;
+ assert.equal(frames.audio.fullMix,true);
+ assert.equal(frames.audio.mixSample,'/media/'+base+'/working/audio/mix.wav');
+ assert.deepEqual(frames.scenes[1].timeline,[5,12]);
+ plan.audio.music='music-bubbles';
+ put(base+'/plan.json',plan);
+ assert.equal(readReview(root,'reels','demo').stale,true);
+ assert.throws(()=>prepare('frames'),/fresh frames and audio/);
+});
+
+test('lighting frame approval includes the matched motion sample', t => {
+  const {root, put} = fixture(t);
+  const base = 'outputs/edits/lighting';
+  const comparison = base + '/preview/comparison.mp4';
+  const frame = base + '/preview/frame.png';
+  put(comparison, 'review motion');
+  put(frame, 'matched still');
+  put(base + '/analysis.json', {width:2160, height:3840, fps_fraction:'60000/1001'});
+  put(base + '/session.json', {mode:'lighting', source:'inputs/shot.mov', width:2160,
+    analysis:base + '/analysis.json', preview:{id:'fixture-preview', frames:[frame], comparison}});
+  const {request} = prepareReview(root, {kind:'edits', id:'lighting', stage:'frames'});
+  assert.equal(request.comparison, '/media/' + comparison);
+  assert.equal(request.outputProfile.height, 3840);
+  put(comparison, 'different sample');
+  assert.equal(readReview(root, 'edits', 'lighting').stale, true);
+  assert.throws(() => submitReview(root, 'edits', 'lighting', {id:randomUUID(), requestId:request.id, action:'approve'}), /changed/);
+});
+
+test('project lighting choices apply to the whole plan and retain shot geometry across Off', t => {
+  for (const kind of ['reels','videos']) {
+    const {root,put} = fixture(t), base = `outputs/${kind}/lights`;
+    const regions = [[[.1,.2],[.2,.2],[.2,.4]]];
+    const cuts = [{id:'01',lighting:null}, {id:'02',lighting:{preset:'natural-studio',screen_regions:regions}}];
+    put(base + '/plan.json', {title:'Lighting plan',shots:cuts});
+    const {request} = prepareReview(root, {kind,id:'lights',stage:'plan'});
+    assert.equal(request.projectLighting.options.length, 2);
+    let revision = request.id;
+    for (const look of ['softbox','none','wall-accents']) {
+      const next = selectLighting(root,kind,'lights',{requestId:revision,look}).request;
+      assert.notEqual(revision,next.id);
+      revision = next.id;
+      const plan = JSON.parse(readFileSync(join(root,base,'plan.json')));
+      assert.equal(plan.lighting?.look || 'none',look);
+      assert.deepEqual(plan.shots[1].lighting_calibration.screen_regions,regions);
+      assert.ok(plan.shots.every(shot => !Object.hasOwn(shot,'lighting')));
+    }
+    assert.throws(()=>selectLighting(root,kind,'lights',{requestId:request.id,look:'softbox'}),/Reload/);
+    assert.throws(()=>selectLighting(root,kind,'lights',{requestId:revision,look:'bogus'}),/Unknown/);
+  }
 });

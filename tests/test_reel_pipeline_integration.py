@@ -50,7 +50,7 @@ class PipelineIntegration(unittest.TestCase):
      configs=list((f/'working/vibha').glob('*/effects.json'));self.assertTrue(configs)
      self.assertTrue(all(rw.read_json(path)['effects'][0]['fx']=='studio-light' for path in configs))
     self.assertEqual(encoded['frame_count'],12)
-    html=(f/'hyperframes/index.html').read_text();self.assertEqual(html.count('id="source-voice"'),1);self.assertEqual(html.count('<div id="captions"'),1)
+    html=(f/'hyperframes/index.html').read_text();self.assertEqual(html.count('id="approved-mix"'),1);self.assertEqual(html.count('<div id="captions"'),1)
     self.assertNotIn('data-has-audio="true"',(f/'hyperframes/compositions/shot-01.html').read_text())
     rw.run(['ffmpeg','-y','-v','error','-i',exported['file'],'-frames:v','1',f'/tmp/reel-verified-{width}-{fps.replace("/","-")}.png'])
     if effect:

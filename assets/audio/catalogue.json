@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "entries": [
     {
       "id": "sfx-whoosh-1",
@@ -13,7 +13,15 @@
       "source": "https://freesound.org/s/831936/",
       "author": "1bob",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/831936/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "1.2K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-whoosh-2",
@@ -27,7 +35,15 @@
       "source": "https://freesound.org/s/683101/",
       "author": "florianreichelt",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/683101/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "24.4K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-whoosh-3",
@@ -41,7 +57,15 @@
       "source": "https://freesound.org/s/632763/",
       "author": "adh.dreaming",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/632763/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "3.4K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-whip",
@@ -55,7 +79,15 @@
       "source": "https://freesound.org/s/838766/",
       "author": "JW_Audio",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/838766/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "88",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-swipe-1",
@@ -69,7 +101,15 @@
       "source": "https://kenney.nl/assets/casino-audio",
       "author": "Kenney",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://opengameart.org/node/12742",
+        "scope": "pack",
+        "metric": "downloads",
+        "display_count": "4259",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-swipe-2",
@@ -83,7 +123,15 @@
       "source": "https://kenney.nl/assets/casino-audio",
       "author": "Kenney",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://opengameart.org/node/12742",
+        "scope": "pack",
+        "metric": "downloads",
+        "display_count": "4259",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-pop-1",
@@ -97,7 +145,15 @@
       "source": "https://freesound.org/s/202230/",
       "author": "deraj",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/202230/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "62.6K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-pop-2",
@@ -111,7 +167,15 @@
       "source": "https://freesound.org/s/328119/",
       "author": "D.S.G.",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/328119/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "5.0K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-pop-3",
@@ -125,7 +189,15 @@
       "source": "https://freesound.org/s/850097/",
       "author": "lbrady240",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/850097/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "1.8K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-click-1",
@@ -139,7 +211,15 @@
       "source": "https://kenney.nl/assets/interface-sounds",
       "author": "Kenney",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://opengameart.org/content/interface-sounds",
+        "scope": "pack",
+        "metric": "downloads",
+        "display_count": "6061",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-click-2",
@@ -153,7 +233,15 @@
       "source": "https://kenney.nl/assets/interface-sounds",
       "author": "Kenney",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://opengameart.org/content/interface-sounds",
+        "scope": "pack",
+        "metric": "downloads",
+        "display_count": "6061",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-key-1",
@@ -167,7 +255,15 @@
       "source": "https://freesound.org/s/194799/",
       "author": "jim-ph",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/194799/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "3.9K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-key-2",
@@ -181,7 +277,15 @@
       "source": "https://freesound.org/s/194799/",
       "author": "jim-ph",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/194799/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "3.9K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-key-3",
@@ -195,7 +299,15 @@
       "source": "https://freesound.org/s/194799/",
       "author": "jim-ph",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/194799/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "3.9K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-key-4",
@@ -209,7 +321,15 @@
       "source": "https://freesound.org/s/194799/",
       "author": "jim-ph",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/194799/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "3.9K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-blip",
@@ -223,7 +343,15 @@
       "source": "https://kenney.nl/assets/interface-sounds",
       "author": "Kenney",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://opengameart.org/content/interface-sounds",
+        "scope": "pack",
+        "metric": "downloads",
+        "display_count": "6061",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-ding",
@@ -237,7 +365,15 @@
       "source": "https://freesound.org/s/611113/",
       "author": "5ro4",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/611113/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "11.0K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-impact-1",
@@ -251,7 +387,15 @@
       "source": "https://freesound.org/s/201571/",
       "author": "Julien_Matthey",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/201571/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "5.1K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-impact-2",
@@ -265,7 +409,15 @@
       "source": "https://freesound.org/s/315725/",
       "author": "Renovatio871",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/315725/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "2.0K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-riser",
@@ -279,7 +431,15 @@
       "source": "https://freesound.org/s/685256/",
       "author": "syntheffects",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/685256/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "8.3K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-shutter",
@@ -293,7 +453,15 @@
       "source": "https://freesound.org/s/539136/",
       "author": "ristooooo1",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/539136/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "228",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-coin",
@@ -307,7 +475,15 @@
       "source": "https://freesound.org/s/209578/",
       "author": "Zott820",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freesound.org/s/209578/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "51.6K",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "sfx-success",
@@ -321,7 +497,15 @@
       "source": "https://kenney.nl/assets/interface-sounds",
       "author": "Kenney",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://opengameart.org/content/interface-sounds",
+        "scope": "pack",
+        "metric": "downloads",
+        "display_count": "6061",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "music-lofi",
@@ -336,7 +520,15 @@
       "source": "https://opengameart.org/content/happy-lo-fi-lofi-collection",
       "author": "HoliznaCC0",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freemusicarchive.org/music/holiznacc0/busted-guitar-lofi-edit/poor-but-happy/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "4342",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "music-upbeat",
@@ -351,7 +543,15 @@
       "source": "https://opengameart.org/content/happy-lo-fi-lofi-collection",
       "author": "HoliznaCC0",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freemusicarchive.org/music/holiznacc0/lo-fi-and-chill/puppy-love/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "1283",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "music-chill",
@@ -366,7 +566,15 @@
       "source": "https://opengameart.org/content/chill-beats-collection",
       "author": "HoliznaCC0",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freemusicarchive.org/music/holiznacc0/lo-fi-and-chill/autumn/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "1230",
+        "checked": "2026-11-18"
+      }
     },
     {
       "id": "music-funk",
@@ -381,7 +589,38 @@
       "source": "https://opengameart.org/content/funk-collection",
       "author": "HoliznaCC0",
       "license": "CC0-1.0",
-      "notice": "tools/techno-reel/public/sfx/CREDITS.md"
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freemusicarchive.org/music/holiznacc0/bassic/make-funk/",
+        "scope": "recording",
+        "metric": "downloads",
+        "display_count": "5317",
+        "checked": "2026-11-18"
+      }
+    },
+    {
+      "id": "music-bubbles",
+      "kind": "music",
+      "title": "Bubbles",
+      "file": "tools/techno-reel/public/music/bubbles.mp3",
+      "moods": [
+        "bright",
+        "demo"
+      ],
+      "duration": 147.636,
+      "source": "https://freemusicarchive.org/music/holiznacc0/public-domain-lofi/bubbles-lofi-bright-relaxed/",
+      "author": "HoliznaCC0",
+      "license": "CC0-1.0",
+      "notice": "tools/techno-reel/public/sfx/CREDITS.md",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "popularity": {
+        "source": "https://freemusicarchive.org/music/holiznacc0/public-domain-lofi/bubbles-lofi-bright-relaxed/",
+        "scope": "recording",
+        "metric": "favorites",
+        "display_count": "63",
+        "checked": "2026-11-18"
+      }
     }
   ]
 }

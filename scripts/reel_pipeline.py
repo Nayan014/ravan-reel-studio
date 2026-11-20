@@ -28,7 +28,7 @@ def timeline(plan):
 
 
 def normalize(folder,shot,output):
-    key=digest_key([shot['source_sha256'],shot['clip'],shot.get('focus',[.5,.4]),shot.get('framing','crop'),folder.parent.name,output,'normalize-v3'])
+    key=digest_key([shot['source_sha256'],shot['clip'],shot.get('focus',[.5,.4]),shot.get('framing','crop'),folder.parent.name,output,'normalize-v4'])
     target=folder/'working/normalized'/f'{shot["id"]}-{key}.mp4';target.parent.mkdir(parents=True,exist_ok=True)
     if not target.exists():
         count=frames_for(shot['clip'][1]-shot['clip'][0],output);duration=count/float(rate(output['fps']))
@@ -38,9 +38,14 @@ def normalize(folder,shot,output):
         else:
             vf=f'scale={w}:{h}:force_original_aspect_ratio=increase:flags=lanczos,crop={w}:{h}:(iw-ow)*{x}:(ih-oh)*{y},setsar=1,fps={output["fps"]}'
         pending=target.with_name(target.stem+'.pending.mp4')
-        run(['ffmpeg','-y','-v','error','-ss',str(shot['clip'][0]),'-i',folder/'raw'/shot['source'],
-             '-vf',vf,'-frames:v',str(count),'-af',f'apad,atrim=duration={duration}',
-             '-c:v','libx264','-preset','fast','-crf','16','-pix_fmt','yuv420p','-c:a','aac','-ar','48000','-ac','2','-movflags','+faststart',pending])
+        cmd = ['ffmpeg','-y','-v','error','-ss',str(shot['clip'][0]),'-i',folder/'raw'/shot['source']]
+        audio_stream = '0:a:0'
+        if not probe(folder/'raw'/shot['source'])['has_audio']:
+            cmd += ['-f','lavfi','-i','anullsrc=r=48000:cl=stereo']
+            audio_stream = '1:a:0'
+        run(cmd + ['-map','0:v:0','-map',audio_stream,'-vf',vf,'-t',str(duration),
+                   '-af',f'apad,atrim=duration={duration}','-c:v','libx264','-preset','fast','-crf','16',
+                   '-pix_fmt','yuv420p','-c:a','aac','-ar','48000','-ac','2','-movflags','+faststart',pending])
         validate_export(probe(pending),output,count);pending.replace(target)
     return target
 
@@ -55,7 +60,7 @@ def input_hash(folder,visual_only=False):
             if path.is_symlink():raise ValueError('Production inputs cannot use symlinks.')
             if path.is_file() and '__pycache__' not in path.parts and not any(p.startswith('.') for p in path.relative_to(root).parts):
                 values.append((str(path),digest(path)))
-    for name in ['reel_workflow.py','reel_pipeline.py','media_profile.py','audio_library.py']:
+    for name in ['reel_workflow.py','reel_pipeline.py','media_profile.py','audio_library.py','narration.py']:
         path=Path(__file__).with_name(name);values.append((name,digest(path)))
     if (folder/'hyperframes').is_symlink():raise ValueError('Hyperframes inputs cannot use symlinks.')
     for path in sorted((folder/'hyperframes').rglob('*')):
@@ -101,6 +106,8 @@ def caption_source(plan,placed,output):
             if page in shot.get('caption_omit_pages',[]): continue
             start=row['start']+(words[0]['start'] if words else 0)
             end=row['start']+(shot['words'][cursor]['start'] if cursor<len(shot['words']) else row['duration'])
+            if shot.get('narration') and words:
+                end=row['start'] + min(words[-1]['end'], row['duration'])
             ident=f'caption-{shot["id"]}-{i}'
             groups.append(f'<div id="{ident}" class="caption">{html.escape(page)}</div>')
             cues.append(f'tl.set("#{ident}",{{opacity:1}},{start:.12f}).set("#{ident}",{{opacity:0}},{end:.12f});')
@@ -137,15 +144,11 @@ def build(folder,plan,final_media=None):
     refs.append(f'<div id="captions" class="clip" data-composition-id="captions" data-composition-src="compositions/captions.html" data-start="0" data-duration="{duration:.12f}" data-track-index="30" data-width="{w}" data-height="{h}" style="position:absolute;inset:0;z-index:30"></div>')
     source=f'<!doctype html><html><head><meta charset="utf-8"><title>{html.escape(plan["title"])}</title><script src="assets/vendor/gsap.min.js"></script><style>*{{box-sizing:border-box}}html,body{{margin:0;width:{w}px;height:{h}px;overflow:hidden;background:#111}}#root{{position:relative;width:{w}px;height:{h}px}}</style></head><body><div id="root" data-composition-id="main" data-start="0" data-duration="{duration:.12f}" data-fps="{float(rate(output["fps"])):.12f}" data-width="{w}" data-height="{h}">{"".join(refs)}<!-- STUDIO AUDIO START --><!-- STUDIO AUDIO END --></div><script>const tl=gsap.timeline({{paused:true}});window.__timelines=window.__timelines||{{}};window.__timelines.main=tl;</script></body></html>'
     managed_write(hf,hf/'index.html',source,manifest)
-    audio=prepare_audio(folder,plan,output,placed);audio_nodes=[]
-    audio_files=[audio['voice'],audio['sample']]+([audio['bed']] if audio['bed'] else [])
-    def node(ident,file,start,length,gain,track):
-        name=file.name;copy_changed(file,hf/'assets/audio'/name)
-        return f'<audio id="{ident}" class="clip" src="assets/audio/{name}" data-start="{start:.12f}" data-duration="{length:.12f}" data-volume="{gain}" data-track-index="{track}"></audio>'
-    audio_nodes.append(node('source-voice',audio['voice'],0,duration,1,40))
-    if audio['bed']: audio_nodes.append(node('music-bed',audio['bed'],0,duration,1,41))
-    for i,cue in enumerate(audio['cues']):
-        audio_nodes.append(node(f'sfx-{i}',cue['file'],cue['start'],cue['duration'],cue.get('gain',.1),42+i));audio_files.append(cue['file'])
+    audio=prepare_audio(folder,plan,output,placed)
+    mix = audio['sample']
+    audio_files = [mix]
+    copy_changed(mix,hf/'assets/audio'/mix.name)
+    audio_nodes = [f'<audio id="approved-mix" class="clip" src="assets/audio/{mix.name}" data-start="0" data-duration="{duration:.12f}" data-volume="1" data-track-index="40"></audio>']
     index=hf/'index.html';text=index.read_text()
     block='<!-- STUDIO AUDIO START -->'+''.join(audio_nodes)+'<!-- STUDIO AUDIO END -->'
     if not re.search(r'<!-- STUDIO AUDIO START -->.*?<!-- STUDIO AUDIO END -->',text,re.S): raise ValueError('The authored index no longer has its managed audio section. Restore it before building.')
@@ -221,6 +224,7 @@ def preview(slug):
     if input_hash(folder)!=before: raise ValueError('Inputs changed during preview. Generate fresh frames.')
     review=rw.make_html(folder,plan,dest/'review.html',images)
     record={'pipeline_version':2,'inputs':before,'visual_inputs':input_hash(folder,True),'files':files+[str(review)],
+            'review_plan_sha256':digest(folder/'plan.json'),'mix_version':2,'scene_audio_times':{row['id']:[row['start'],row['start']+row['duration']] for row in built['timeline']},
             'frame_details':details,'media_files':[str(p) for p in built['prepared']],
             'audio_files':[str(p) for p in built['audio_files']],'mix_sample':str(built['audio']['sample']),
             'review':str(review),'output_profile':output}
@@ -231,17 +235,21 @@ def preview(slug):
 def choose_music(slug,track):
     rw=api();folder,plan=rw.plan_at(slug)
     if plan.get('pipeline_version')!=2: raise ValueError('Audio selection is available for the version 2 reel pipeline.')
-    if track is not None: audio_file(track,'music')
+    if track is not None:
+        from audio_library import require_verified
+        require_verified(track);audio_file(track,'music')
     old=read_json(folder/'preview.json') if (folder/'preview.json').exists() else None
     current=bool(old and old['inputs']==input_hash(folder) and rw.preview_digest(old)==old['id'])
     visual_before=input_hash(folder,True)
+    if plan.get('audio',{}).get('music') != track:
+        rw.invalidate_approval(folder)
     plan.setdefault('audio',{})['music']=track;write_json(folder/'plan.json',plan)
     sample=None
     refreshed=False
     if plan.get('output_profile') and all(s.get('source') and s.get('text_confirmed') for s in plan['shots']):
         built=build(folder,plan);sample=str(built['audio']['sample'])
         if current and visual_before==input_hash(folder,True):
-            old.update(inputs=input_hash(folder),audio_files=[str(p) for p in built['audio_files']],mix_sample=sample)
+            old.update(inputs=input_hash(folder),review_plan_sha256=digest(folder/'plan.json'),audio_files=[str(p) for p in built['audio_files']],mix_sample=sample)
             old['id']=rw.preview_digest(old);write_json(folder/'preview.json',old)
             refreshed=True
     rw.make_html(folder,plan)
@@ -258,16 +266,22 @@ def render(slug):
     run(['node',STUDIO/'tools/hyperframes/hyperframes.mjs','render',built['project'],'--quality','delivery','--fps',output['fps'],'--workers','1','--experimental-fast-capture=false','--output',pending],folder/'working/hyperframes-render.log')
     rw.approval_check(folder);validate_export(probe(pending),output,built['frames'])
     final=folder/'export'/f'{slug}-{record["id"][:12]}.mp4';final.parent.mkdir(exist_ok=True)
-    # Match the bounded mix sample's final limiter while copying video bytes unchanged.
-    run(['ffmpeg','-y','-v','error','-i',pending,'-c:v','copy','-af','alimiter=limit=0.95:level=false','-c:a','aac','-b:a','192k','-movflags','+faststart',final])
-    info=probe(final);validate_export(info,output,built['frames'])
-    run(['ffmpeg','-v','error','-i',final,'-f','null','-'],folder/'working/decode.log')
+    # Encode the WAV the creator heard. Hyperframes contributes only the approved picture.
+    mix = Path(record['mix_sample'])
+    if built['audio']['sample'] != mix:
+        raise ValueError('The reviewed mix changed. Generate fresh previews.')
+    staged = folder/'working/approved-mix.pending.mp4'
+    run(['ffmpeg','-y','-v','error','-i',pending,'-i',mix,'-map','0:v:0','-map','1:a:0','-c:v','copy',
+         '-c:a','aac','-b:a','192k','-movflags','+faststart',staged])
+    info=probe(staged);validate_export(info,output,built['frames'])
+    run(['ffmpeg','-v','error','-i',staged,'-f','null','-'],folder/'working/decode.log')
     rw.approval_check(folder)
+    staged.replace(final)
     cover=final.parent/'cover.png';run(['ffmpeg','-y','-v','error','-i',final,'-frames:v','1',cover])
     caption=final.parent/'caption.txt'
     # Platform copy is authored by the agent before the export; never invent a ready-to-post caption.
     write_json(folder/'export.json',{'project_type':plan.get('project_type','reel'),'file':str(final),'renderer':'hyperframes','project':str(built['project']),
-               'preview_id':record['id'],'output_profile':output,'width':info['width'],'height':info['height'],
+               'preview_id':record['id'],'approved_mix_sha256':digest(mix),'output_profile':output,'width':info['width'],'height':info['height'],
                'fps':info['fps'],'frames':info['frame_count'],'duration':info['duration'],'cover':{'png':'export/cover.png'},
                'caption_ready':caption.is_file(),'decode_check':'passed'})
     return {'project':slug,'stage':'exported' if caption.is_file() else 'video_ready_posting_copy_pending','file':str(final),'output_profile':output}

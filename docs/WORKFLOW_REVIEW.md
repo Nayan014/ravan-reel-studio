@@ -19,7 +19,7 @@ The page shows the full script first, one chronological scene table, actual fram
 
 There are no custom canvas, colour, size or drag controls. For direct editing, **Launch Hyperframes Studio** opens authored HTML elements in the bundled editor. Composition changes invalidate review; regenerate actual frames. The Studio stays open for editing; stop it from its composition folder with the local wrapper's `preview --stop` when finished. Legacy authored text-layer data remains render-compatible; the removed review editing endpoint is unavailable.
 
-The audio catalogue reuses four tracks and 23 SFX with stable IDs, durations, mood and source/licence credits. Recommended music appears first. Auditioning never approves; selecting changes the review revision and rebuilds the bounded voice-mix sample. Valid visual stills and Vibha caches are retained for music-only changes. No music is a valid selection. Final audio is one source-voice track plus a ducked music-only bed and chosen cues; no second source-video voice.
+The audio catalogue includes five music tracks and 23 effects with stable IDs and source credits. New selections require CC0 and a dated popularity count for the recording. Choose music or silence, audition narration A/B in the plan, and play the full mix or each scene in frame review. Selection changes the revision. Approved exports encode that exact WAV. Music-only changes can reuse valid visual stills.
 
 ## Process submissions
 

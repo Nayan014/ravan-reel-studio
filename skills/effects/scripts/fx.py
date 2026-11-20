@@ -11,7 +11,7 @@ import numpy as np
 import cv2
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from text_layers import validate_layers, render_layers
-from studio_lighting import expand_lighting, validate_lighting, render_studio_light
+from studio_lighting import AdaptiveAnalysis, expand_lighting, validate_lighting, render_studio_light, render_adaptive
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONT = {k: os.path.join(ROOT, 'fonts', v) for k, v in {
@@ -320,7 +320,10 @@ def grid(c):
 
 @effect('studio-light', 'natural studio lighting: muted blue/red room and a soft face key')
 def fx_studio_light(c, e):
-    render_studio_light(c, e, grid, guided)
+    if e.o.get('preset') == 'adaptive-studio':
+        render_adaptive(c, e, grid)
+    else:
+        render_studio_light(c, e, grid, guided)
 
 
 @effect('spotlight', 'kill the lights, keep you lit')
@@ -832,13 +835,15 @@ def glass_widgets_v1(c, e):
     d.text((bh * 0.2, bh * 0.36), e.o.get('name', 'Vibha'), font=font('uib', bh * 0.22), fill=(255, 255, 255, 255), anchor='lm')
     d.text((bh * 0.2, bh * 0.66), e.o.get('handle', '@vibha.in.progress'), font=font('uim', bh * 0.14), fill=(255, 255, 255, 215), anchor='lm')
     place(c, g, bx, cy2, 0.6 + 0.4 * pop(c, 0.24), 0, al * clamp((c.lt - 0.24) / 0.1), behind=True)
-    f1, f2 = font('uim', W * 0.045), font('uib', W * 0.045)
-    pre, hi = e.o.get('pill', 'Edited by |Claude').split('|') if '|' in e.o.get('pill', 'Edited by |Claude') else (e.o['pill'], '')
-    tw = f1.getlength(pre) + f2.getlength(hi); ph = W * 0.105; pw = tw + ph * 0.9; py = c.H * 0.865
-    q = glass(c, pw, ph, ph / 2, W / 2, py, amt=0.16, tint=(70, 70, 76)); d = ImageDraw.Draw(q)
-    d.text(((pw - tw) / 2, ph / 2), pre, font=f1, fill=(255, 255, 255, 255), anchor='lm')
-    d.text(((pw - tw) / 2 + f1.getlength(pre), ph / 2), hi, font=f2, fill=(255, 176, 146, 255), anchor='lm')
-    place(c, shadowed(q, 14, 6, 70), W / 2, py, 0.7 + 0.3 * pop(c, 0.4), 0, al * clamp((c.lt - 0.4) / 0.1), guard=True)
+    pill_text = e.o.get('pill')
+    if pill_text and pill_text not in ('none', 'false', 'False'):
+        f1, f2 = font('uim', W * 0.045), font('uib', W * 0.045)
+        pre, hi = pill_text.split('|') if '|' in pill_text else (pill_text, '')
+        tw = f1.getlength(pre) + f2.getlength(hi); ph = W * 0.105; pw = tw + ph * 0.9; py = c.H * 0.865
+        q = glass(c, pw, ph, ph / 2, W / 2, py, amt=0.16, tint=(70, 70, 76)); d = ImageDraw.Draw(q)
+        d.text(((pw - tw) / 2, ph / 2), pre, font=f1, fill=(255, 255, 255, 255), anchor='lm')
+        d.text(((pw - tw) / 2 + f1.getlength(pre), ph / 2), hi, font=f2, fill=(255, 176, 146, 255), anchor='lm')
+        place(c, shadowed(q, 14, 6, 70), W / 2, py, 0.7 + 0.3 * pop(c, 0.4), 0, al * clamp((c.lt - 0.4) / 0.1), guard=True)
 
 
 @effect('red-collage', 'black and white you, a giant red word behind, kinetic type stacked beside you')
@@ -1375,11 +1380,11 @@ def glass_widgets_v2(c, e):
     # 4 · views artifact (a mini page inside the glass)
     aw, ah = 330 * u, 330 * u; dx, dy = 50 * u + aw / 2, ay + S / 2 + 26 * u + ah / 2
     art = G(aw, ah, dx, dy, 44 * u); d = ImageDraw.Draw(art)
-    d.text((24 * u, 30 * u), 'artifact · views.html', font=font('mono', 15 * u), fill=white + (220,), anchor='lm')
+    d.text((24 * u, 30 * u), e.o.get('artifact_title', 'artifact · views.html'), font=font('mono', 15 * u), fill=white + (220,), anchor='lm')
     inn = rrect(aw - 36 * u, ah - 74 * u, 20 * u, (250, 248, 244, 255)); di = ImageDraw.Draw(inn); iw, ih = inn.size
     for j in range(3): di.ellipse([14 * u + j * 16 * u, 14 * u, 24 * u + j * 16 * u, 24 * u], fill=((255, 95, 87), (255, 189, 46), (40, 200, 64))[j] + (255,))
-    di.text((16 * u, 40 * u), 'Top reels', font=font('uib', 26 * u), fill=(24, 22, 26, 255))
-    di.text((16 * u, 72 * u), '197K', font=font('anton', 44 * u), fill=(200, 85, 61, 255))
+    di.text((16 * u, 40 * u), e.o.get('card_title', 'Top reels'), font=font('uib', 26 * u), fill=(24, 22, 26, 255))
+    di.text((16 * u, 72 * u), e.o.get('card_stat', '197K'), font=font('anton', 44 * u), fill=(200, 85, 61, 255))
     vals = [197, 140, 124, 83, 50, 40, 38]; gx0, gx1, gy1 = 16 * u, iw - 16 * u, ih - 18 * u; bwid = (gx1 - gx0) / 7 * 0.66
     for j, v in enumerate(vals):
         q = ease_out((c.lt - 0.35 - 0.05 * j) / 0.4); hh = (ih * 0.42) * v / 197 * q; x0 = gx0 + (gx1 - gx0) * j / 7
@@ -1396,7 +1401,7 @@ def glass_widgets_v2(c, e):
     for k_ in range(6):
         ang = k_ * math.pi / 3; ad.line([(A / 2 - 26 * u * math.cos(ang), A / 2 - 26 * u * math.sin(ang)), (A / 2 + 26 * u * math.cos(ang), A / 2 + 26 * u * math.sin(ang))], fill=(255, 255, 255, 255), width=int(7 * u))
     mu.alpha_composite(art2, (int(22 * u), int(22 * u)))
-    d.text((134 * u, 44 * u), 'NOW EDITING', font=font('mono', 15 * u), fill=white + (200,), anchor='lm')
+    d.text((134 * u, 44 * u), e.o.get('media_tag', 'NOW EDITING'), font=font('mono', 15 * u), fill=white + (200,), anchor='lm')
     d.text((134 * u, 78 * u), e.o.get('song', 'soft UI pops'), font=font('uib', 28 * u), fill=white + (255,), anchor='lm')
     d.text((134 * u, 108 * u), 'sfx · 25.7s', font=font('uim', 20 * u), fill=white + (200,), anchor='lm')
     pp = clamp(c.lt / max(0.5, e.d)); d.rounded_rectangle([22 * u, 140 * u, mw - 22 * u, 146 * u], 3 * u, fill=white + (70,))
@@ -1424,13 +1429,16 @@ def glass_widgets_v2(c, e):
     d.text((R / 2, R / 2 - 8 * u), '4K', font=font('uib', 52 * u), fill=white + (255,), anchor='mm')
     d.text((R / 2, R - 26 * u), 'render', font=font('uim', 20 * u), fill=white + (210,), anchor='mm')
     show(rg, rx, ry, 6)
-    # 8 · Edited by Claude pill (in front)
-    f1, f2 = font('uim', W * 0.045), font('uib', W * 0.045); pre, hi = 'Edited by ', 'Claude'
-    tw = f1.getlength(pre) + f2.getlength(hi); ph = W * 0.105; pw = tw + ph * 0.9; py = H * 0.875
-    q = glass(c, pw, ph, ph / 2, W / 2, py, amt=0.16, tint=(70, 70, 76)); d = ImageDraw.Draw(q)
-    d.text(((pw - tw) / 2, ph / 2), pre, font=f1, fill=white + (255,), anchor='lm')
-    d.text(((pw - tw) / 2 + f1.getlength(pre), ph / 2), hi, font=f2, fill=(255, 176, 146, 255), anchor='lm')
-    show(shadowed(q, 14, 6, 70), W / 2, py, 7, front=True)
+    # 8 · Bottom pill (only if explicitly enabled)
+    pill_text = e.o.get('pill')
+    if pill_text and pill_text not in ('none', 'false', 'False'):
+        f1, f2 = font('uim', W * 0.045), font('uib', W * 0.045)
+        pre, hi = pill_text.split('|') if '|' in pill_text else (pill_text, '')
+        tw = f1.getlength(pre) + f2.getlength(hi); ph = W * 0.105; pw = tw + ph * 0.9; py = H * 0.875
+        q = glass(c, pw, ph, ph / 2, W / 2, py, amt=0.16, tint=(70, 70, 76)); d = ImageDraw.Draw(q)
+        d.text(((pw - tw) / 2, ph / 2), pre, font=f1, fill=white + (255,), anchor='lm')
+        d.text(((pw - tw) / 2 + f1.getlength(pre), ph / 2), hi, font=f2, fill=(255, 176, 146, 255), anchor='lm')
+        show(shadowed(q, 14, 6, 70), W / 2, py, 7, front=True)
 
 
 @effect('glass-widgets', 'frosted glass phone widgets and mini artifacts float around your head, with an Edited by Claude pill')
@@ -2315,9 +2323,12 @@ class Tracker:
         if self.prev is not None: m = 0.65 * m + 0.35 * self.prev
         self.prev = m
         _, f = self.fd.detect(cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
+        self.detected_face = None
         face = None
         if f is not None and len(f):
             r = max(f, key=lambda r: r[2] * r[3] * r[-1]); face = (r[0] + r[2] / 2, r[1] + r[3] / 2, r[2])
+            if r[-1] >= .8:
+                self.detected_face = face
         else:
             rows = np.where((m > 0.5).sum(1) > m.shape[1] * 0.01)[0]
             if len(rows):
@@ -2365,10 +2376,13 @@ def main():
     ap.add_argument('--plan'); ap.add_argument('--start', type=float); ap.add_argument('--end', type=float)
     ap.add_argument('--text'); ap.add_argument('--images'); ap.add_argument('--opt', action='append', default=[], help='key=value')
     ap.add_argument('--still', help='comma-separated seconds: save PNG check frames instead of a video')
+    ap.add_argument('--comparison', metavar='MP4', help='With --still, show matched original/treated pairs and a short motion sample with source audio')
     ap.add_argument('--warmup', action='store_true', help='Replay preceding effect frames for stateful still/video parity')
     ap.add_argument('--width', type=int, default=1080, help='short side of the output (1080 default, 2160 for 4K)')
     ap.add_argument('--list', action='store_true')
     a = ap.parse_args()
+    if a.comparison and not a.still:
+        ap.error('--comparison requires --still')
     text_layers=[]
     if a.list:
         for i, (k, (_, d)) in enumerate((item for item in EFFECTS.items() if item[0] != 'studio-light')): print(f'{i + 1:2d}. {k:15s} {d}')
@@ -2402,12 +2416,18 @@ def main():
     inwin = lambda t: any(f.start - 0.5 <= t < f.end + 0.5 for f in fxs)
     print(f'Pass 1: tracking you ({len(fxs)} effect{"s" * (len(fxs) > 1)})...', flush=True)
     trk = Tracker(aw, ah); masks, faces, thumbs = {}, [], []
+    adaptive = AdaptiveAnalysis(fps) if any(f.name == 'studio-light' and f.o.get('preset') == 'adaptive-studio' for f in fxs) else None
+    lighting_samples = {}
     n_thumb = 10; thumb_at = {int(dur * fps * (j + 0.5) / n_thumb) for j in range(n_thumb)}
     for i, fr_ in enumerate(read_frames(src, aw, ah, fr)):
         t = i / fps
         if i in thumb_at: thumbs.append(Image.fromarray(fr_.copy()))
         if inwin(t):
+            if adaptive and adaptive.start_frame(fr_):
+                trk.prev = None
             m, f = trk(fr_, int(t * 1000)); masks[i] = m; faces.append(f)
+            if adaptive:
+                lighting_samples[i] = adaptive.measure(fr_, m, trk.detected_face)
         else:
             faces.append(None); trk.prev = None
     sm = smooth(faces, fps)
@@ -2415,6 +2435,19 @@ def main():
     for f in fxs:
         if f.name in CARD_FX: f.cards = load_cards(f.o.get('images'), thumbs)
     stills = sorted({int(round(float(s) * fps)) for s in a.still.split(',')}) if a.still else None
+    sample = None
+    motion_frames = range(0)
+    if a.comparison:
+        length = min(len(faces), max(1, min(round(3 * fps), len(faces) // 2)))
+        first = (len(faces) - length) // 2
+        motion_frames = range(first, first + length)
+        # Render with the production geometry, then downsample for playback.
+        panel_w = min(W, 640)
+        panel_h = max(2, round(H * panel_w / W / 2) * 2)
+        sample = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24',
+            '-s', f'{panel_w * 2}x{panel_h}', '-r', str(fr), '-i', '-', '-ss', str(first / fps), '-i', src,
+            '-map', '0:v', '-map', '1:a:0?', '-c:v', 'libx264', '-crf', '16', '-pix_fmt', 'yuv420p',
+            '-c:a', 'aac', '-t', str(length / fps), '-movflags', '+faststart', a.comparison], stdin=subprocess.PIPE)
     enc = None
     if not stills:
         enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(fr), '-i', '-',
@@ -2426,27 +2459,41 @@ def main():
         t = i / fps
         act = [f for f in fxs if f.start <= t < f.end]
         if stills is not None:
-            if i > stills[-1]: break
-            if i not in stills and not a.warmup: continue
+            if i > max(stills[-1], motion_frames.stop - 1): break
+            if i not in stills and i not in motion_frames and not a.warmup: continue
+        original = frame
         if act:
             c = Ctx(); c.W, c.H, c.t, c.fps = W, H, t, fps
             c.img = frame.astype(np.float32) / 255.0
             m = masks.get(i)
             c.m = cv2.resize(m, (W, H), interpolation=cv2.INTER_LINEAR).astype(np.float32) / 255.0 if m is not None else np.zeros((H, W), np.float32)
             fx_, fy_, fw_ = sm[min(i, len(sm) - 1)]; c.fx, c.fy, c.fw = fx_ * sc, fy_ * sc, max(fw_ * sc, W * 0.05)
+            if adaptive:
+                sample_data = lighting_samples.get(i)
+                c.adaptive = None if sample_data is None else (
+                    sample_data[0] * sc, sample_data[1] * H / ah, sample_data[2] * sc, *sample_data[3:])
             for f in act:
                 c.lt = t - f.start; EFFECTS[f.name][0](c, f)
             frame = (np.clip(c.img, 0, 1) * 255 + 0.5).astype(np.uint8)
         if overlay is not None:
             alpha=overlay[:,:,3:4]/255
             frame=np.clip(frame*(1-alpha)+overlay[:,:,:3]*alpha+.5,0,255).astype(np.uint8)
+        if sample and i in motion_frames:
+            panels = [cv2.resize(img, (panel_w, panel_h), interpolation=cv2.INTER_AREA) for img in (original, frame)]
+            sample.stdin.write(np.hstack(panels).tobytes())
         if stills is not None:
             if i not in stills: continue
+            if a.comparison:
+                frame = np.hstack((original, frame))
             out = dst if len(stills) == 1 else dst.replace('.png', f'_{t:.2f}.png')
             cv2.imwrite(out, cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)); print('saved', out)
         else:
             enc.stdin.write(frame.tobytes())
             if i % int(fps * 5) == 0: print(f'  {t:5.1f}s / {dur:.1f}s', flush=True)
+    if sample:
+        sample.stdin.close()
+        if sample.wait() != 0:
+            raise RuntimeError('ffmpeg could not encode the lighting comparison')
     if enc:
         enc.stdin.close()
         if enc.wait()!=0: raise RuntimeError('ffmpeg could not encode the effects output')

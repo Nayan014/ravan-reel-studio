@@ -7,7 +7,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'skills/effects/scripts'))
-from studio_lighting import validate_lighting, expand_lighting
+from studio_lighting import validate_lighting, expand_lighting, shot_lighting
 
 
 class LightingConfiguration(unittest.TestCase):
@@ -70,6 +70,110 @@ class LightingPixels(unittest.TestCase):
                 self.assertGreater(float(face),float(background))
                 c.img=before.copy();render_studio_light(c,effect,grid,guided)
                 np.testing.assert_array_equal(c.img,first)
+
+
+class AdaptiveLighting(unittest.TestCase):
+    def fixture(self, left, right, room):
+        import numpy as np
+        from studio_lighting import AdaptiveAnalysis
+        rgb = np.full((120, 160, 3), room, np.uint8)
+        mask = np.zeros(rgb.shape[:2], np.uint8)
+        mask[30:, 45:115] = 255
+        rgb[30:, 45:80] = left
+        rgb[30:, 80:115] = right
+        analysis = AdaptiveAnalysis(30)
+        analysis.start_frame(rgb)
+        sample = analysis.measure(rgb, mask, (80, 55, 60))
+        c = SimpleNamespace(W=160, H=120, img=rgb.astype(np.float32)/255,
+                            adaptive=sample, m=mask.astype(np.float32)/255)
+        return c, analysis, rgb, mask
+
+    def render(self, c, options=None):
+        from fx import grid
+        from studio_lighting import render_adaptive
+        render_adaptive(c, SimpleNamespace(o=options or {}, state={}), grid)
+
+    def test_backlight_balances_face_room_and_protects_screen_and_specular(self):
+        import numpy as np
+        c, _, _, _ = self.fixture(52, 52, 200)
+        c.img[50, 80] = [1, .97, .8]
+        c.img[60, 70] = [.35, .24, .18]
+        before = c.img.copy()
+        self.render(c, {'screen_regions': [[[.03,.05],[.18,.05],[.18,.23],[.03,.23]]]})
+        self.assertGreater(c.img[60,70,0], before[60,70,0])
+        np.testing.assert_allclose(c.img[60,70] / before[60,70], c.img[60,70,0] / before[60,70,0])
+        self.assertLess(c.img[20,130,0], before[20,130,0])
+        np.testing.assert_array_equal(c.img[50,80], before[50,80])
+        np.testing.assert_array_equal(c.img[15,15], before[15,15])
+
+    def test_softbox_shapes_face_and_room_while_protecting_displays(self):
+        import numpy as np
+        options = {'look':'softbox','screen_regions':[[[.02,.02],[.19,.02],[.19,.23],[.02,.23]]]}
+        plan = expand_lighting({'lighting':{'preset':'adaptive-studio', **options},'effects':[]})
+        self.assertEqual(plan['effects'][0]['look'], 'softbox')
+        c = self.fixture(85, 105, 185)[0]
+        original = c.img.copy()
+        self.render(c, options)
+        self.assertGreater(c.img[55,80].mean() - original[55,80].mean(), .07)
+        self.assertLess(c.img[30,130].mean(), original[30,130].mean() * .8)
+        np.testing.assert_array_equal(c.img[15,15], original[15,15])
+        self.assertLessEqual(c.img.max(), 1)
+        self.assertTrue(np.isfinite(c.img).all())
+
+    def test_wall_lights_add_local_colour_and_keep_face_and_display_neutral(self):
+        import numpy as np
+        cfg = {'look':'wall-accents','preset':'adaptive-studio'}
+        centers = {'blue':[.16,.30],'red':[.82,.30]}
+        regions = [[[.76,.38],[.94,.38],[.94,.55],[.76,.55]]]
+        project = {'lighting':cfg,'lighting_calibration':{'accent_centers':centers}}
+        opts = shot_lighting(project, {'lighting_calibration':{'screen_regions':regions}})
+        c = self.fixture(85,105,185)[0]
+        original = c.img.copy()
+        self.render(c, opts)
+        self.assertGreater(c.img[36,26,2], c.img[36,26,0] + .12)
+        self.assertGreater(c.img[36,131,0], c.img[36,131,2] + .12)
+        np.testing.assert_array_equal(c.img[53,134], original[53,134])
+        np.testing.assert_allclose(c.img[60,80], c.img[60,80,0])
+        with self.assertRaises(ValueError):
+            validate_lighting({**cfg, 'accent_centers':{'red':[-1,1]}})
+        self.assertIsNone(shot_lighting({'lighting':None}, {}))
+
+    def test_fills_either_darker_cheek_preserving_direction(self):
+        for values in [(45, 145), (145, 45)]:
+            c, _, _, _ = self.fixture(*values, 110)
+            before = c.img.copy()
+            self.render(c)
+            dark, bright = (65, 95) if values[0] < values[1] else (95, 65)
+            relative_gain = c.img / before.clip(.001)
+            self.assertGreater(relative_gain[60,dark,0], relative_gain[60,bright,0])
+            self.assertLess(c.img[60,dark,0], c.img[60,bright,0])
+
+    def test_balanced_face_and_unconfirmed_detection(self):
+        import numpy as np
+        c, analysis, rgb, mask = self.fixture(135,135,145)
+        before = c.img.copy()
+        self.render(c)
+        np.testing.assert_array_equal(c.img, before)
+        self.assertIsNone(analysis.measure(rgb, mask, None))
+        self.assertIsNone(analysis.measure(rgb, mask * 0, (80,55,60)))
+        c.adaptive = None
+        self.render(c)
+        np.testing.assert_array_equal(c.img, before)
+
+    def test_cut_resets_history_and_small_motion_is_smoothed(self):
+        import numpy as np
+        c, a, rgb, mask = self.fixture(40, 120, 180)
+        initial = c.adaptive
+        center = (80,55,60)
+        changed = rgb.copy()
+        changed[30:,45:80] += 20
+        self.assertFalse(a.start_frame(changed))
+        result = a.measure(changed, mask, center)
+        fresh = self.fixture(60,120,180)[0].adaptive
+        self.assertLess(abs(initial[4] - result[4]), abs(initial[4] - fresh[4]))
+        cut = self.fixture(60,120,40)
+        self.assertTrue(a.start_frame(cut[2]))
+        np.testing.assert_allclose(a.measure(cut[2], mask, center), cut[0].adaptive)
 
 
 if __name__ == '__main__': unittest.main()

@@ -1,0 +1,17 @@
+{
+  "version": "1.4",
+  "background": "#F3EFE7",
+  "text": "#252525",
+  "headline_accent": "#252525",
+  "accent": "#55574F",
+  "hero_fill": "#C9C3B8",
+  "outline_width": 1.5,
+  "glow": false,
+  "grid": false,
+  "engraving": false,
+  "techno": "#FF9933",
+  "ravan": "#EF3340",
+  "brand_gap_em": 0.25,
+  "headline_font": "skills/effects/fonts/ArchivoBlack-Regular.ttf",
+  "brand_font": "skills/effects/fonts/SpaceMono-Bold.ttf"
+}

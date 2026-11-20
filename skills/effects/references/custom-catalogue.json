@@ -1,0 +1,18 @@
+[
+  {
+    "id": "TR1",
+    "name": "developer-dark-glow",
+    "desc": "A sleek dark-mode background with ambient code glow tailored for developer storytelling.",
+    "use": "Coding tips and tech explanations",
+    "category": "Techno Ravan Effects",
+    "author": "Techno Ravan",
+    "subtitle": "Coding tips and tech explanations",
+    "preview": "assets/reference-previews/locked-on.jpg",
+    "config": {
+      "fx": "locked-on",
+      "start": 0,
+      "end": 4
+    },
+    "frame_time": 2.2
+  }
+]

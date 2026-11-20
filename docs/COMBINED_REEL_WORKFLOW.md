@@ -48,7 +48,7 @@ One local ASR model serves each uncached batch. Speech/timings, quality metadata
 
 Node 22.18+, ffmpeg/ffprobe, the bundled effects Python environment and `npm ci` in `tools/hyperframes/` are needed for production. Dashboard viewing still needs only Node. Use the local wrapper `node tools/hyperframes/hyperframes.mjs COMMAND ABSOLUTE_COMPOSITION_DIRECTORY`. Existing Remotion projects use the Techno Reel package and its `npm ci` setup.
 
-The audio catalogue in `assets/audio/catalogue.json` references the existing4 music tracks and23 SFX, without copying new media. It includes stable IDs, moods, duration, source/author and CC0 notices; upstream credit files remain under `tools/techno-reel/public/`. Dashboard adaptation credits/licence remain in `dashboard/LICENSE`; renderer origins/import hashes remain in `SOURCE.json` and `tools/techno-reel/STUDIO_SOURCE.json`.
+The catalogue in `assets/audio/catalogue.json` has five music tracks and 23 sound effects. Each entry identifies its creator, CC0 license, and dated popularity evidence. New selections use recording-level counts. The sound-design skill covers cue placement, and the natural-narration skill covers local Kokoro auditions and recorded alternatives for speech-free scenes. Frame review plays the full mix and individual scenes. Export encodes the approved WAV. Dashboard adaptation credits/licence remain in `dashboard/LICENSE`; renderer origins/import hashes remain in `SOURCE.json` and `tools/techno-reel/STUDIO_SOURCE.json`.
 
 ## Verification
 

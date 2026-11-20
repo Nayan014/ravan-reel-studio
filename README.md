@@ -43,6 +43,8 @@ Name the clips `1.mp4`, `2.mp4`, `3.mp4` and so on. If your assistant does not r
 
 Output follows the recordings up to **4K/60**: portrait 2160×3840 for reels or landscape 3840×2160 for YouTube, including fractional frame rates. When takes differ, you choose the output profile.
 
+For backlit faces and uneven room lighting, ask for “improve the lighting on my face” to use the local [adaptive studio lighting skill](skills/studio-lighting/SKILL.md).
+
 **Optional studio lighting:** ask for “natural studio lighting” to add a soft face light with muted blue/red accents in a darker room. Review it on your actual footage before export. It runs locally before graphics and captions, with no generated face or new cloud service. [Lighting workflow](docs/STUDIO_LIGHTING.md)
 
 <details>
@@ -85,6 +87,9 @@ Send these shortcuts directly to your coding assistant.
 | `/wf-gallery` | Browse the effect reference pictures |
 | `/wf-effects` | Apply a named effect |
 | `/wf-resume` | Resume a saved single-video edit |
+| `/cover-image` | Create or revise a video cover using the shared Techno Ravan style |
+| `/india-map` | Prepare a verified map using the Government of India's boundary depiction |
+| `/captions` | Author multi-platform social captions (Instagram, YouTube, TikTok, LinkedIn) without em dashes |
 
 <details>
 <summary>Prefer the numbered workflow menu?</summary>
@@ -103,6 +108,8 @@ Send `/wf`, then reply with a menu number. For example, `/wf` followed by **5** 
 </details>
 
 `/wf reel-plan`, `/wf video-plan`, `/video-edit` and `/effects` remain available. Command discovery varies by agent; reading the shared instructions is the portable fallback.
+
+New video exports use the [shared cover skill](skills/cover-image/SKILL.md) for consistent portrait covers and landscape thumbnails. Its [versioned style guide](skills/cover-image/references/style.md) uses the selected headline-first layout, bold upright type and a restrained editorial palette, with orange TECHNO and red RAVAN separated by a compact measured gap. Covers use local code for layout and typography by default; the [Pillow renderer](skills/cover-image/references/code-rendering.md) keeps the composition editable. The skill asks whether you want to provide a separate photo or create a cover without your face. Taking your portrait from video is an optional route only when you request it. Refine the style guide to improve future covers; each project keeps a copy of the style it used.
 
 ## Nafay 3D motion graphics
 

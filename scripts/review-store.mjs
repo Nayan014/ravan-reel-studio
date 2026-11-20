@@ -15,6 +15,21 @@ const parse = path => JSON.parse(readFileSync(path, 'utf8'));
 const inside = (base, path) => path.startsWith(base + sep);
 const slash = path => path.split(sep).join('/');
 const bundled=fileURLToPath(new URL('../',import.meta.url));
+const lightingOptions = parse(join(bundled, 'assets/styles/studio-lighting.json'));
+
+function lightingPanel(root, base, plan) {
+  const config = plan.lighting;
+  return {
+    selected: config?.look || config?.preset || 'none',
+    options: lightingOptions.map(option => {
+      const filename = 'lighting-' + option.id + '.jpg';
+      const local = base + '/assets/' + filename;
+      const path = existsSync(join(root, local)) ? local : 'skills/effects/assets/reference-previews/' + filename;
+      return {...option, image: mediaUrl(path)};
+    })
+  };
+}
+
 export class ReviewError extends Error {
   constructor(message, status = 400) { super(message); this.status = status; }
 }
@@ -57,11 +72,13 @@ function context(root, kind, id, stage, document) {
     try { const path = mediaPath(root, name); files.push([name, hash(readFileSync(path))]); return parse(path); }
     catch { return null; }
   };
-  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[], referenceStyle=null, audioReview=null, renderer=null;
+  let title = id.replace(/[-_]/g, ' '), scenes = [], previewId = null, frames = [], outputProfile=null, audio=null, sourceProfiles=[], referenceStyle=null, audioReview=null, comparison=null, projectLighting=null, renderer=null;
   if (kind !== 'plans') {
     const base = `outputs/${kind}/${id}`;
     const plan = add(`${base}/plan.json`), session = add(`${base}/session.json`);
     renderer=plan?.renderer||null;
+    if (['reels', 'videos'].includes(kind) && Array.isArray(plan?.shots) && renderer !== 'nafay')
+      projectLighting = lightingPanel(root, base, plan);
     if(renderer==='nafay') {
       const trackFile=path=>{
         if(!existsSync(path))return;
@@ -104,7 +121,7 @@ function context(root, kind, id, stage, document) {
       };
       for(const dir of ['hyperframes','hyperframes-4k','raw','assets'])track(join(root,base,dir));
       if(plan.pipeline_version===2){
-        for(const name of ['scripts/reel_workflow.py','scripts/reel_pipeline.py','scripts/media_profile.py','scripts/audio_library.py','assets/audio/catalogue.json']){
+        for(const name of ['scripts/reel_workflow.py','scripts/reel_pipeline.py','scripts/media_profile.py','scripts/audio_library.py','scripts/narration.py','assets/audio/catalogue.json']){
           const path=join(bundled,name);files.push([`engine:${name}`,hash(readFileSync(path))]);
         }
         for(const name of ['scripts','fonts','models'])track(join(bundled,'skills/effects',name));
@@ -125,7 +142,7 @@ function context(root, kind, id, stage, document) {
     }
     title = plan?.title || session?.source?.split('/').at(-1) || title;
     outputProfile=plan?.output_profile||null;sourceProfiles=plan?.source_profiles||[];
-    audio=plan?.pipeline_version===2?{...plan.audio,mixSample:preview?.mix_sample?mediaUrl(slash(relative(root,preview.mix_sample))):null}:null;
+    audio=plan?.pipeline_version===2?{...plan.audio,fullMix:preview?.mix_version===2, mixSample:stage==='frames'&&preview?.mix_sample?mediaUrl(slash(relative(root,preview.mix_sample))):null}:null;
     let cursor=0;const parts=String(outputProfile?.fps||30).split('/'),fps=Number(parts[0])/Number(parts[1]||1);
     scenes = (Array.isArray(plan?.shots) ? plan.shots : []).map((s,index) => {
       const start=cursor,duration=s.clip?Math.max(1,Math.round((s.clip[1]-s.clip[0])*fps))/fps:s.estimated_duration||0;cursor+=duration;
@@ -134,14 +151,33 @@ function context(root, kind, id, stage, document) {
         ? `Displayed source ${source.width}×${source.height} · fit with padding · picture ${Math.round(source.width*scale)}×${Math.round(source.height*scale)} · scale ${scale.toFixed(3)}×`
         : `Displayed source ${source.width}×${source.height} · crop ${Math.round(outputProfile.width/scale)}×${Math.round(outputProfile.height/scale)} · scale ${scale.toFixed(3)}×`
         : '';
-      return { id: String(s.id), text: String(s.say || s.expected_say || ''),timeline:[start,cursor],
+      let audition=null;
+      if(plan.pipeline_version===2 && s.audition){
+        const takes={};
+        for(const key of ['A','B']){
+          const file=s.audition.takes[key].file;
+          if(!/^working\/narration\/[0-9a-f]{32}\/[AB]\.wav$/.test(file))throw new ReviewError('Invalid narration audition path.');
+          const name=base+'/'+file;
+          const checksum=hashFile(mediaPath(root,name));
+          if(checksum!==s.audition.takes[key].sha256)throw new ReviewError('Reading changed. Generate a fresh audition.');
+          files.push([name,checksum]);
+          takes[key]=mediaUrl(name);
+        }
+        audition={id:s.audition.id,takes};
+      }
+      if(s.narration){
+        const name=base+'/'+s.narration.file;
+        if(!/^assets\/narration\/[a-f0-9]{64}\.wav$/.test(s.narration.file))throw new ReviewError('Invalid selected voice file.');
+        files.push([name,hashFile(mediaPath(root,name))]);
+      }
+      return { audition,voice:s.narration?.kind||s.voice_mode||'source',id: String(s.id), text: String(s.say || s.expected_say || ''),timeline:preview?.mix_version===2&&stage==='frames'?preview.scene_audio_times?.[s.id]||[start,cursor]:[start,cursor],
       source:s.source||'Awaiting numbered recording',shootingNote:s.shooting_note||'',referenceNote:String(s.reference_note||''),clip:s.clip||null,
       captions:renderer==='nafay'&&!plan.nafay?.captions?[]:s.caption_pages||[],effects:s.vibha||{},finish:s.hyperframes_note||(renderer==='nafay'?'Nafay 3D graphics and audio':'Hyperframes assembly, captions and audio'),
       sourceFrame:s.source_frame?mediaUrl(`${base}/${s.source_frame}`):null,focus:s.focus||[.5,.4],framing };});
     if(stage==='frames')for(const file of preview?.audio_files||[]){
       const name=isAbsolute(file)?slash(relative(root,file)):file;
       // Library audio is fingerprinted separately; only project audio may be served as media.
-      if(name.startsWith(base+'/')){const path=mediaPath(root,name);files.push([name,hash(readFileSync(path))]);}
+      if(name.startsWith(base+'/')){const path=mediaPath(root,name);files.push([name,hashFile(path)]);}
     }
     if (session?.plan) {
       const name = isAbsolute(session.plan) ? slash(relative(root, session.plan)) : session.plan.startsWith('outputs/') ? session.plan : `${base}/${session.plan}`;
@@ -156,8 +192,22 @@ function context(root, kind, id, stage, document) {
         const path=mediaPath(root,name);files.push([name,hashFile(path)]);
         audioReview={url:mediaUrl(name),start:preview.mix_start||0,label:'Nafay source voice and effects'};
       }
+      if(preview?.mix_version===2 && preview.review_plan_sha256!==hashFile(mediaPath(root,base+'/plan.json')))
+        throw new ReviewError('Generate fresh frames and audio for the changed plan.');
       if (!preview?.id) throw new ReviewError('Generate actual preview frames before opening a frame approval.');
       previewId = preview.id;
+      if (kind === 'edits' && session?.mode === 'lighting' && preview.comparison) {
+        const name = preview.comparison;
+        if (!name.startsWith(base + '/') || !name.endsWith('.mp4')) throw new ReviewError('Select a lighting comparison inside this edit.');
+        files.push([name, hashFile(mediaPath(root, name))]);
+        comparison = mediaUrl(name);
+        title = 'Studio lighting · ' + session.source.split('/').slice(-2).join(' / ');
+        const info = add(session.analysis);
+        if (info) {
+          const scale = session.width / Math.min(info.width, info.height);
+          outputProfile = {width: Math.round(info.width * scale / 2) * 2, height: Math.round(info.height * scale / 2) * 2, fps: info.fps_fraction};
+        }
+      }
       const source = Array.isArray(preview.frames) ? preview.frames : Array.isArray(preview.files) ? preview.files : [];
       frames = source.filter(p => typeof p === 'string' && /\.(png|jpe?g|webp)$/i.test(p)).map(p => {
         const name = isAbsolute(p) ? slash(relative(root, p)) : p.startsWith('outputs/') ? p : `${base}/${p}`;
@@ -187,7 +237,7 @@ function context(root, kind, id, stage, document) {
     files.push(['draft-text-layers',hash(JSON.stringify(design))]);
     if (!scenes.length) scenes=[{id:'01',text:'Draft text design'}];
   }
-  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio,referenceStyle,audioReview,renderer, fingerprint: hash(JSON.stringify([stage, files])) };
+  return { title: String(title), scenes, previewId, frames, outputProfile,sourceProfiles,audio,referenceStyle,audioReview,comparison,projectLighting,renderer, fingerprint: hash(JSON.stringify([stage, files])) };
 }
 
 export function prepareReview(root, { kind, id, stage = 'plan', document = null }) {
@@ -211,9 +261,47 @@ export function readReview(root, kind, id) {
   if (!existsSync(path)) throw new ReviewError('No review is open. Ask your editing agent to open this plan for review.', 404);
   const state = parse(path), r = state.request;
   let stale = false;
-  try { stale = context(root, kind, id, r.stage, r.document).fingerprint !== r.fingerprint; }
+  try {
+    const snapshot = context(root, kind, id, r.stage, r.document);
+    stale = snapshot.fingerprint !== r.fingerprint;
+    r.projectLighting = snapshot.projectLighting;
+  }
   catch { stale = true; }
   return { ...state, stale };
+}
+
+export function selectLighting(root, kind, id, value) {
+  const {request, stale} = readReview(root, kind, id);
+  if (stale || request.id !== value.requestId) throw new ReviewError('Reload the current review before changing lighting.', 409);
+  if (!request.projectLighting || !['script', 'plan'].includes(request.stage))
+    throw new ReviewError('Choose lighting from the production plan.');
+  const option = lightingOptions.find(o => o.id === value.look);
+  if (!option && value.look !== 'none') throw new ReviewError('Unknown project lighting.');
+  const base = `outputs/${kind}/${id}`;
+  const path = mediaPath(root, base + '/plan.json');
+  const plan = parse(path);
+  // One explicit whole-project choice replaces prior shot looks, keeping the
+  // camera-specific calibration available even when toggling lighting off.
+  for (const record of [plan, ...plan.shots]) {
+    for (const key of ['screen_regions', 'accent_centers']) {
+      if (record.lighting?.[key]) {
+        record.lighting_calibration ||= {};
+        record.lighting_calibration[key] = record.lighting[key];
+      }
+    }
+    delete record.lighting;
+  }
+  plan.lighting = option ? {preset:'adaptive-studio', look:option.id} : null;
+  const name = option?.name || 'Off';
+  const htmlName = base + '/review.html';
+  if (existsSync(join(root, htmlName))) {
+    const htmlPath = mediaPath(root, htmlName);
+    const html = readFileSync(htmlPath, 'utf8');
+    const updated = html.replace(/<p data-shot-lighting><b>[^<]*<\/b><\/p>/g, '').replace(/(<strong data-studio-selection>)[^<]*(<\/strong>)/, '$1' + name + '$2');
+    if (updated !== html) writeFileSync(htmlPath, updated);
+  }
+  if (JSON.stringify(plan) !== JSON.stringify(parse(path))) save(path, plan);
+  return prepareReview(root, {kind, id, stage:request.stage, document:request.document});
 }
 
 export function submitReview(root, kind, id, value) {
@@ -222,7 +310,20 @@ export function submitReview(root, kind, id, value) {
   const duplicate = state.submissions.find(s => s.id === value.id);
   if (duplicate) return duplicate;
   if (state.stale || value.requestId !== r.id) throw new ReviewError('This review changed. Reload the latest revision before submitting.', 409);
-  if (value.action==='approve'&&state.submissions.some(s=>s.status==='pending')) throw new ReviewError('Resolve submitted feedback before approving.',409);
+  if (value.action === 'approve' && r.stage!=='script' && r.scenes.some(s=>s.audition)) throw new ReviewError('Select a reading or supply a recorded take first.');
+  if (value.action === 'approve' && state.submissions.some(s => s.status === 'pending')) {
+    if (value.resolvePending) {
+      for (const s of state.submissions) {
+        if (s.status === 'pending') {
+          s.status = 'handled';
+          s.result = 'Resolved by plan approval';
+          s.handledAt = new Date().toISOString();
+        }
+      }
+    } else {
+      throw new ReviewError('Resolve submitted feedback before approving.', 409);
+    }
+  }
   const text = typeof value.text === 'string' ? value.text.trim() : '';
   let scene = typeof value.scene === 'string' ? value.scene : '';
   const scope=value.scope|| (scene?'scene':'script'),frame=typeof value.frame==='string'?value.frame:'';

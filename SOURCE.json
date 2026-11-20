@@ -23,7 +23,8 @@
     "Unified reel-plan and YouTube video-plan entry points, landscape source-matched production, continuous-source scene mapping and Videos dashboard/review support; public wf-reel command retired. Verification deferred by creator request.",
     "Optional private reference library in both planning commands, local bounded frame/cut sampling, reusable content-hashed agent style profiles and pinned per-project style notes. Reference media excluded from publication; testing deferred by creator.",
     "Nafay 3D AI Video Editor imported from creator-supplied ZIP with original file hashes and explicit unresolved package-licence notice; standalone wf-nafay wrapper, editor choice, seven-style planning catalogue, exact source-quality output and cut/plan/frame/audio approvals. Setup, transcription, renders and tests deferred.",
-    "Optional local natural-studio lighting: portable face/person-aware renderer, muted blue/red room accents, neutral face lift, per-project/shot opt-in and calibrated display masks; applied before graphics with approval/cache invalidation. Existing 51 catalogue IDs and private-media exclusions preserved."
+    "Optional local natural-studio lighting: portable face/person-aware renderer, muted blue/red room accents, neutral face lift, per-project/shot opt-in and calibrated display masks; applied before graphics with approval/cache invalidation. Existing 51 catalogue IDs and private-media exclusions preserved.",
+    "Adaptive softbox and blue/red wall lighting, project-wide plan selection, calibrated screen protection and motion comparison review. Both bundled lighting examples derive from the existing lean-in reference preview."
   ],
   "upstream_file_sha256": {
     "scripts/setup.sh": "b84c0e6b55e0428b37778fa9a72d3744b37c8e4062fbd375bd9754fd6702f10b",

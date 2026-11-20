@@ -6,3 +6,5 @@ description: Create a portrait reel from an idea, existing recordings or a saved
 # Plan and create a reel
 
 Set KIND to `reels`, project_type to `reel`, orientation to portrait 9:16. Read `references/planning.md` and follow it for the supplied topic, folder or project. Resolve the studio two directories above this skill. Full production continues through the shared production reference without another public command.
+
+Never ask about visual effects in chat. Visual choices must be selected by the creator in the interactive HTML plan review (`/review/reels/<slug>`), where suggested effects display dummy sample cards and reasons.

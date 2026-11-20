@@ -1,0 +1,8 @@
+description = "Create a consistent Techno Ravan video cover or thumbnail."
+prompt = """
+Read AGENTS.md in this workspace, then canonical skills/cover-image/SKILL.md.
+Use its shared versioned style and the supplied project context to create or revise the cover. Preserve video approval requirements.
+User arguments:
+
+{{args}}
+"""

@@ -1,10 +1,14 @@
 // Adapted from Techno Reel by Nayan V. See LICENSE in this directory.
 import { captionSections, captionRows, formatCaption, writeCaptionClipboard } from './captions.mjs';
+import { initTheme, initSettingsModal } from './settings.mjs';
+
+initTheme();
+initSettingsModal();
 
 const app = document.querySelector('#app');
 const connection = document.querySelector('#connection');
 const tabs = ['overview', 'plan', 'previews', 'exports', 'files'];
-let projects = [], search = '', filter = 'all', routeKey = '', signature = '', loaded = false;
+let projects = [], search = '', filter = 'reels', routeKey = '', signature = '', loaded = false;
 const selectedVideos = new Map();
 const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const date = value => value ? new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
@@ -24,17 +28,20 @@ function fileList(files, reveal = false) {
 }
 
 function renderCards() {
-  const filtered = projects.filter(p => (filter === 'all' || p.kind === filter) && `${p.title} ${p.id}`.toLowerCase().includes(search.toLowerCase()));
+  const filtered = projects.filter(p => p.kind === filter && `${p.title} ${p.id}`.toLowerCase().includes(search.toLowerCase()));
   document.querySelector('#project-count').textContent = `${filtered.length} OF ${projects.length} PROJECT${projects.length === 1 ? '' : 'S'}`;
   document.querySelector('#cards').innerHTML = filtered.map(p => {
     const poster = p.cover || p.previews[0];
-    return `<a class="card" href="${href(p)}"><div class="poster">${poster ? `<img loading="lazy" src="${escape(poster.url)}" alt="${escape(p.title)}${p.cover ? ' cover' : ' preview'}">` : `<span class="placeholder">${escape(p.title.slice(0, 2).toLowerCase())}.</span>`}<span class="poster-kind">${p.kind === 'reels' ? 'REEL' : p.kind === 'videos' ? 'YOUTUBE VIDEO' : 'SINGLE-VIDEO EDIT'}</span></div><div class="card-body"><div class="tag-list">${badge(p.status)}${p.warnings.length ? '<span class="badge warn">Missing files</span>' : ''}</div><h2>${escape(p.title)}</h2><div class="card-meta"><span>${p.exports.length ? `${p.exports.length} export${p.exports.length === 1 ? '' : 's'}` : 'In progress'}</span><span>${date(p.updated)}</span></div></div></a>`;
+    const statusBadge = (p.status && p.status !== 'export available') ? badge(p.status) : '';
+    const warnBadge = p.warnings.length ? '<span class="badge warn">Missing files</span>' : '';
+    const tagsHtml = (statusBadge || warnBadge) ? `<div class="tag-list">${statusBadge}${warnBadge}</div>` : '';
+    return `<a class="card" href="${href(p)}" data-kind="${p.kind}"><div class="poster">${poster ? `<img loading="lazy" src="${escape(poster.url)}" alt="${escape(p.title)}${p.cover ? ' cover' : ' preview'}">` : `<span class="placeholder">${escape(p.title.slice(0, 2).toLowerCase())}.</span>`}<span class="poster-kind">${p.kind === 'reels' ? 'REEL' : p.kind === 'videos' ? 'YOUTUBE VIDEO' : 'SINGLE-VIDEO EDIT'}</span></div><div class="card-body">${tagsHtml}<h2>${escape(p.title)}</h2><div class="card-meta"><span class="meta-exports"><svg class="meta-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg> ${p.exports.length ? `${p.exports.length} export${p.exports.length === 1 ? '' : 's'}` : 'In progress'}</span><span class="meta-date">${date(p.updated)}</span></div></div></a>`;
   }).join('') || `<div class="empty">${projects.length ? 'No projects match your search or filter.' : 'Your library is ready. Create a reel with /wf-reel or edit a video with /wf-video in your AI chat. Finished work and previews will appear here.'}</div>`;
 }
 
 function renderHome() {
   if (routeKey !== 'home') {
-    app.innerHTML = `<div class="eyebrow">Your local studio</div><h1>Your studio. One place.</h1><p class="description">Your footage, your ideas, your finished work. Browse reels, YouTube videos and edits, review the details, and find everything you need to share.</p><div class="toolbar"><div class="library-controls"><input id="search" type="search" placeholder="Find a project…" aria-label="Find a project" value="${escape(search)}"><div class="filters" role="group" aria-label="Project type">${[['all', 'All'], ['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits']].map(([value, label]) => `<button class="filter" data-filter="${value}" aria-pressed="${filter === value}">${label}</button>`).join('')}</div></div><span class="count" id="project-count"></span></div><div id="cards" class="grid"></div><div class="notice"><strong>Your next project starts in your AI chat.</strong><p>Use <code>/wf-reel-plan</code> for a reel, <code>/wf-video-plan</code> for YouTube, or <code>/wf-video</code> for a quick single-video edit. Plans, previews, and exports appear here automatically.</p></div>`;
+    app.innerHTML = `<div class="hero-section"><div class="eyebrow"><span class="eyebrow-dot"></span>Your local studio</div><h1>Your studio. One place.</h1><p class="description">Your footage, your ideas, your finished work. Browse reels, YouTube videos and edits, review the details, and find everything you need to share.</p></div><div class="toolbar"><div class="library-controls"><div class="search-box"><svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="search" type="search" placeholder="Search projects…" aria-label="Search projects" value="${escape(search)}"></div><div class="filters" role="group" aria-label="Project type">${[['reels', 'Reels'], ['videos', 'Videos'], ['edits', 'Edits']].map(([value, label]) => `<button class="filter" data-filter="${value}" aria-pressed="${filter === value}">${label}</button>`).join('')}</div></div><span class="count" id="project-count"></span></div><div id="cards" class="grid"></div><div class="notice"><div class="notice-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div><div class="notice-body"><strong>Your next project starts in your AI chat.</strong><p>Use <code>/wf-reel-plan</code> for a reel, <code>/wf-video-plan</code> for YouTube, or <code>/wf-video</code> for a quick single-video edit. Plans, previews, and exports appear here automatically.</p></div></div>`;
     document.querySelector('#search').addEventListener('input', e => { search = e.target.value; renderCards(); });
     document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
       filter = button.dataset.filter;
@@ -60,16 +67,189 @@ function captionsPanel(p) {
   const sources = p.captions.map((f, fileIndex) => {
     const sections = captionRows(captionSections(f.text)).map(row => `<div class="caption-row">${row.map(({ section, index: sectionIndex }) => {
       const formatted = formatCaption(section);
-      return `<details class="caption-item" data-caption-section="${escape(JSON.stringify([f.path, section.label]))}"><summary>${escape(section.label)}</summary><p class="caption-text">${formatted.html}</p><p class="caption-format-note">${escape(formatted.hint)}</p><button class="secondary copy-part" data-caption="${fileIndex}:${sectionIndex}" aria-label="Copy ${escape(section.label)}">${formatted.clipboardHtml ? 'Copy formatted' : 'Copy'}</button></details>`;
+      return `<details class="caption-item" data-caption-section="${escape(JSON.stringify([f.path, section.label]))}"><summary>${escape(section.label)}</summary><p class="caption-text">${formatted.html}</p>${formatted.hint ? `<p class="caption-format-note">${escape(formatted.hint)}</p>` : ''}<button class="secondary copy-part" data-caption="${fileIndex}:${sectionIndex}" aria-label="Copy ${escape(section.label)}">${formatted.clipboardHtml ? 'Copy formatted' : 'Copy'}</button></details>`;
     }).join('')}</div>`).join('');
     return `<div class="caption-source"><p class="muted">${fileLink(f)}</p>${sections}</div>`;
   }).join('');
   return `<section class="panel caption-panel"><div class="panel-title"><div><div class="section-label">READY TO SHARE</div><h2>Social captions</h2></div></div>${sources || empty('No social captions yet. Add caption.txt, captions.md, or Social_Copy.md to this project when your copy is ready.')}</section>`;
 }
 
+function planPanel(p) {
+  const cp = p.creativePlan || {};
+  const hasStage1 = cp.planConfirmed || Boolean(cp.speech) || Boolean(cp.plannedEffects && cp.plannedEffects.length);
+  const hasStage2 = cp.approved || Boolean(cp.sliceFrames && cp.sliceFrames.length) || Boolean(p.previews && p.previews.length);
+
+  return `<section class="panel plan-panel">
+    <div class="panel-title">
+      <div>
+        <div class="section-label">THE CREATIVE BLUEPRINT</div>
+        <h2>Creative Plan & Confirmations</h2>
+      </div>
+      <button class="button primary" data-review="plan">Review plan in full ↗</button>
+    </div>
+    <p class="muted">
+      ${p.renderer === 'nafay'
+        ? 'Nafay motion graphics review includes script breakdown, scene feedback, and approval gates.'
+        : 'Track your video through its two distinct verification gates: the initial creative direction confirmation and the final slice frame approval before rendering.'}
+    </p>
+
+    <div class="confirmations-stack">
+      <!-- 1. Initial Plan Confirmation -->
+      <div class="confirmation-card ${hasStage1 ? 'confirmed' : 'pending'}">
+        <div class="confirmation-header">
+          <div class="confirmation-title-wrap">
+            <span class="step-num">1</span>
+            <div>
+              <h3>Initial Plan Confirmation</h3>
+              <p class="confirmation-subtitle">Creative direction, speech analysis & visual selection</p>
+            </div>
+          </div>
+          <span class="badge ${cp.planConfirmed ? 'success' : 'pending'}">${cp.planConfirmed ? '✓ Plan Confirmed' : 'Planning in progress'}</span>
+        </div>
+
+        ${cp.speech ? `
+          <div class="plan-speech-card">
+            <div class="micro-label">SPOKEN HOOK / SCRIPT</div>
+            <blockquote class="plan-speech-quote">“${escape(cp.speech)}”</blockquote>
+          </div>
+        ` : ''}
+
+        ${cp.planRationale ? `
+          <div class="plan-rationale-box">
+            <div class="micro-label">CREATIVE RATIONALE</div>
+            <p class="plan-rationale-text">${escape(cp.planRationale)}</p>
+          </div>
+        ` : ''}
+
+        ${cp.plannedEffects && cp.plannedEffects.length ? `
+          <div class="planned-effects-section">
+            <div class="micro-label">PLANNED VISUAL SCENES & EFFECTS</div>
+            <div class="planned-effects-grid">
+              ${cp.plannedEffects.map(fx => `
+                <div class="planned-effect-card">
+                  <div class="planned-effect-top">
+                    <span class="planned-effect-name">${escape(fx.name)}</span>
+                    ${fx.timing ? `<span class="planned-effect-time">${escape(fx.timing)}</span>` : ''}
+                  </div>
+                  ${fx.text ? `<div class="planned-effect-overlay">Overlay text: <strong>“${escape(fx.text)}”</strong></div>` : ''}
+                  ${fx.say ? `<div class="planned-effect-say">“${escape(fx.say)}”</div>` : ''}
+                  ${fx.reason ? `<p class="planned-effect-reason">${escape(fx.reason)}</p>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        ${cp.initialSelection ? `
+          <div class="confirmation-footer">
+            <span class="meta-label">CREATOR SELECTION / INSTRUCTION:</span>
+            <span class="meta-value">${escape(cp.initialSelection)}</span>
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- 2. Final Slice Frame Confirmation -->
+      <div class="confirmation-card ${hasStage2 ? 'confirmed' : 'pending'}">
+        <div class="confirmation-header">
+          <div class="confirmation-title-wrap">
+            <span class="step-num">2</span>
+            <div>
+              <h3>Final Slice Frame Confirmation</h3>
+              <p class="confirmation-subtitle">Actual rendered video frame slices & verification</p>
+            </div>
+          </div>
+          <span class="badge ${cp.approved ? 'success' : 'pending'}">${cp.approved ? '✓ Frames Approved & Verified' : 'Approval pending'}</span>
+        </div>
+
+        ${(cp.sliceFrames && cp.sliceFrames.length) ? `
+          <div class="slice-frames-section">
+            <div class="micro-label">VERIFIED SLICE FRAMES AT EXACT TIMESTAMPS</div>
+            <div class="slice-frames-grid">
+              ${cp.sliceFrames.map(f => `
+                <div class="slice-frame-card">
+                  <a href="${escape(f.url)}" target="_blank" rel="noreferrer" class="slice-frame-thumb" title="View full frame">
+                    <img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}" class="slice-frame-img">
+                    ${f.time ? `<span class="slice-frame-tag">${escape(f.time)}</span>` : ''}
+                  </a>
+                  <div class="slice-frame-meta">
+                    <span class="slice-frame-name">${escape(f.name.split('/').pop())}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : (p.previews && p.previews.length) ? `
+          <div class="slice-frames-section">
+            <div class="micro-label">PREVIEW FRAMES</div>
+            <div class="slice-frames-grid">
+              ${p.previews.map(f => `
+                <div class="slice-frame-card">
+                  <a href="${escape(f.url)}" target="_blank" rel="noreferrer" class="slice-frame-thumb" title="View full frame">
+                    <img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}" class="slice-frame-img">
+                  </a>
+                  <div class="slice-frame-meta">
+                    <span class="slice-frame-name">${escape(f.name.split('/').pop())}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : empty('No preview slice frames generated yet. Generate preview frames in your AI chat before approval.')}
+
+        ${cp.approval ? `
+          <div class="approval-card-details">
+            <div class="approval-detail-item">
+              <span class="detail-label">APPROVAL DECISION</span>
+              <strong class="detail-text">“${escape(cp.approval.user_message || cp.approval.message || 'Approved')}”</strong>
+            </div>
+            <div class="approval-detail-item">
+              <span class="detail-label">PREVIEW FINGERPRINT</span>
+              <code class="detail-code" title="${escape(cp.previewId || '')}">${escape((cp.previewId || '').slice(0, 16))}…</code>
+            </div>
+            <div class="approval-detail-item">
+              <span class="detail-label">VERIFIED AT</span>
+              <span class="detail-date">${date(cp.approval.at)} ${cp.approval.at ? new Date(cp.approval.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- Feedback History if present -->
+      ${cp.feedbackSubmissions && cp.feedbackSubmissions.length ? `
+        <div class="feedback-card">
+          <div class="micro-label">REVISION & FEEDBACK HISTORY</div>
+          <ul class="feedback-list">
+            ${cp.feedbackSubmissions.map(sub => `
+              <li class="feedback-item">
+                <div class="feedback-item-header">
+                  <span class="badge ${sub.status === 'handled' ? 'success' : 'warn'}">${escape(sub.status || 'submitted')}</span>
+                  <span class="feedback-date">${date(sub.at)}</span>
+                </div>
+                <p class="feedback-text">“${escape(sub.text)}”</p>
+                ${sub.result ? `<div class="feedback-result">↳ ${escape(sub.result)}</div>` : ''}
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      ` : ''}
+
+      <!-- Interactive Storyboard iframe if document exists -->
+      ${p.plans && p.plans.length ? `
+        <details class="storyboard-details">
+          <summary class="storyboard-summary">
+            <span>Interactive Storyboard Document</span>
+            <span class="badge">${escape(p.plans[0].name)}</span>
+          </summary>
+          <iframe class="preview-frame" title="Interactive Storyboard" sandbox="" loading="lazy" src="${escape(p.plans[0].url)}"></iframe>
+        </details>
+      ` : ''}
+    </div>
+  </section>`;
+}
+
 function content(p, tab) {
   if (tab === 'overview') return `<div class="overview-layout">${mediaPanel(p)}<section class="panel cover-panel"><div class="panel-title"><div><div class="section-label">YOUR THUMBNAIL</div><h2>Cover image</h2></div></div>${p.cover ? `<a class="cover-link" href="${escape(p.cover.url)}" target="_blank" rel="noreferrer"><img class="cover overview-cover" src="${escape(p.cover.url)}" alt="${escape(p.title)} cover"></a>${revealButton(p.cover, 'Show cover in folder', { className: 'cover-action' })}` : empty('No cover yet. Existing cover images will appear here when added to the project.')}</section><aside class="project-sidebar">${savedStatus(p)}</aside>${captionsPanel(p)}</div>`;
-  if (tab === 'plan') return `<section class="panel"><div class="panel-title"><div><div class="section-label">THE CREATIVE DIRECTION</div><h2>Plans & frame reviews</h2></div><button data-review="plan">Review plan ↗</button></div><p class="muted">${p.renderer==='nafay'?'The interactive review includes script, scene and frame feedback, voice/effects previews and approval.':'The interactive review includes script, scene and frame feedback, music selection and approval.'} ${p.renderer==='nafay'?'Nafay graphics are edited in chat through the saved story.js.':'Use Hyperframes Studio for visual editing.'}</p>${p.plans.length ? p.plans.map(f => `<details class="plan-document"${f.path === p.plans[0].path ? ' open' : ''}><summary>${escape(f.name)}</summary><p>${fileLink(f)} · <a href="${escape(download(f))}" download>Download HTML</a></p><iframe class="preview-frame" title="${escape(f.name)}" sandbox="" loading="lazy" src="${escape(f.url)}"></iframe></details>`).join('') : empty('No HTML plan yet. Saved JSON plans are available below.')}${fileList(p.files.filter(f => /(?:^|\/)(?:plan|session)\.json$/.test(f.name)))}</section>`;
+  if (tab === 'plan') return planPanel(p);
   if (tab === 'previews') return `<section class="panel"><div class="panel-title"><div><div class="section-label">ACTUAL REVIEW FRAMES</div><h2>Previews</h2></div><button data-review="frames">Review & approve frames ↗</button></div>${p.previews.length ? `<div class="frame-grid">${p.previews.map(f => `<figure><a href="${escape(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}"></a><figcaption>${escape(f.name)} <a href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓</a></figcaption></figure>`).join('')}</div>` : empty('No preview frames yet. Generate them in your AI chat before approving an export.')}</section>`;
   if (tab === 'exports') return `<section class="panel"><div class="section-label">SAVED ON THIS DEVICE</div><h2>Videos</h2>${fileList(p.exports, true)}</section><section class="panel"><h2>Covers</h2>${fileList(p.covers, true)}</section>${captionsPanel(p)}`;
   const originals = p.files.filter(f => f.name.startsWith('raw/') || f.path === p.source?.path);
@@ -93,7 +273,7 @@ function renderProject(p, tab) {
   const wasPlaying = oldVideo && !oldVideo.paused;
   const oldTime = oldVideo?.currentTime;
   const openCaptions = new Set(key === routeKey ? [...document.querySelectorAll('details[data-caption-section][open]')].map(item => item.dataset.captionSection) : []);
-  app.innerHTML = `<a class="back" href="#">← ALL PROJECTS</a><div class="project-heading"><div><div class="eyebrow">${p.kind === 'reels' ? 'Combined reel' : p.kind === 'videos' ? 'YouTube video' : 'Single-video edit'}</div><h1>${escape(p.title)}</h1><div class="path">${escape(p.path)}/</div></div><div class="heading-actions"><button class="secondary" id="open-folder">Open project folder ↗</button><button class="secondary" id="copy-path">Copy folder path</button><span id="folder-status" role="status"></span></div></div><nav class="tabs" aria-label="Project sections">${tabs.map(t => `<a class="${tab === t ? 'active' : ''}"${tab === t ? ' aria-current="page"' : ''} href="${href(p, t)}">${t[0].toUpperCase() + t.slice(1)}</a>`).join('')}</nav><div id="content">${content(p, tab)}</div>`;
+  app.innerHTML = `<a class="back" href="#"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg> ALL PROJECTS</a><div class="project-heading"><div><div class="eyebrow"><span class="eyebrow-dot"></span>${p.kind === 'reels' ? 'Combined reel' : p.kind === 'videos' ? 'YouTube video' : 'Single-video edit'}</div><h1>${escape(p.title)}</h1><div class="path">${escape(p.path)}/</div></div><div class="heading-actions"><button class="secondary button-icon" id="open-folder"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Open project folder</button><button class="secondary button-icon" id="copy-path"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy folder path</button><span id="folder-status" role="status"></span></div></div><nav class="tabs" aria-label="Project sections">${tabs.map(t => `<a class="${tab === t ? 'active' : ''}"${tab === t ? ' aria-current="page"' : ''} href="${href(p, t)}">${t[0].toUpperCase() + t.slice(1)}</a>`).join('')}</nav><div id="content">${content(p, tab)}</div>`;
   const newVideo = document.querySelector('#reel-video');
   if (oldVideo && newVideo && oldVideo.getAttribute('src') === newVideo.getAttribute('src')) {
     newVideo.replaceWith(oldVideo);

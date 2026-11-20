@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cover Image"
+  short_description: "Consistent Techno Ravan covers and thumbnails"
+  default_prompt: "Use $cover-image to create a cover for this video using the shared Techno Ravan style."
