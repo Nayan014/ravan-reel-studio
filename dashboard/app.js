@@ -476,9 +476,11 @@ async function refresh() {
     const latest = await response.json();
     if (revision !== uploadRevision || savingUploads.size) return;
     projects = latest; loaded = true;
-    connection.textContent = 'Up to date'; connection.className = '';
+    connection.hidden = true;
+    connection.textContent = '';
     render();
   } catch {
+    connection.hidden = false;
     connection.textContent = 'Disconnected · retrying'; connection.className = 'error';
     if (!loaded && location.hash !== '#guide') app.innerHTML = '<div class="empty">Cannot read projects. Check the dashboard terminal. Retrying automatically…</div>';
   } finally { setTimeout(refresh, 5000); }
