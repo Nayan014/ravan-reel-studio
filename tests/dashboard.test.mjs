@@ -95,6 +95,28 @@ test('discovers reels, Hyperframes, export packages and edits without changing w
   assert.equal(all.find(p => p.id === 'package').primary.name, 'Creative_Final.mp4');
 });
 
+test('AI labels use whole-video provenance and legacy AI reels have playable media', async t => {
+  const { root, put } = fixture(t);
+  put('outputs/ai-reels/legacy/export/final.mp4', 'video');
+  put('outputs/ai-reels/mixed/export.json', {fully_ai_generated: false});
+  put('outputs/videos/generated/Provenance.json', {fully_ai_generated: true});
+  put('outputs/edits/generated/export.json', {fully_ai_generated: true});
+  put('outputs/reels/planned/plan.json', {fully_ai_generated: true});
+  put('outputs/reels/changed/plan.json', {fully_ai_generated: true});
+  put('outputs/reels/changed/export.json', {fully_ai_generated: false});
+  put('outputs/reels/recording/plan.json', {title: 'AI news', creation_mode: 'faceless_ai_narration'});
+  put('outputs/reels/unknown/export.json', {fully_ai_generated: 'true'});
+  const base = await serverFixture(t, root);
+  const projects = await fetch(base + '/api/projects').then(r => r.json());
+  assert.equal(projects.length, 8);
+  assert.deepEqual(projects.filter(p => p.fullyAiGenerated).map(p => p.path).sort(), [
+    'outputs/ai-reels/legacy', 'outputs/edits/generated', 'outputs/reels/planned', 'outputs/videos/generated',
+  ]);
+  const legacy = projects.find(p => p.id === 'legacy');
+  assert.equal(legacy.projectType, 'reel');
+  assert.equal(await fetch(base + legacy.primary.url).then(r => r.text()), 'video');
+});
+
 test('uses newest fallback and isolates malformed metadata, missing files and duplicate filenames', t => {
   const { root, put } = fixture(t);
   const old = put('outputs/reels/a/export/final.mp4', 'first');

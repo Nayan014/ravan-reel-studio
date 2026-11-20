@@ -10,6 +10,7 @@ export const mediaTypes = {
   '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml',
   '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.pdf': 'application/pdf',
 };
+const projectKinds = ['reels', 'ai-reels', 'videos', 'edits'];
 const video = /\.(mp4|mov|m4v|webm|mkv|avi)$/i;
 const image = /\.(png|jpe?g|webp|gif|svg)$/i;
 const ignored = new Set(['node_modules', '__pycache__', 'voicestudio', 'models']);
@@ -24,7 +25,7 @@ export function mediaPath(root, name) {
   const parts = name.split('/');
   if (parts.some(p => !p || p === '.' || p.startsWith('.') || ignored.has(p))) throw Error('Invalid path');
   const [top, group, id] = parts;
-  const projectMedia = top === 'outputs' && ['reels', 'videos', 'edits'].includes(group) && validId(id || '') && parts.length >= 4;
+  const projectMedia = top === 'outputs' && projectKinds.includes(group) && validId(id || '') && parts.length >= 4;
   const inputMedia = top === 'inputs' && parts.length >= 2 && (video.test(name) || image.test(name) || /\.(wav|mp3|m4a)$/i.test(name));
   const reference = (name.startsWith('skills/effects/assets/reference-previews/') || name.startsWith('docs/effect-gallery/')) && image.test(name);
   if (!projectMedia && !inputMedia && !reference) throw Error('Outside media locations');
@@ -64,6 +65,11 @@ function projectData(root, kind, id) {
   const exported = record('export.json'), preview = record('preview.json');
   const approval = record('approval.json'), checks = record('checks.json'), selfReview = record('self-review.json');
   const provenance = record('Provenance.json');
+  // An explicit whole-video declaration takes precedence over a legacy AI reel designation.
+  const declaredOrigin = exported?.fully_ai_generated ?? provenance?.fully_ai_generated ?? plan?.fully_ai_generated;
+  const fullyAiGenerated = declaredOrigin === undefined
+    ? (exported?.kind ?? plan?.kind ?? kind) === 'ai-reels'
+    : declaredOrigin === true;
   const files = new Map();
   const add = path => {
     try {
@@ -219,7 +225,7 @@ function projectData(root, kind, id) {
   };
 
   return {
-    id, kind, projectType: plan?.project_type || (kind === 'videos' ? 'video' : kind === 'reels' ? 'reel' : 'edit'), title, path: local, updated: all[0]?.modified || statSync(folder).mtime.toISOString(),
+    id, kind, fullyAiGenerated, projectType: plan?.project_type || (kind === 'videos' ? 'video' : kind === 'edits' ? 'edit' : 'reel'), title, path: local, updated: all[0]?.modified || statSync(folder).mtime.toISOString(),
     status: session?.stage ? String(session.stage).replace(/_/g, ' ') : primary ? 'export available' : plan ? 'planning' : 'files available',
     renderer: typeof plan?.renderer === 'string' ? plan.renderer : kind === 'edits' ? 'Vibha effects' : plan ? 'remotion' : null,
     primary, cover, covers, exports, captions, plans, previews, source, files: all, records, creativePlan, warnings: [...new Set(warnings)],
@@ -228,7 +234,7 @@ function projectData(root, kind, id) {
 
 export function listProjects(root) {
   root = realpathSync(root);
-  return ['reels', 'videos', 'edits'].flatMap(kind => {
+  return projectKinds.flatMap(kind => {
     const parent = join(root, 'outputs', kind);
     // Do not follow a symlink used in place of outputs/ or one of its libraries.
     try {

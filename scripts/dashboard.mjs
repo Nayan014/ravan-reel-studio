@@ -322,7 +322,7 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
         return finish(405);
       }
       if (req.method === 'POST') {
-        const match = /^\/api\/projects\/(reels|videos|edits)\/([A-Za-z0-9_-]+)\/(open|reveal)$/.exec(url.pathname);
+        const match = /^\/api\/projects\/(reels|ai-reels|videos|edits)\/([A-Za-z0-9_-]+)\/(open|reveal)$/.exec(url.pathname);
         if (!match) return finish(405, 'Review only');
         const action = match[3];
         if (req.headers.origin !== `http://${host}` || req.headers['x-dashboard-action'] !== (action === 'reveal' ? 'reveal-file' : 'open-folder')) return finish(403);

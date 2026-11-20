@@ -27,7 +27,9 @@ are intentionally not accepted. The server stays on this device.
 ## Your library
 
 The dashboard opens on **Reels**. Choose **Videos** or **Edits** to browse those projects,
-or search within the selected type. Export packages with videos but no workflow plan also appear.
+or search within the selected type. Export packages with videos but no workflow plan also appear. Choose **AI** at the top to see fully AI-generated projects across all three types. Search works within this filter.
+
+The **AI** badge uses the boolean `fully_ai_generated` in `export.json`, `Provenance.json`, or `plan.json`, in that order. Set it to `true` when the complete video is AI-generated. Use `false` for mixed or recorded productions. The dashboard also recognizes the older `ai-reels` kind and discovers existing packages under `outputs/ai-reels/`.
 Data refreshes every five seconds. Search, selected tabs,
 export selection, and playing videos are preserved during refresh.
 
