@@ -433,5 +433,11 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     console.error(error.code === 'EADDRINUSE' ? `Port ${port} is busy. Stop the other dashboard or set DASHBOARD_PORT to another port.` : error.message);
     process.exitCode = 1;
   });
-  server.listen(port, '127.0.0.1', () => console.log(`Ravan Reel Studio · http://127.0.0.1:${server.address().port}\nSubmit targeted feedback and approval here; use Hyperframes Studio for visual editing. Ctrl+C to stop.`));
+  server.listen(port, '127.0.0.1', () => {
+    console.log(`Ravan Reel Studio · http://127.0.0.1:${server.address().port}\nSubmit targeted feedback and approval here; use Hyperframes Studio for visual editing. Ctrl+C to stop.`);
+    const syncScript = resolve(studioRoot, '../ai-brain/scripts/sync.py');
+    if (existsSync(syncScript)) {
+      try { execFile('python3', [syncScript, '--project', 'video-effects-studio'], () => {}); } catch {}
+    }
+  });
 }
