@@ -1,9 +1,19 @@
 // Adapted from Techno Reel by Nayan V. See LICENSE in this directory.
 import { captionSections, captionRows, formatCaption, writeCaptionClipboard } from './captions.mjs';
 import { initTheme, initSettingsModal } from './settings.mjs';
+import { PLATFORMS, getSafeArea, renderSafeAreaToolbar, renderSimulatedUI, renderSafeAreaGuides } from './safe-area.mjs';
 
 initTheme();
 initSettingsModal();
+
+let appSafePlatform = 'universal';
+try { appSafePlatform = localStorage.getItem('studio_safe_platform') || 'universal'; } catch {}
+let appShowGuides = true;
+try { appShowGuides = localStorage.getItem('studio_safe_guides') !== 'false'; } catch {}
+let appShowSimUi = true;
+try { appShowSimUi = localStorage.getItem('studio_safe_ui') !== 'false'; } catch {}
+let appShowProfileGrid = false;
+try { appShowProfileGrid = localStorage.getItem('studio_safe_grid') === 'true'; } catch {}
 
 const app = document.querySelector('#app');
 const connection = document.querySelector('#connection');
@@ -145,6 +155,7 @@ async function saveUpload(p, input) {
 }
 
 function mediaPanel(p) {
+  const isPortrait = libraryKind(p) === 'reels' || p.projectType === 'reel';
   const key = `${p.kind}/${p.id}`, selected = selectedVideos.get(key);
   const current = p.exports.find(f => f.path === selected) || p.primary;
   const preview = current?.path === p.primary?.path ? p.creativePlan?.sliceFrames?.[0]?.url : null;
@@ -152,9 +163,23 @@ function mediaPanel(p) {
     <label class="export-picker" for="video-select">Video version
       <select id="video-select">${p.exports.map(f => `<option value="${escape(f.path)}"${f.path === current?.path ? ' selected' : ''}>${escape(f.name)}</option>`).join('')}</select>
     </label>` : '';
+  const safeToolbar = isPortrait ? renderSafeAreaToolbar(appSafePlatform, {
+    showGuides: appShowGuides,
+    showSimUi: appShowSimUi,
+    showProfileGrid: appShowProfileGrid,
+    isVideo: true
+  }) : '';
+  const overlays = isPortrait && current ? `
+    ${renderSafeAreaGuides(appSafePlatform, appShowGuides, appShowProfileGrid)}
+    ${renderSimulatedUI(appSafePlatform, p.channel || 'Techno Ravan')}
+  ` : '';
   return `<section class="panel media-panel">
     <div class="panel-title"><h2>${libraryKind(p) === 'reels' ? 'Reel preview' : 'Video preview'}</h2></div>
-    ${current ? `<div class="video-wrap"><video id="reel-video" aria-label="${escape(p.title)}" controls playsinline preload="metadata"${preview ? ` poster="${escape(preview)}"` : ''} src="${escape(current.url)}"></video></div>
+    ${safeToolbar}
+    ${current ? `<div class="video-wrap" data-safe-container="video">
+      <video id="reel-video" aria-label="${escape(p.title)}" controls playsinline preload="metadata"${preview ? ` poster="${escape(preview)}"` : ''} src="${escape(current.url)}"></video>
+      ${overlays}
+    </div>
       <div class="media-footer"><span class="media-specs" id="video-specs"></span>${picker || `<span class="media-filename">${escape(current.name.split('/').pop())}</span>`}
         ${revealButton(current, 'Show in folder', {id: 'video-reveal'})}</div>` : empty('No exported video yet.')}
   </section>`;
@@ -356,7 +381,32 @@ function content(p, tab) {
   if (tab === 'overview') return `<div class="overview-layout" data-format="${libraryKind(p) === 'reels' || p.projectType === 'reel' ? 'portrait' : 'landscape'}">
     ${mediaPanel(p)}${coverPanel(p)}<div class="project-sidebar">${uploadChecklist(p)}${captionsPanel(p)}</div></div>`;
   if (tab === 'plan') return planPanel(p);
-  if (tab === 'previews') return `<section class="panel"><div class="panel-title"><div><h2>Previews</h2></div>${p.kind === 'ai-reels' ? '' : '<button data-review="frames">Review & approve frames ↗</button>'}</div>${p.previews.length ? `<div class="frame-grid">${p.previews.map(f => `<figure><a href="${escape(f.url)}" target="_blank" rel="noreferrer"><img loading="lazy" src="${escape(f.url)}" alt="${escape(f.name)}"></a><figcaption>${escape(f.name)} <a href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓</a></figcaption></figure>`).join('')}</div>` : empty('No preview frames yet. Generate them in your AI chat before approving an export.')}</section>`;
+  if (tab === 'previews') {
+    const isPortrait = libraryKind(p) === 'reels' || p.projectType === 'reel';
+    const safeToolbar = isPortrait ? renderSafeAreaToolbar(appSafePlatform, {
+      showGuides: appShowGuides,
+      showSimUi: appShowSimUi,
+      showProfileGrid: appShowProfileGrid
+    }) : '';
+    return `<section class="panel">
+      <div class="panel-title">
+        <div><h2>Previews</h2></div>
+        ${p.kind === 'ai-reels' ? '' : '<button data-review="frames">Review & approve frames ↗</button>'}
+      </div>
+      ${safeToolbar}
+      ${p.previews.length ? `<div class="frame-grid">${p.previews.map(f => `
+        <figure>
+          <div class="${isPortrait ? 'preview-stage-wrap' : ''}">
+            <a href="${escape(f.url)}" target="_blank" rel="noreferrer">
+              <img loading="lazy" class="${isPortrait ? 'preview-img' : ''}" src="${escape(f.url)}" alt="${escape(f.name)}">
+            </a>
+            ${isPortrait ? renderSafeAreaGuides(appSafePlatform, appShowGuides, appShowProfileGrid) : ''}
+            ${isPortrait ? renderSimulatedUI(appSafePlatform, p.channel || 'Techno Ravan') : ''}
+          </div>
+          <figcaption>${escape(f.name)} <a href="${escape(download(f))}" download aria-label="Download ${escape(f.name)}">↓</a></figcaption>
+        </figure>`).join('')}</div>` : empty('No preview frames yet. Generate them in your AI chat before approving an export.')}
+    </section>`;
+  }
   if (tab === 'exports') return `<section class="panel"><h2>Videos</h2>${fileList(p.exports, true)}</section><section class="panel"><h2>Covers</h2>${fileList(p.covers, true)}</section>${captionsPanel(p)}`;
   const originals = p.files.filter(f => f.name.startsWith('raw/') || f.path === p.source?.path);
   const supporting = p.files.filter(f => !originals.includes(f));
@@ -464,6 +514,40 @@ function renderProject(p, tab) {
     const formatted = formatCaption(captionSections(p.captions[file].text)[section]);
     copy(button, formatted.text, formatted.clipboardHtml);
   }));
+  document.querySelectorAll('.safe-platform-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const plat = e.currentTarget.dataset.platform;
+      if (!plat) return;
+      appSafePlatform = plat;
+      try { localStorage.setItem('studio_safe_platform', plat); } catch {}
+      signature = '';
+      render();
+    });
+  });
+  document.querySelectorAll('#safe-toggle-guides').forEach(input => {
+    input.addEventListener('change', e => {
+      appShowGuides = e.target.checked;
+      try { localStorage.setItem('studio_safe_guides', String(appShowGuides)); } catch {}
+      signature = '';
+      render();
+    });
+  });
+  document.querySelectorAll('#safe-toggle-ui').forEach(input => {
+    input.addEventListener('change', e => {
+      appShowSimUi = e.target.checked;
+      try { localStorage.setItem('studio_safe_ui', String(appShowSimUi)); } catch {}
+      signature = '';
+      render();
+    });
+  });
+  document.querySelectorAll('#safe-toggle-grid').forEach(input => {
+    input.addEventListener('change', e => {
+      appShowProfileGrid = e.target.checked;
+      try { localStorage.setItem('studio_safe_grid', String(appShowProfileGrid)); } catch {}
+      signature = '';
+      render();
+    });
+  });
 }
 
 function render() {

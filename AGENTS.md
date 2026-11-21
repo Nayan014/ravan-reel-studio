@@ -39,6 +39,7 @@ Open plans through the interactive review page and preserve actual-frame approva
 | sound-design | Select credited CC0 music and scene cues with documented popularity | `skills/sound-design/SKILL.md` |
 | natural-narration | Audition and select local Kokoro readings for speech-free scenes | `skills/natural-narration/SKILL.md` |
 | effect-tailor | Analyze speech and branding to author meaningful effect options, eliminating placeholder text | `skills/effect-tailor/SKILL.md` |
+| safe-area | Enforce Instagram Reels, YouTube Shorts, and TikTok safe areas on text, captions and graphics | `skills/safe-area/SKILL.md` |
 
 For `/wf` commands, read `skills/wf/SKILL.md` and route there. Bare `/wf` shows a menu; `/wf video-edit` starts the guided workflow. For `Start video edit` or `/video-edit`, follow the video-edit skill directly. Its sample choice, actual preview review and final approval are separate user decisions. Use its helper to render only the approved plan. Direct effect requests can use the effects skill. For a visual choice, open `docs/Video_Effects_Visual_Guide.pdf` or inspect the appropriate image listed in `skills/effects/references/catalogue.json`. That JSON uses preview paths relative to `skills/effects/` and contains all 51 effects and three bonus looks.
 
@@ -47,6 +48,8 @@ For `/wf` commands, read `skills/wf/SKILL.md` and route there. Bare `/wf` shows 
 ## Working on a video
 
 - For geographic maps of India, its states/territories, or world/regional maps including India, use `skills/india-map/SKILL.md` in every cover and video-editing route. Verify the depiction against official Government of India sources; do not default to generic third-party or AI-generated outlines. Preserve source terms and the existing frame/audio approval gates.
+
+- For all portrait reels and vertical videos, follow `skills/safe-area/SKILL.md`. Keep spoken captions, hook headlines, cards and graphics strictly inside safe zone boundaries across Instagram Reels, YouTube Shorts, and TikTok so content is never obscured by platform action rails (like/comment/share), profile headers, or bottom metadata. Verify safe areas in the review dashboard before release.
 
 - For the local review dashboard, run `npm run dashboard` from this folder and open `http://127.0.0.1:4173`. See `docs/DASHBOARD.md`. It discovers reels, YouTube videos and edits. Interactive review pages accept feedback and stage-specific approvals for the agent to process. Viewing needs only Node 22.18+, without renderer setup.
 - Use the actual source video and user supplied assets. `inputs/` is available for local media; an external source path also works.

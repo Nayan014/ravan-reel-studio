@@ -393,7 +393,7 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
         }
       } else {
         const reviewPage = /^\/review\/(reels|videos|edits|plans)\/[A-Za-z0-9_-]+$/.test(url.pathname);
-        const name = reviewPage ? 'review.html' : { '/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/captions.mjs': 'captions.mjs', '/review.js': 'review.js', '/review.css': 'review.css', '/settings.mjs': 'settings.mjs' }[url.pathname];
+        const name = reviewPage ? 'review.html' : { '/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/captions.mjs': 'captions.mjs', '/review.js': 'review.js', '/review.css': 'review.css', '/settings.mjs': 'settings.mjs', '/safe-area.mjs': 'safe-area.mjs' }[url.pathname];
         if (!name) return finish(404, 'Not found');
         path = join(ui, name);
       }

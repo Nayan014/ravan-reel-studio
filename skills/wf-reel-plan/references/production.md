@@ -32,6 +32,7 @@ In Step 2 (Final Plan), each scene displays:
 - Scene dialogue and shooting notes
 - Applied visual effect title
 - 1 key actual preview frame showing the footage with the effect applied (clean, focused, no clutter of redundant frames)
+- Safe area toolbar and overlays (Universal, Instagram, TikTok, YouTube Shorts) simulating platform controls to verify that text, captions, and graphics are clear of UI elements
 - History of feedback addressed for this scene from earlier revisions
 - Per-scene Approve button
 - Per-scene Feedback textarea and Submit feedback button

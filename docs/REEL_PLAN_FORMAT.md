@@ -29,6 +29,13 @@ Each scene or meaningful visual beat needs these columns:
 4. **CC on screen**: exact spoken words broken into short caption pages. Show page breaks clearly.
 5. **Effects**: write **None**, or choose from the catalogue with its verified visual-guide number, canonical name and visual preview. In the interactive review, select effects directly from the dropdown to preview appearance on that row. The redundant finishing column is retired.
 
+## Safe Area & Platform UI Handling
+
+- Follow `skills/safe-area/SKILL.md` on every portrait reel. Spoken captions, headlines, cards and visual overlays must remain within the verified Safe Zone across Instagram Reels, YouTube Shorts, and TikTok.
+- Spoken captions are anchored from the bottom (`bottom: 460px` on 1080×1920) and clear the right action rail (`width: 825px`, `left: 80px`, leaving 175px clear on the right).
+- Headlines and hooks start below `top: 300px` and stay centered within the Instagram 1:1 profile crop (`y: 420` to `1500`).
+- Use the interactive review dashboard's Safe Area toolbar to visually verify framing with simulated platform UI overlays before final approval.
+
 ## Visual preferences and decisions
 
 - Prefer clear developer typography: upright bold or monospace headings, controlled glow and readable edges. Avoid decorative italic name/AI lettering, blurred red titles and caption pills. Use bold outlined captions when requested; omit a scene's captions when its headline already carries the same idea. Tool-logo sequences should use original icons without added white cards or repeated names. Keep these as style preferences, not automatic effect approval.

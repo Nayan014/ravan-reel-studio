@@ -11,6 +11,7 @@ import uuid
 from video_workflow import STUDIO, run, runtime, effects_root, read_json, write_json, digest, probe
 from media_profile import get_profile, frames_for, rate, validate_export
 from audio_library import prepare_audio, validate_audio, audio_file, digest_key
+from safe_area import caption_bounds, headline_bounds
 
 
 def api():
@@ -95,8 +96,10 @@ def managed_write(folder,path,text,manifest):
 
 def caption_source(plan,placed,output):
     scale=min(output['width'],output['height'])/1080
-    landscape=output['width']>output['height']
-    font_size=(48 if landscape else 64)*scale
+    w,h=output['width'],output['height']
+    platform=plan.get('target_platform','universal')
+    cb=caption_bounds(platform,w,h)
+    font_size=cb['font_size']
     groups=[];cues=[]
     for shot,row in zip(plan['shots'],placed):
         if not shot.get('captions_visible',True): continue
@@ -111,8 +114,8 @@ def caption_source(plan,placed,output):
             ident=f'caption-{shot["id"]}-{i}'
             groups.append(f'<div id="{ident}" class="caption">{html.escape(page)}</div>')
             cues.append(f'tl.set("#{ident}",{{opacity:1}},{start:.12f}).set("#{ident}",{{opacity:0}},{end:.12f});')
-    w,h=output['width'],output['height']
-    return f'<template><style>@font-face{{font-family:StudioInter;src:url(assets/fonts/Inter.ttf);font-weight:100 900}}#root{{position:absolute;inset:0;width:{w}px;height:{h}px;pointer-events:none}}.caption{{position:absolute;top:{h*.76}px;left:{w*.08}px;width:{w*.84}px;font-family:StudioInter,sans-serif;font-size:{font_size}px;font-weight:800;line-height:1.15;color:white;text-align:center;text-wrap:balance;opacity:0;-webkit-text-stroke:{2*scale}px #101319;paint-order:stroke fill;text-shadow:0 {3*scale}px {6*scale}px #000}}</style><div id="root" data-composition-id="captions" data-width="{w}" data-height="{h}">{"".join(groups)}</div><script>const tl=gsap.timeline({{paused:true}});{"".join(cues)}window.__timelines=window.__timelines||{{}};window.__timelines.captions=tl;</script></template>'
+    css=f"position:absolute;bottom:{cb['bottom']}px;left:{cb['left']}px;width:{cb['width']}px;font-family:StudioInter,sans-serif;font-size:{font_size}px;font-weight:800;line-height:1.15;color:white;text-align:center;text-wrap:balance;opacity:0;-webkit-text-stroke:{cb['stroke_width']}px #101319;paint-order:stroke fill;text-shadow:0 {3*scale}px {cb['shadow_blur']}px #000"
+    return f'<template><style>@font-face{{font-family:StudioInter;src:url(assets/fonts/Inter.ttf);font-weight:100 900}}#root{{position:absolute;inset:0;width:{w}px;height:{h}px;pointer-events:none}}.caption{{{css}}}</style><div id="root" data-composition-id="captions" data-width="{w}" data-height="{h}">{"".join(groups)}</div><script>const tl=gsap.timeline({{paused:true}});{"".join(cues)}window.__timelines=window.__timelines||{{}};window.__timelines.captions=tl;</script></template>'
 
 
 def build(folder,plan,final_media=None):
@@ -137,7 +140,9 @@ def build(folder,plan,final_media=None):
         headline=extra.get('headline','')
         # Initial scaffolds are deliberately small. Studio/agent-authored code stays editable.
         graphic=f'<div class="headline">{html.escape(str(headline))}</div>' if headline else ''
-        text=f'<template><style>#root{{position:absolute;inset:0;width:{w}px;height:{h}px;overflow:hidden;background:#111}}.visual{{position:absolute;inset:0}}video,img{{position:absolute;inset:0;width:{w}px;height:{h}px;object-fit:cover}}.headline{{position:absolute;top:10%;left:8%;width:84%;color:white;font:800 {88*min(w,h)/1080}px/1.1 sans-serif;text-align:center}}</style><div id="root" data-composition-id="shot-{ident}" data-width="{w}" data-height="{h}"><div id="visual-{ident}" class="visual"><video id="media-{ident}" class="clip" data-start="0" data-duration="{row["duration"]:.12f}" data-track-index="0" src="assets/media/{ident}.mp4" muted playsinline></video>{graphic}</div></div><script>const tl=gsap.timeline({{paused:true}});window.__timelines=window.__timelines||{{}};window.__timelines["shot-{ident}"]=tl;</script></template>'
+        hb=headline_bounds(plan.get('target_platform','universal'),w,h)
+        headline_css=f"position:absolute;top:{hb['top']}px;left:{hb['left']}px;width:{hb['width']}px;color:white;font:800 {hb['font_size']}px/1.1 sans-serif;text-align:center;text-wrap:balance"
+        text=f'<template><style>#root{{position:absolute;inset:0;width:{w}px;height:{h}px;overflow:hidden;background:#111}}.visual{{position:absolute;inset:0}}video,img{{position:absolute;inset:0;width:{w}px;height:{h}px;object-fit:cover}}.headline{{{headline_css}}}</style><div id="root" data-composition-id="shot-{ident}" data-width="{w}" data-height="{h}"><div id="visual-{ident}" class="visual"><video id="media-{ident}" class="clip" data-start="0" data-duration="{row["duration"]:.12f}" data-track-index="0" src="assets/media/{ident}.mp4" muted playsinline></video>{graphic}</div></div><script>const tl=gsap.timeline({{paused:true}});window.__timelines=window.__timelines||{{}};window.__timelines["shot-{ident}"]=tl;</script></template>'
         managed_write(hf,hf/f'compositions/shot-{ident}.html',text,manifest)
         refs.append(f'<div id="shot-{ident}" class="clip" data-composition-id="shot-{ident}" data-composition-src="compositions/shot-{ident}.html" data-start="{row["start"]:.12f}" data-duration="{row["duration"]:.12f}" data-track-index="1" data-width="{w}" data-height="{h}" style="position:absolute;inset:0"></div>')
     managed_write(hf,hf/'compositions/captions.html',caption_source(plan,placed,output),manifest)
