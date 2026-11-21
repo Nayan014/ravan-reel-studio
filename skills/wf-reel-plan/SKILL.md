@@ -9,7 +9,7 @@ Set KIND to `reels`, project_type to `reel`, orientation to portrait 9:16. Read 
 
 When footage is supplied, always start fresh (`--fresh`) so that folders with the same name never pick up old work or feedback. The interactive review guides the creator through 3 steps:
 1. **Initial plan**: Full script, scene breakdown, dummy reference cards for visual choices, per-scene Approve button, per-scene Feedback button with submit, and sticky action bar.
-2. **Final plan**: Actual preview frames with applied effects (1 key frame per scene, dialogue, effect title, feedback history addressed, per-scene Approve button and Feedback button).
+2. **Final plan**: Actual preview frames with applied effects (1 key frame per scene, dialogue, effect title, feedback history addressed, safe area overlay with simulated Instagram/TikTok/Shorts UI controls, per-scene Approve button and Feedback button). Follow `skills/safe-area/SKILL.md` to ensure captions, headlines and graphics never collide with platform UI elements.
 3. **Final release**: Video render and export.
 
 Never ask about visual effects in chat. Visual choices must be selected by the creator in the interactive HTML plan review (`/review/reels/<slug>`), where suggested effects display dummy sample cards and reasons.

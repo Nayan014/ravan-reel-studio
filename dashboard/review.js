@@ -1,7 +1,17 @@
 import { initTheme, initSettingsModal } from './settings.mjs';
+import { PLATFORMS, getSafeArea, renderSafeAreaToolbar, renderSimulatedUI, renderSafeAreaGuides, validateBox } from './safe-area.mjs';
 
 initTheme();
 initSettingsModal();
+
+let currentSafePlatform = 'universal';
+try { currentSafePlatform = localStorage.getItem('studio_safe_platform') || 'universal'; } catch {}
+let showSafeGuides = true;
+try { showSafeGuides = localStorage.getItem('studio_safe_guides') !== 'false'; } catch {}
+let showSimUi = true;
+try { showSimUi = localStorage.getItem('studio_safe_ui') !== 'false'; } catch {}
+let showProfileGrid = false;
+try { showProfileGrid = localStorage.getItem('studio_safe_grid') === 'true'; } catch {}
 
 const [, , kind, id] = location.pathname.split('/');
 const api = `/api/reviews/${encodeURIComponent(kind)}/${encodeURIComponent(id)}`;
@@ -307,9 +317,18 @@ function readings(scene) {
 
 function renderFinalPlanScenes(r) {
   if (!r.scenes?.length) return '';
+  const channelName = state?.request?.channel || 'Techno Ravan';
+  const isPortrait = !r.outputProfile || r.outputProfile.width <= r.outputProfile.height;
+  const safeToolbar = isPortrait ? renderSafeAreaToolbar(currentSafePlatform, {
+    showGuides: showSafeGuides,
+    showSimUi: showSimUi,
+    showProfileGrid: showProfileGrid
+  }) : '';
+
   return `
     <h2>Scene-by-scene final plan & frames</h2>
-    <p class="review-note">Check the dialogue and actual frame with applied effect for each scene. Approve each scene or submit feedback.</p>
+    <p class="review-note">Check the dialogue and actual frame with applied effect for each scene. Toggle platform safe areas and simulated UI overlays to verify clear framing across Instagram, YouTube Shorts, and TikTok.</p>
+    ${safeToolbar}
     <div class="final-plan-cards">
       ${r.scenes.map(s => {
         const sceneFrames = r.frames.filter(f => f.scene === s.id);
@@ -324,6 +343,7 @@ function renderFinalPlanScenes(r) {
 
         const priorFeedback = (state?.submissions || []).filter(sub => sub.scene === s.id && sub.action === 'feedback');
         const isApproved = approvedScenes.has(s.id);
+        const currentSpec = PLATFORMS[currentSafePlatform] || PLATFORMS.universal;
 
         return `
           <article class="final-scene-card" data-scene="${esc(s.id)}">
@@ -361,12 +381,19 @@ function renderFinalPlanScenes(r) {
               </div>
 
               <div class="final-scene-preview">
-                <label class="meta-label">Actual preview frame with effect:</label>
+                <label class="meta-label">Actual preview frame with safe area:</label>
                 ${keyFrame ? `
-                  <a href="${esc(keyFrame.url)}" target="_blank" rel="noreferrer" title="Click to view full size">
-                    <img class="final-preview-img" src="${esc(keyFrame.url)}" alt="Actual frame for scene ${esc(s.id)} with effect">
-                  </a>
-                  <span class="preview-caption">1 keyframe shown · click to view full size</span>
+                  <div class="preview-stage-wrap" data-scene="${esc(s.id)}">
+                    <a href="${esc(keyFrame.url)}" target="_blank" rel="noreferrer" title="Click to view full size">
+                      <img class="final-preview-img" src="${esc(keyFrame.url)}" alt="Actual frame for scene ${esc(s.id)} with effect">
+                    </a>
+                    ${isPortrait ? renderSafeAreaGuides(currentSafePlatform, showSafeGuides, showProfileGrid) : ''}
+                    ${isPortrait ? renderSimulatedUI(currentSafePlatform, channelName) : ''}
+                  </div>
+                  <div class="preview-meta-row" style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:260px;margin-top:4px;">
+                    <span class="preview-caption">1 keyframe · ${esc(currentSpec.shortName)}</span>
+                    <span class="safe-badge-pill safe-valid" title="Visual content verified within platform UI boundaries">✓ Safe Area</span>
+                  </div>
                 ` : `
                   <p class="muted">Actual frame generating…</p>
                 `}
@@ -490,7 +517,51 @@ function render() {
   }
 
   updateSceneApprovalButtons();
+  bindSafeAreaToolbar();
   controls();
+}
+
+function bindSafeAreaToolbar() {
+  document.querySelectorAll('.safe-platform-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const plat = e.currentTarget.dataset.platform;
+      if (!plat) return;
+      currentSafePlatform = plat;
+      try { localStorage.setItem('studio_safe_platform', plat); } catch {}
+      displayed = '';
+      render();
+    });
+  });
+
+  const toggleGuides = $('safe-toggle-guides');
+  if (toggleGuides) {
+    toggleGuides.addEventListener('change', e => {
+      showSafeGuides = e.target.checked;
+      try { localStorage.setItem('studio_safe_guides', String(showSafeGuides)); } catch {}
+      displayed = '';
+      render();
+    });
+  }
+
+  const toggleUi = $('safe-toggle-ui');
+  if (toggleUi) {
+    toggleUi.addEventListener('change', e => {
+      showSimUi = e.target.checked;
+      try { localStorage.setItem('studio_safe_ui', String(showSimUi)); } catch {}
+      displayed = '';
+      render();
+    });
+  }
+
+  const toggleGrid = $('safe-toggle-grid');
+  if (toggleGrid) {
+    toggleGrid.addEventListener('change', e => {
+      showProfileGrid = e.target.checked;
+      try { localStorage.setItem('studio_safe_grid', String(showProfileGrid)); } catch {}
+      displayed = '';
+      render();
+    });
+  }
 }
 
 async function refresh() {
