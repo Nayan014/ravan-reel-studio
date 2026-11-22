@@ -17,21 +17,22 @@ This repository is connected to the **Centralized AI Brain** (`../ai-brain`). Al
 
 ## 2. Active Skills in this Repository
 
-### Global Skills
+### Global Skills (Shared Across All Workspace Repos)
 - **`safe-area-standard`**: Multi-platform 9:16 vertical video safe area boundaries (Shorts, Reels, TikTok) and preview overlay HUD.
 - **`creator-brand-voice`**: Techno Ravan brand voice, direct developer tone, and strict zero-em-dash rule.
 - **`ui-ux-pro-max`**: Design system heuristics, color systems, typography, and Remotion CSS/Canvas styling.
 - **`ai-brain-manager`**: Autonomous skill manager to create, toggle, and synchronize skills across repos.
+- **`captions`**: Platform-optimized social posting copy (Instagram, YouTube, TikTok, LinkedIn) without em dashes.
+- **`cover-image`**: High-CTR portrait covers and landscape thumbnails in the Techno Ravan style standard.
+- **`sound-design`**: Sound effect timing, risers, swooshes, and audio mix balancing.
+- **`baoyu-cover-image`**: Multi-aspect ratio editorial & infographic covers across 11 palettes.
+- **`connected-educational-triad`**: 7-step automated pipeline connecting Short ➔ Masterclass ➔ Quiz ➔ Masterclass.
 
 ### Project-Scoped Skills (Studio & Workflows)
-- **`captions`**: Platform-optimized social posting copy (Instagram, YouTube, TikTok, LinkedIn) without em dashes.
 - **`effects`**: Computer vision and effects pipeline (depth estimation, selfie segmentation, glow shaders, text layers).
 - **`wf-reel-plan`**: End-to-end workflow for designing, pacing, and structuring portrait reels.
 - **`studio-lighting`**: Synthetic 3-point studio lighting simulation and color grading.
 - **`studio-wall-lights`**: Studio background lighting, neon wall washes, and accents.
-- **`sound-design`**: Sound effect timing, risers, swooshes, and audio mix balancing.
-- **`cover-image`**: Automated high-CTR video thumbnail and cover generator.
-- **`baoyu-cover-image`**: Illustrated infographic cover templates.
 - **`natural-narration`**: Audio cadence and speech timing refinement.
 - **`video-edit`**: Core video editing assembly and cut automation.
 - **`wf` / `wf-auto-ai` / `wf-effects` / `wf-gallery` / `wf-nafay` / `wf-resume` / `wf-video` / `wf-video-plan`**: Domain-specific workflow orchestrators.
