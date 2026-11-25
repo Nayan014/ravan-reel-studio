@@ -6,7 +6,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { basename, dirname, extname, join, resolve, win32 } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { listProjects, mediaPath, mediaTypes, setUploaded, uploadPlatforms } from './dashboard-library.mjs';
+import { listProjects, mediaPath, mediaTypes, setUploaded, uploadPlatforms, cleanStudio } from './dashboard-library.mjs';
 import { readReview, submitReview, suggestedReview, reviewDocument, prepareReview, selectLighting } from './review-store.mjs';
 import { audioCatalogue,libraryAudio,selectAudio,settingsAudioOptions,voicePreviewFile } from './audio-library.mjs';
 import { studioProject, openNativeStudio } from './native-studio.mjs';
@@ -331,6 +331,20 @@ export function createDashboard({ root = studioRoot, revealFolder = openFolder, 
           return;
         }
         return finish(405);
+      }
+      if (url.pathname === '/api/studio/clean') {
+        if (!['POST', 'GET'].includes(req.method)) return finish(405, 'POST or GET only');
+        if (req.method === 'POST') {
+          if (req.headers.origin && req.headers.origin !== `http://${host}`) return finish(403);
+        }
+        try {
+          const result = cleanStudio(root);
+          res.setHeader('Content-Type', 'application/json');
+          return finish(200, JSON.stringify(result));
+        } catch (err) {
+          res.setHeader('Content-Type', 'application/json');
+          return finish(500, JSON.stringify({ ok: false, error: err.message }));
+        }
       }
       if (req.method === 'POST') {
         const match = /^\/api\/projects\/(reels|ai-reels|videos|edits)\/([A-Za-z0-9_-]+)\/(open|reveal)$/.exec(url.pathname);

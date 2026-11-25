@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, statSync, unlinkSync, writeFileSync, rmSync } from 'node:fs';
 import { basename, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 export const mediaTypes = {
@@ -268,4 +268,72 @@ export function listProjects(root) {
       } catch { return []; }
     });
   }).sort((a, b) => b.updated.localeCompare(a.updated) || a.id.localeCompare(b.id));
+}
+
+export function cleanStudio(root) {
+  root = realpathSync(root);
+  const projects = listProjects(root);
+  let cleanedProjects = 0;
+  let keptProjects = 0;
+
+  for (const p of projects) {
+    const hasExports = Array.isArray(p.exports) && p.exports.length > 0;
+    const isCompleted = Boolean(p.primary || hasExports);
+    const folder = join(root, p.path);
+
+    if (isCompleted) {
+      keptProjects++;
+    } else {
+      try {
+        if (existsSync(folder) && realpathSync(folder).startsWith(root)) {
+          rmSync(folder, { recursive: true, force: true });
+          cleanedProjects++;
+        }
+      } catch (err) {
+        console.error(`Failed to clean ${p.path}:`, err);
+      }
+    }
+  }
+
+  // Also purge any empty or incomplete draft directories across projectKinds
+  for (const kind of projectKinds) {
+    const parent = join(root, 'outputs', kind);
+    if (!existsSync(parent)) continue;
+    try {
+      if (lstatSync(parent).isSymbolicLink()) continue;
+    } catch { continue; }
+    try {
+      const entries = readdirSync(parent, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory() && validId(entry.name)) {
+          const dirPath = join(parent, entry.name);
+          let hasVideo = false;
+          try {
+            const checkVideo = (dir, depth = 0) => {
+              if (depth > 4 || hasVideo) return;
+              const files = readdirSync(dir, { withFileTypes: true });
+              for (const f of files) {
+                if (f.isDirectory()) checkVideo(join(dir, f.name), depth + 1);
+                else if (video.test(f.name)) { hasVideo = true; return; }
+              }
+            };
+            checkVideo(dirPath);
+          } catch {}
+          if (!hasVideo) {
+            try {
+              rmSync(dirPath, { recursive: true, force: true });
+              cleanedProjects++;
+            } catch {}
+          }
+        }
+      }
+    } catch {}
+  }
+
+  return {
+    ok: true,
+    cleanedProjects,
+    keptProjects,
+    message: `Studio cleaned! Purged ${cleanedProjects} incomplete project(s) and kept ${keptProjects} completed project(s).`
+  };
 }

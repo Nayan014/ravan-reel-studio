@@ -6,6 +6,37 @@ import { PLATFORMS, getSafeArea, renderSafeAreaToolbar, renderSimulatedUI, rende
 initTheme();
 initSettingsModal();
 
+const cleanBtn = document.querySelector('#clean-studio-btn');
+if (cleanBtn) {
+  cleanBtn.addEventListener('click', async () => {
+    if (!confirm('Are you sure you want to clean all in-progress projects and temporary working files? Completed video exports will be kept.')) return;
+    const origHtml = cleanBtn.innerHTML;
+    cleanBtn.disabled = true;
+    cleanBtn.innerHTML = '<span>⏳</span><span>Cleaning…</span>';
+    try {
+      const res = await fetch('/api/studio/clean', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const data = await res.json();
+      if (data.ok) {
+        alert(data.message || 'Studio cleaned successfully!');
+        const projRes = await fetch('/api/projects');
+        projects = await projRes.json();
+        renderCards();
+      } else {
+        alert(data.error || 'Failed to clean studio.');
+      }
+    } catch (err) {
+      console.error('Clean error:', err);
+      alert('Error connecting to clean API: ' + err.message);
+    } finally {
+      cleanBtn.disabled = false;
+      cleanBtn.innerHTML = origHtml;
+    }
+  });
+}
+
 let appSafePlatform = 'universal';
 try { appSafePlatform = localStorage.getItem('studio_safe_platform') || 'universal'; } catch {}
 let appShowGuides = true;
