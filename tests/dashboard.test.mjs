@@ -402,3 +402,33 @@ test('clipboard failures propagate instead of reporting a successful copy', asyn
     writeText: async () => { throw Error('Clipboard denied'); },
   }), /Clipboard denied/);
 });
+
+test('clean studio purges incomplete projects while preserving completed video exports', async t => {
+  const { root, put } = fixture(t);
+  // Completed project with video export
+  put('outputs/reels/completed-reel/plan.json', { title: 'Completed reel' });
+  put('outputs/reels/completed-reel/export/video.mp4', 'dummy video');
+  // Incomplete / in-progress project without export
+  put('outputs/reels/in-progress-reel/plan.json', { title: 'Draft reel' });
+  put('outputs/reels/in-progress-reel/previews/frame1.png', 'dummy preview');
+
+  const base = await serverFixture(t, root);
+  const beforeRes = await fetch(base + '/api/projects');
+  const beforeProjects = await beforeRes.json();
+  assert.equal(beforeProjects.length, 2);
+
+  const cleanRes = await fetch(base + '/api/studio/clean', {
+    method: 'POST',
+    headers: { origin: base }
+  });
+  assert.equal(cleanRes.status, 200);
+  const cleanData = await cleanRes.json();
+  assert.equal(cleanData.ok, true);
+  assert.equal(cleanData.cleanedProjects, 1);
+  assert.equal(cleanData.keptProjects, 1);
+
+  const afterRes = await fetch(base + '/api/projects');
+  const afterProjects = await afterRes.json();
+  assert.equal(afterProjects.length, 1);
+  assert.equal(afterProjects[0].id, 'completed-reel');
+});

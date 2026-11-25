@@ -187,6 +187,35 @@ header {
   height: 20px;
 }
 
+.header-actions .clean-btn {
+  width: auto;
+  min-width: 40px;
+  padding: 0 14px;
+  gap: 7px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+}
+.header-actions .clean-btn .clean-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+.header-actions .clean-btn:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+  box-shadow: 0 2px 8px rgba(185, 28, 28, 0.15);
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .header-actions .clean-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
 .header-actions .header-action-btn:hover {
   background: var(--paper-hover);
   border-color: var(--line-strong);
