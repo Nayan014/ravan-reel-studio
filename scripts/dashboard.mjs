@@ -1,4 +1,5 @@
 // Adapted from Techno Reel by Nayan V. See ../dashboard/LICENSE.
+import { connectAiBrain } from './ai-brain.mjs';
 import { createServer } from 'node:http';
 import {createHash} from 'node:crypto';
 import { createReadStream, realpathSync, statSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -449,9 +450,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   });
   server.listen(port, '127.0.0.1', () => {
     console.log(`Ravan Reel Studio · http://127.0.0.1:${server.address().port}\nSubmit targeted feedback and approval here; use Hyperframes Studio for visual editing. Ctrl+C to stop.`);
-    const syncScript = resolve(studioRoot, '../ai-brain/scripts/sync.py');
-    if (existsSync(syncScript)) {
-      try { execFile('python3', [syncScript, '--project', 'video-effects-studio'], () => {}); } catch {}
-    }
+    connectAiBrain({root: studioRoot});
   });
 }

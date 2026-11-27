@@ -1,6 +1,6 @@
 # Ravan Reel Studio
 
-Read `AGENTS.md` in this folder for the shared skill index and workflow. See `AI_SKILLS.md` for the central `ai-brain` skill catalog and instructions on adding new skills. For `Start video edit` or `/video-edit`, follow `skills/video-edit/SKILL.md`; it guides selection and waits for approval of actual frames before rendering. For a direct effect request, use `skills/effects/SKILL.md`. Use the local renderer and runtime. This project is usable without a global Claude skill installation.
+Read `AGENTS.md` in this folder for the shared skill index and workflow. See `AI_SKILLS.md` for the central `ai-brain` skill catalog (fetched automatically; run `python3 scripts/ai_brain.py` if `.claude/skills` is empty) and instructions on adding new skills. For `Start video edit` or `/video-edit`, follow `skills/video-edit/SKILL.md`; it guides selection and waits for approval of actual frames before rendering. For a direct effect request, use `skills/effects/SKILL.md`. Use the local renderer and runtime. This project is usable without a global Claude skill installation.
 
 Use `skills/wf/SKILL.md` for `/wf`, including `/wf video-edit`. Bare `/wf` shows the local command menu.
 

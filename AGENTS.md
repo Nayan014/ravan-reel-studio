@@ -1,7 +1,7 @@
 # Shared instructions for this workspace
 
 This folder is a portable video effects workspace. Use its local skill packages and assets. Resolve paths from this folder or the relevant `SKILL.md`; do not rely on the original Codex installation or a previous chat.
-All AI skills in this repo are centrally managed by `../ai-brain` (symlinked into `.agents/skills`, `.claude/skills`, `.gemini/skills`). See [AI_SKILLS.md](AI_SKILLS.md) for details on active skills, global vs studio-scoped skills, and instructions for adding new skills.
+AI skills in this repo come from the shared **AI Brain** (github.com/Nayan014/ai-brain). `python3 scripts/ai_brain.py` finds or clones it (`../ai-brain` or `.ai-brain/`), pulls updates and mounts the skills into `.agents/skills`, `.claude/skills`, `.gemini/skills`. `npm start`, `npm run dashboard` and Claude Code session start run it automatically. **If `.agents/skills` is empty or outdated, run `python3 scripts/ai_brain.py`.** See [AI_SKILLS.md](AI_SKILLS.md).
 
 For reel scripts, storyboards and production plans, first read `docs/REEL_PLAN_FORMAT.md`. It records the user's reusable preferences. Create HTML for review before any PDF, with the full script followed by one integrated scene table. Update that preference file when the user changes the shared format. These planning defaults do not replace the guided workflow's effect selection or actual-frame approval requirements.
 
