@@ -6,6 +6,7 @@ import {delimiter,dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createDashboard,workspaceId} from './dashboard.mjs';
 import {installDemo} from './install-demo.mjs';
+import {connectAiBrain} from './ai-brain.mjs';
 
 const ROOT=fileURLToPath(new URL('../',import.meta.url));
 export function supportedNode(version){
@@ -136,6 +137,7 @@ export async function launchDashboard({root=ROOT,port=Number(process.env.DASHBOA
 }
 
 async function main(){
+ connectAiBrain({wait:true});
  const args=process.argv.slice(2);if(args.some(arg=>arg!=='--no-open'))throw Error('Usage: npm start [-- --no-open]');
  if(!supportedNode(process.version)){
   if(process.env.RAVAN_MANAGED_NODE)throw Error('Could not select Node22.18+. Install a supported Node version and rerun npm start.');

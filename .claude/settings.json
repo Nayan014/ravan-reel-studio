@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/ai_brain.py --quiet || python scripts/ai_brain.py --quiet || true"
+          }
+        ]
+      }
+    ]
+  }
+}

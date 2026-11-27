@@ -6,14 +6,13 @@ This repository is connected to the **Centralized AI Brain** (`../ai-brain`). Al
 
 ## 1. Where Skills Live
 
-**Do not create skills directly in this folder.** All skills are authored centrally in `ai-brain` and mounted into this project via Git-tracked relative symlinks:
+**Do not create skills directly in this folder.** Skills are authored once in the shared `ai-brain` repo and mounted here by `scripts/ai_brain.py`:
 
-- **Antigravity / Gemini**: `.gemini/skills/` -> points to `../ai-brain/skills/`
-- **Claude Code**: `.claude/skills/` -> points to `../ai-brain/skills/`
-- **ChatGPT / Codex / Cursor / OpenCode**: `.agents/skills/` -> points to `../ai-brain/skills/`
-- **Active Session State**: `STATE.md` -> symlinked to `../ai-brain/STATE.md`
+1. Finds the brain: `$AI_BRAIN_HOME`, `../ai-brain` (side-by-side dev layout) or `.ai-brain/` (auto-cloned on first run).
+2. Pulls the latest brain (fast-forward only, at most once an hour, skipped offline or when the brain has local edits).
+3. Mounts skills: `.claude/skills` (Claude Code), `.agents/skills` (Codex, Cursor, others), `.gemini/skills` and `.gemini/commands` (Antigravity/Gemini), plus `STATE.md`.
 
----
+It runs from `npm start`, `npm run dashboard` (via `scripts/ai-brain.mjs`) and a Claude Code `SessionStart` hook. The mounted folders are git-ignored, never committed. Force it any time: `python3 scripts/ai_brain.py --pull`.
 
 ## 2. Active Skills in this Repository
 
@@ -50,15 +49,15 @@ Simply ask your AI assistant in chat:
 The agent will use `ai-brain-manager` to:
 1. Validate that `video-effects-studio` is an active project.
 2. Create the skill package inside `../ai-brain/skills/projects/video-effects-studio/<skill-name>/`.
-3. Register it in `../ai-brain/skills-manifest.json`.
-4. Run `python3 ../ai-brain/scripts/sync.py`.
+3. (Optional) Add a manifest entry in the brain only if it needs a custom summary or should start disabled.
+4. Run `python3 scripts/ai_brain.py`.
 5. Instantly provide the skill to Antigravity, Claude, and ChatGPT.
 
 ### Method B: Manual Addition
 1. Create the skill directory in `../ai-brain/skills/projects/video-effects-studio/<skill-name>/`.
 2. Add `SKILL.md` with YAML frontmatter (`name`, `description`).
-3. Add the skill entry under `"projects" -> "video-effects-studio"` in `../ai-brain/skills-manifest.json`.
-4. Run `python3 ../ai-brain/scripts/sync.py`.
+3. Nothing to register: any folder with a `SKILL.md` is discovered (use `skills-manifest.json` only to disable it or set a summary).
+4. Run `python3 scripts/ai_brain.py`.
 
 ---
 
